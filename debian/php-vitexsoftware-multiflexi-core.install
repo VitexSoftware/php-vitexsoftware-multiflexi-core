@@ -1,0 +1,2 @@
+src/MultiFlexi/*.php                      usr/share/php/MultiFlexi/
+debian/tmp/composer.json                  usr/share/php/MultiFlexi/

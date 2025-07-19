@@ -2,3 +2,13 @@
 Makefile
 /vendor/
 
+debian/files
+debian/.debhelper/
+debian/php-vitexsoftware-multiflexi-core/
+debian/php-vitexsoftware-multiflexi-core-dev/
+debian/debhelper-build-stamp
+debian/php-vitexsoftware-multiflexi-core.substvars
+debian/php-vitexsoftware-multiflexi-core-dev.substvars
+.build/
+debian/php-vitexsoftware-multiflexi-core-dev.debhelper.log
+debian/php-vitexsoftware-multiflexi-core.debhelper.log

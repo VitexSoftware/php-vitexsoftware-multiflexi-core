@@ -160,7 +160,7 @@ class CredentialTest extends TestCase
             );
 
         // Inject mock Credata
-        $this->injectCredataMock($credentialMock, $credataMock);
+        self::injectCredataMock($credentialMock, $credataMock);
 
         // Run test
         $result = $credentialMock->insertToSQL($data);
@@ -201,7 +201,7 @@ class CredentialTest extends TestCase
         $credataMock->method('listingQuery')->willReturn($query);
 
         // Inject mock Credata
-        $this->injectCredataMock($credentialMock, $credataMock);
+        self::injectCredataMock($credentialMock, $credataMock);
 
         // Set credential type ID to trigger loading the credential type
         $credentialMock->setDataValue('credential_type_id', 1);
@@ -269,7 +269,7 @@ class CredentialTest extends TestCase
             );
 
         // Inject mock Credata
-        $this->injectCredataMock($credentialMock, $credataMock);
+        self::injectCredataMock($credentialMock, $credataMock);
 
         // Set up data with both regular fields and credential-specific fields
         $data = [
@@ -313,7 +313,7 @@ class CredentialTest extends TestCase
             ->willReturn(true);
 
         // Inject mock Credata
-        $this->injectCredataMock($credentialMock, $credataMock);
+        self::injectCredataMock($credentialMock, $credataMock);
 
         // Run test
         $result = $credentialMock->deleteFromSQL();
@@ -356,7 +356,7 @@ class CredentialTest extends TestCase
         $credataMock->method('listingQuery')->willReturn($query);
 
         // Inject mock Credata
-        $this->injectCredataMock($credentialMock, $credataMock);
+        self::injectCredataMock($credentialMock, $credataMock);
 
         // Run test
         $result = $credentialMock->query();
@@ -460,7 +460,7 @@ class CredentialTest extends TestCase
      * @param mixed $credentialMock
      * @param mixed $credataMock
      */
-    private function injectCredataMock($credentialMock, $credataMock): void
+    private static function injectCredataMock($credentialMock, $credataMock): void
     {
         // Replace the credator property with our mock
         $reflector = new ReflectionClass($credentialMock);

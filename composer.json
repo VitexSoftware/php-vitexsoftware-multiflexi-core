@@ -2,18 +2,9 @@
     "name": "vitexsoftware/multiflexi-core",
     "type": "library",
     "require": {
-        "vitexsoftware/ease-fluentpdo": "dev-main",
-        "phpstan/phpstan": "2.1.x-dev"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "12.3.x-dev"
+        "vitexsoftware/ease-fluentpdo": "dev-main"
     },
     "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Vitex\\PhpVitexsoftwareMultiflexiCore\\": "src/"
-        }
-    },
     "authors": [
         {
             "name": "Vítězslav Dvořák",
@@ -34,9 +25,9 @@
     "require-dev": {
         "phpunit/phpunit": "*",
         "phpstan/phpstan": "*",
-        "friendsofphp/php-cs-fixer": "^3.75",
+        "friendsofphp/php-cs-fixer": "^3.84",
         "ergebnis/composer-normalize": "^2.47",
-        "ergebnis/php-cs-fixer-config": "^6.46",
+        "ergebnis/php-cs-fixer-config": "^6.50",
         "phpstan/phpstan-phpunit": "2.0.x-dev",
         "rector/rector": "dev-main"
     },
