@@ -1,0 +1,15 @@
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+    autoload_files:
+        - %currentWorkingDirectory%/vendor/autoload.php
+    ignoreErrors:
+        - '#Call to static method .* on an unknown class#'
+    checkMissingIterableValueType: false
+    checkMissingCallableSignature: false
+    
