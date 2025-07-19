@@ -12,14 +12,14 @@ Vcs-Browser: https://github.com/VitexSoftware/php-vitexsoftware-multiflexi-core
 Package: php-vitexsoftware-multiflexi-core
 Architecture: all
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-easefluentpdo
 Description: VitexSoftware Multiflexi Core Library
  This package contains the core library for the VitexSoftware Multiflexi
 
 Package: php-vitexsoftware-multiflexi-core-dev
 Architecture: all
 Multi-Arch: foreign
-Depends: php-vitexsoftware-multiflexi-core (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
+Depends: php-vitexsoftware-multiflexi-core (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-multiflexi-core
 Description: VitexSoftware Multiflexi Core Library
  This package contains the development files for the VitexSoftware Multiflexi
  Core Library.
