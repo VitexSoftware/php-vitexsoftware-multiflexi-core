@@ -28,9 +28,4 @@ if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
 
 \define('EASE_LOGGER', implode('|', $loggers));
 
-\Ease\Shared::user(null, '\MultiFlexi\User');
-
-/**
- * @global WebPage $oPage
- */
-$oPage = new MultiFlexi\Ui\WebPage();
+// \Ease\Shared::user(null, '\MultiFlexi\User');

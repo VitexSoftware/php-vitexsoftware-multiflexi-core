@@ -31,6 +31,7 @@ class ActionConfigTest extends \PHPUnit\Framework\TestCase
     protected function setUp(): void
     {
         $this->object = new ActionConfig();
+        $this->object->insertToSQL(['id' => 1, 'name' => 'TestTemplate']);
     }
 
     /**

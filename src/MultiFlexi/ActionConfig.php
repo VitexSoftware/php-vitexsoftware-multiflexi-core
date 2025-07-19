@@ -83,9 +83,25 @@ class ActionConfig extends Engine
      *
      * @return int
      */
+    /**
+     * Retrieve module configuration from the database.
+     *
+     * @param string $module      the module name
+     * @param string $key         the configuration key
+     * @param string $value       the configuration value
+     * @param string $mode        The mode (e.g., success, fail).
+     * @param int    $runtempalte the runtemplate ID
+     *
+     * @return mixed the result of the query
+     */
     public function getModuleConfig($module, $key, $value, $mode, $runtempalte)
     {
-        return $this->listingQuery()->where(['module' => $mode, 'keyname' => $key, 'mode' => $mode, 'runtemplate_id' => $runtempalte]);
+        return $this->listingQuery()->where([
+            'module' => $module,
+            'keyname' => $key,
+            'mode' => $mode,
+            'runtemplate_id' => $runtempalte,
+        ]);
     }
 
     /**
