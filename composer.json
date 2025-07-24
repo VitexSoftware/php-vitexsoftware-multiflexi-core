@@ -2,6 +2,7 @@
     "name": "vitexsoftware/multiflexi-core",
     "type": "library",
     "require": {
+        "justinrainbow/json-schema": "^6.0@dev",
         "vitexsoftware/ease-fluentpdo": "dev-main"
     },
     "license": "MIT",
