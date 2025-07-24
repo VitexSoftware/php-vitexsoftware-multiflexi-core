@@ -14,3 +14,4 @@ debian/php-vitexsoftware-multiflexi-core-dev.debhelper.log
 debian/php-vitexsoftware-multiflexi-core.debhelper.log
 .env
 .phpunit.result.cache
+debian/tmp/composer.json
