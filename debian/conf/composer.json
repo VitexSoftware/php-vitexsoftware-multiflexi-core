@@ -22,7 +22,7 @@
   "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "MultiFlexi\\": "MultiFlexi"
+      "MultiFlexi\\": "./"
     }
   },
   "repositories": [

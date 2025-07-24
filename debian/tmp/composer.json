@@ -1,5 +1,5 @@
 {
-  "name": "vitexsoftware/multiflexi",
+  "name": "deb/multiflexi-core",
   "description": "MultiFlexi Core library",
   "type": "project",
   "require": {
