@@ -23,7 +23,7 @@ use Ease\SQL\Orm;
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
  * @copyright  2015-2023 Vitex Software
  */
-class User extends \Ease\User implements \MultiFlexi\Ui\columns
+class User extends \Ease\User
 {
     use Orm;
     public $useKeywords = [
@@ -288,23 +288,6 @@ class User extends \Ease\User implements \MultiFlexi\Ui\columns
     public function passwordChange($newPassword): bool
     {
         return $this->dbsync([$this->passwordColumn => $this->encryptPassword($newPassword), $this->getKeyColumn() => $this->getUserID()]);
-    }
-
-    /**
-     * @see https://datatables.net/examples/advanced_init/column_render.html
-     *
-     * @return string Column rendering
-     */
-    public function columnDefs()
-    {
-        return <<<'EOD'
-
-"columnDefs": [
-           // { "visible": false,  "targets": [ 0 ] }
-        ]
-,
-
-EOD;
     }
 
     /**
