@@ -15,7 +15,8 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "MultiFlexi\\": "src/MultiFlexi/"
+            "MultiFlexi\\": "src/MultiFlexi/",
+            "MultiFlexi\\Zabbix\\": "src/MultiFlexi/Zabbix"
         }
     },
     "autoload-dev": {

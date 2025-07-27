@@ -1,2 +1,3 @@
 src/MultiFlexi/*.php                      usr/share/php/MultiFlexi/
+src/MultiFlexi/Zabbix/*.php               usr/share/php/MultiFlexi/Zabbix/
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/

@@ -23,6 +23,7 @@
   "autoload": {
     "psr-4": {
       "MultiFlexi\\": "./"
+      "MultiFlexi\\Zabbix\\": "./Zabbix",
     }
   },
   "repositories": [

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8c7437d8d9d8703318a5c991ce644d3d",
+    "content-hash": "3862b60c1f61a0548159580b32934901",
     "packages": [
         {
             "name": "fpdo/fluentpdo",
@@ -64,6 +64,156 @@
                 "source": "https://github.com/envms/fluentpdo/tree/v2.2.4"
             },
             "time": "2022-01-27T21:49:44+00:00"
+        },
+        {
+            "name": "justinrainbow/json-schema",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jsonrainbow/json-schema.git",
+                "reference": "3763af105ab2781bd705418ba5fa2481049b8e84"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/3763af105ab2781bd705418ba5fa2481049b8e84",
+                "reference": "3763af105ab2781bd705418ba5fa2481049b8e84",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "marc-mabe/php-enum": "^4.0",
+                "php": "^7.2 || ^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "3.3.0",
+                "json-schema/json-schema-test-suite": "^23.2",
+                "marc-mabe/php-enum-phpstan": "^2.0",
+                "phpspec/prophecy": "^1.19",
+                "phpstan/phpstan": "^1.12",
+                "phpunit/phpunit": "^8.5"
+            },
+            "default-branch": true,
+            "bin": [
+                "bin/validate-json"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "6.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "JsonSchema\\": "src/JsonSchema/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bruno Prieto Reis",
+                    "email": "bruno.p.reis@gmail.com"
+                },
+                {
+                    "name": "Justin Rainbow",
+                    "email": "justin.rainbow@gmail.com"
+                },
+                {
+                    "name": "Igor Wiedler",
+                    "email": "igor@wiedler.ch"
+                },
+                {
+                    "name": "Robert Schönthal",
+                    "email": "seroscho@googlemail.com"
+                }
+            ],
+            "description": "A library to validate a json schema.",
+            "homepage": "https://github.com/jsonrainbow/json-schema",
+            "keywords": [
+                "json",
+                "schema"
+            ],
+            "support": {
+                "issues": "https://github.com/jsonrainbow/json-schema/issues",
+                "source": "https://github.com/jsonrainbow/json-schema/tree/master"
+            },
+            "time": "2025-06-24T18:27:43+00:00"
+        },
+        {
+            "name": "marc-mabe/php-enum",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/marc-mabe/php-enum.git",
+                "reference": "7159809e5cfa041dca28e61f7f7ae58063aae8ed"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/marc-mabe/php-enum/zipball/7159809e5cfa041dca28e61f7f7ae58063aae8ed",
+                "reference": "7159809e5cfa041dca28e61f7f7ae58063aae8ed",
+                "shasum": ""
+            },
+            "require": {
+                "ext-reflection": "*",
+                "php": "^7.1 | ^8.0"
+            },
+            "require-dev": {
+                "phpbench/phpbench": "^0.16.10 || ^1.0.4",
+                "phpstan/phpstan": "^1.3.1",
+                "phpunit/phpunit": "^7.5.20 | ^8.5.22 | ^9.5.11",
+                "vimeo/psalm": "^4.17.0 | ^5.26.1"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-3.x": "3.2-dev",
+                    "dev-master": "4.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MabeEnum\\": "src/"
+                },
+                "classmap": [
+                    "stubs/Stringable.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Marc Bennewitz",
+                    "email": "dev@mabe.berlin",
+                    "homepage": "https://mabe.berlin/",
+                    "role": "Lead"
+                }
+            ],
+            "description": "Simple and fast implementation of enumerations with native PHP",
+            "homepage": "https://github.com/marc-mabe/php-enum",
+            "keywords": [
+                "enum",
+                "enum-map",
+                "enum-set",
+                "enumeration",
+                "enumerator",
+                "enummap",
+                "enumset",
+                "map",
+                "set",
+                "type",
+                "type-hint",
+                "typehint"
+            ],
+            "support": {
+                "issues": "https://github.com/marc-mabe/php-enum/issues",
+                "source": "https://github.com/marc-mabe/php-enum/tree/v4.7.1"
+            },
+            "time": "2024-11-28T04:54:44+00:00"
         },
         {
             "name": "pear/console_getopt",
@@ -351,12 +501,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/VitexSoftware/php-ease-core.git",
-                "reference": "8f84c9cb09b8c395dc48af1b7146d5383b6b29aa"
+                "reference": "8e57f3828d5d486119302cb96c8fd226e4519f38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/VitexSoftware/php-ease-core/zipball/8f84c9cb09b8c395dc48af1b7146d5383b6b29aa",
-                "reference": "8f84c9cb09b8c395dc48af1b7146d5383b6b29aa",
+                "url": "https://api.github.com/repos/VitexSoftware/php-ease-core/zipball/8e57f3828d5d486119302cb96c8fd226e4519f38",
+                "reference": "8e57f3828d5d486119302cb96c8fd226e4519f38",
                 "shasum": ""
             },
             "require": {
@@ -409,7 +559,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-07-17T13:10:38+00:00"
+            "time": "2025-07-25T16:56:15+00:00"
         },
         {
             "name": "vitexsoftware/ease-fluentpdo",
@@ -1586,82 +1736,6 @@
             "time": "2025-07-15T18:21:57+00:00"
         },
         {
-            "name": "justinrainbow/json-schema",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "3763af105ab2781bd705418ba5fa2481049b8e84"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/3763af105ab2781bd705418ba5fa2481049b8e84",
-                "reference": "3763af105ab2781bd705418ba5fa2481049b8e84",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "marc-mabe/php-enum": "^4.0",
-                "php": "^7.2 || ^8.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "3.3.0",
-                "json-schema/json-schema-test-suite": "^23.2",
-                "marc-mabe/php-enum-phpstan": "^2.0",
-                "phpspec/prophecy": "^1.19",
-                "phpstan/phpstan": "^1.12",
-                "phpunit/phpunit": "^8.5"
-            },
-            "default-branch": true,
-            "bin": [
-                "bin/validate-json"
-            ],
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "6.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "JsonSchema\\": "src/JsonSchema/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Bruno Prieto Reis",
-                    "email": "bruno.p.reis@gmail.com"
-                },
-                {
-                    "name": "Justin Rainbow",
-                    "email": "justin.rainbow@gmail.com"
-                },
-                {
-                    "name": "Igor Wiedler",
-                    "email": "igor@wiedler.ch"
-                },
-                {
-                    "name": "Robert Schönthal",
-                    "email": "seroscho@googlemail.com"
-                }
-            ],
-            "description": "A library to validate a json schema.",
-            "homepage": "https://github.com/jsonrainbow/json-schema",
-            "keywords": [
-                "json",
-                "schema"
-            ],
-            "support": {
-                "issues": "https://github.com/jsonrainbow/json-schema/issues",
-                "source": "https://github.com/jsonrainbow/json-schema/tree/master"
-            },
-            "time": "2025-06-24T18:27:43+00:00"
-        },
-        {
             "name": "kubawerlos/php-cs-fixer-custom-fixers",
             "version": "v3.30.2",
             "source": {
@@ -1767,80 +1841,6 @@
                 "source": "https://github.com/localheinz/diff/tree/1.2.0"
             },
             "time": "2024-12-04T14:16:01+00:00"
-        },
-        {
-            "name": "marc-mabe/php-enum",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/marc-mabe/php-enum.git",
-                "reference": "7159809e5cfa041dca28e61f7f7ae58063aae8ed"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/marc-mabe/php-enum/zipball/7159809e5cfa041dca28e61f7f7ae58063aae8ed",
-                "reference": "7159809e5cfa041dca28e61f7f7ae58063aae8ed",
-                "shasum": ""
-            },
-            "require": {
-                "ext-reflection": "*",
-                "php": "^7.1 | ^8.0"
-            },
-            "require-dev": {
-                "phpbench/phpbench": "^0.16.10 || ^1.0.4",
-                "phpstan/phpstan": "^1.3.1",
-                "phpunit/phpunit": "^7.5.20 | ^8.5.22 | ^9.5.11",
-                "vimeo/psalm": "^4.17.0 | ^5.26.1"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-3.x": "3.2-dev",
-                    "dev-master": "4.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "MabeEnum\\": "src/"
-                },
-                "classmap": [
-                    "stubs/Stringable.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Marc Bennewitz",
-                    "email": "dev@mabe.berlin",
-                    "homepage": "https://mabe.berlin/",
-                    "role": "Lead"
-                }
-            ],
-            "description": "Simple and fast implementation of enumerations with native PHP",
-            "homepage": "https://github.com/marc-mabe/php-enum",
-            "keywords": [
-                "enum",
-                "enum-map",
-                "enum-set",
-                "enumeration",
-                "enumerator",
-                "enummap",
-                "enumset",
-                "map",
-                "set",
-                "type",
-                "type-hint",
-                "typehint"
-            ],
-            "support": {
-                "issues": "https://github.com/marc-mabe/php-enum/issues",
-                "source": "https://github.com/marc-mabe/php-enum/tree/v4.7.1"
-            },
-            "time": "2024-11-28T04:54:44+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -2086,12 +2086,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "ca613115e3da316c5b3fb21b3c696cceb745fa6a"
+                "reference": "8ae740cba5d5fc58580377d7059ab8cff607637f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ca613115e3da316c5b3fb21b3c696cceb745fa6a",
-                "reference": "ca613115e3da316c5b3fb21b3c696cceb745fa6a",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8ae740cba5d5fc58580377d7059ab8cff607637f",
+                "reference": "8ae740cba5d5fc58580377d7059ab8cff607637f",
                 "shasum": ""
             },
             "require": {
@@ -2137,7 +2137,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-17T17:26:58+00:00"
+            "time": "2025-07-27T14:59:51+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2189,7 +2189,7 @@
             "description": "PHPUnit extensions and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
-                "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
+                "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.7"
             },
             "time": "2025-07-13T11:31:46+00:00"
         },
@@ -3379,12 +3379,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "490d66a15ac01f2fe57a6648d8996043c1d5cfd0"
+                "reference": "ee56c24e1df94c0aff83a9ce5a213c0377eeb8e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/490d66a15ac01f2fe57a6648d8996043c1d5cfd0",
-                "reference": "490d66a15ac01f2fe57a6648d8996043c1d5cfd0",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/ee56c24e1df94c0aff83a9ce5a213c0377eeb8e8",
+                "reference": "ee56c24e1df94c0aff83a9ce5a213c0377eeb8e8",
                 "shasum": ""
             },
             "require": {
@@ -3432,7 +3432,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-18T09:45:07+00:00"
+            "time": "2025-07-27T00:47:05+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -4474,12 +4474,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "a7930e07345718263a83133a0e03e468b242f0d0"
+                "reference": "6575e8c431419c1951ba7cf0cfe4f57b2c05cf5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/a7930e07345718263a83133a0e03e468b242f0d0",
-                "reference": "a7930e07345718263a83133a0e03e468b242f0d0",
+                "url": "https://api.github.com/repos/symfony/console/zipball/6575e8c431419c1951ba7cf0cfe4f57b2c05cf5b",
+                "reference": "6575e8c431419c1951ba7cf0cfe4f57b2c05cf5b",
                 "shasum": ""
             },
             "require": {
@@ -4560,7 +4560,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-07-18T08:19:51+00:00"
+            "time": "2025-07-26T13:08:44+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -4793,12 +4793,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "a4244535ea1f85b3d0aae49f1aef49903f876334"
+                "reference": "7df39720b1634375cb474089f34342589bbeda21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/a4244535ea1f85b3d0aae49f1aef49903f876334",
-                "reference": "a4244535ea1f85b3d0aae49f1aef49903f876334",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/7df39720b1634375cb474089f34342589bbeda21",
+                "reference": "7df39720b1634375cb474089f34342589bbeda21",
                 "shasum": ""
             },
             "require": {
@@ -4851,7 +4851,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-07-07T08:24:36+00:00"
+            "time": "2025-07-24T13:09:19+00:00"
         },
         {
             "name": "symfony/finder",
@@ -5532,12 +5532,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "f021b05a130d35510bd6b25fe9053c2a8a15d5d4"
+                "reference": "45112560a3ba2d715666a509a0bc9521d10b6c43"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/f021b05a130d35510bd6b25fe9053c2a8a15d5d4",
-                "reference": "f021b05a130d35510bd6b25fe9053c2a8a15d5d4",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/45112560a3ba2d715666a509a0bc9521d10b6c43",
+                "reference": "45112560a3ba2d715666a509a0bc9521d10b6c43",
                 "shasum": ""
             },
             "require": {
@@ -5592,7 +5592,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v3.6.0"
+                "source": "https://github.com/symfony/service-contracts/tree/main"
             },
             "funding": [
                 {
@@ -5608,7 +5608,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-04-25T09:37:31+00:00"
+            "time": "2025-07-15T11:30:57+00:00"
         },
         {
             "name": "symfony/stopwatch",
@@ -5674,35 +5674,35 @@
         },
         {
             "name": "symfony/string",
-            "version": "7.4.x-dev",
+            "version": "8.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "89ecb57ea26d588329e0ac38a7bbd652afce90bd"
+                "reference": "4b12437f79921d01dcb620a21c4fb1d7aea18d1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/89ecb57ea26d588329e0ac38a7bbd652afce90bd",
-                "reference": "89ecb57ea26d588329e0ac38a7bbd652afce90bd",
+                "url": "https://api.github.com/repos/symfony/string/zipball/4b12437f79921d01dcb620a21c4fb1d7aea18d1f",
+                "reference": "4b12437f79921d01dcb620a21c4fb1d7aea18d1f",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.2",
-                "symfony/polyfill-ctype": "~1.8",
-                "symfony/polyfill-intl-grapheme": "~1.33",
-                "symfony/polyfill-intl-normalizer": "~1.0",
-                "symfony/polyfill-mbstring": "~1.0"
+                "php": ">=8.4",
+                "symfony/polyfill-ctype": "^1.8",
+                "symfony/polyfill-intl-grapheme": "^1.33",
+                "symfony/polyfill-intl-normalizer": "^1.0",
+                "symfony/polyfill-mbstring": "^1.0"
             },
             "conflict": {
                 "symfony/translation-contracts": "<2.5"
             },
             "require-dev": {
-                "symfony/emoji": "^7.1|^8.0",
-                "symfony/error-handler": "^6.4|^7.0|^8.0",
-                "symfony/http-client": "^6.4|^7.0|^8.0",
-                "symfony/intl": "^6.4|^7.0|^8.0",
+                "symfony/emoji": "^7.4|^8.0",
+                "symfony/error-handler": "^7.4|^8.0",
+                "symfony/http-client": "^7.4|^8.0",
+                "symfony/intl": "^7.4|^8.0",
                 "symfony/translation-contracts": "^2.5|^3.0",
-                "symfony/var-exporter": "^6.4|^7.0|^8.0"
+                "symfony/var-exporter": "^7.4|^8.0"
             },
             "type": "library",
             "autoload": {
@@ -5741,7 +5741,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/7.4"
+                "source": "https://github.com/symfony/string/tree/8.0"
             },
             "funding": [
                 {
@@ -5757,7 +5757,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-07-15T09:40:20+00:00"
+            "time": "2025-07-15T11:41:37+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -5813,13 +5813,15 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "vitexsoftware/ease-fluentpdo": 20,
+        "justinrainbow/json-schema": 20,
         "phpstan/phpstan-phpunit": 20,
-        "rector/rector": 20
+        "phpunit/phpunit": 20,
+        "rector/rector": 20,
+        "vitexsoftware/ease-fluentpdo": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
