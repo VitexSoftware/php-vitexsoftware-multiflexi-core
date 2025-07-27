@@ -22,8 +22,13 @@
   "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "MultiFlexi\\": "./"
+      "MultiFlexi\\": "./",
+      "MultiFlexi\\Env\\": "./Env",
       "MultiFlexi\\Zabbix\\": "./Zabbix",
+      "MultiFlexi\\Executor\\": "./Executor",
+      "MultiFlexi\\CredentialType\\": "./CredentialType",
+      "MultiFlexi\\Zabbix\\Request\\": "./Zabbix/Request",
+      "MultiFlexi\\Zabbix\\Exception\\": "./Zabbix/Exception"
     }
   },
   "repositories": [

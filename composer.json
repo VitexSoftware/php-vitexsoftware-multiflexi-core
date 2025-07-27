@@ -16,7 +16,10 @@
     "autoload": {
         "psr-4": {
             "MultiFlexi\\": "src/MultiFlexi/",
-            "MultiFlexi\\Zabbix\\": "src/MultiFlexi/Zabbix"
+            "MultiFlexi\\Env\\": "src/MultiFlexi/Env",
+            "MultiFlexi\\Action\\": "src/MultiFlexi/Action",
+            "MultiFlexi\\Zabbix\\": "src/MultiFlexi/Zabbix",
+            "MultiFlexi\\CredentialType\\": "src/MultiFlexi/CredentialType"
         }
     },
     "autoload-dev": {

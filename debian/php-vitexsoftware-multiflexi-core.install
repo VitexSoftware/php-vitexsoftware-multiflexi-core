@@ -1,3 +1,17 @@
 src/MultiFlexi/*.php                      usr/share/php/MultiFlexi/
 src/MultiFlexi/Zabbix/*.php               usr/share/php/MultiFlexi/Zabbix/
+src/MultiFlexi/*.php                      usr/share/multiflexi/MultiFlexi/
+src/MultiFlexi/Env/*.php                  usr/share/multiflexi/MultiFlexi/Env/
+src/MultiFlexi/CredentialType/*.php       usr/share/multiflexi/MultiFlexi/CredentialType/
+src/MultiFlexi/Action/CustomCommand.php   usr/share/multiflexi/MultiFlexi/Action
+#src/MultiFlexi/Action/Github.php          usr/share/multiflexi/MultiFlexi/Action
+src/MultiFlexi/Action/Sleep.php           usr/share/multiflexi/MultiFlexi/Action
+src/MultiFlexi/Action/WebHook.php          usr/share/multiflexi/MultiFlexi/Action
+src/MultiFlexi/Action/LaunchJob.php       usr/share/multiflexi/MultiFlexi/Action
+#src/MultiFlexi/Action/RedmineIssue.php    usr/share/multiflexi/MultiFlexi/Action
+src/MultiFlexi/Action/Reschedule.php      usr/share/multiflexi/MultiFlexi/Action
+src/MultiFlexi/Action/Stop.php            usr/share/multiflexi/MultiFlexi/Action
+#src/MultiFlexi/Action/TriggerJenkins.php  usr/share/multiflexi/MultiFlexi/Action
+
+
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/
