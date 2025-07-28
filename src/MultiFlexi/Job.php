@@ -125,6 +125,7 @@ class Job extends Engine
     public function newJob(int $runtemplateId, ConfigFields $environment, \DateTime $scheduled, $executor = 'Native', $scheduleType = 'adhoc')
     {
         $this->runTemplate->loadFromSQL($runtemplateId);
+        $this->application = $this->runTemplate->getApplication();
         $jobId = $this->insertToSQL([
             'runtemplate_id' => $runtemplateId,
             'company_id' => $this->runTemplate->getDataValue('company_id'),
