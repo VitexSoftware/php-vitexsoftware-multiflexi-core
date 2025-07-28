@@ -126,6 +126,7 @@ class Job extends Engine
     {
         $this->runTemplate->loadFromSQL($runtemplateId);
         $this->application = $this->runTemplate->getApplication();
+        $this->company = $this->runTemplate->getCompany();
         $jobId = $this->insertToSQL([
             'runtemplate_id' => $runtemplateId,
             'company_id' => $this->runTemplate->getDataValue('company_id'),
