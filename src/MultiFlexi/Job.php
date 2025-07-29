@@ -127,7 +127,8 @@ class Job extends Engine
         $this->runTemplate->loadFromSQL($runtemplateId);
         $this->application = $this->runTemplate->getApplication();
         $this->company = $this->runTemplate->getCompany();
-        $jobId = $this->insertToSQL([
+        
+        $this->setData([
             'runtemplate_id' => $runtemplateId,
             'company_id' => $this->runTemplate->getDataValue('company_id'),
             'app_id' => $this->runTemplate->getDataValue('app_id'),
@@ -140,6 +141,8 @@ class Job extends Engine
             'executor' => $executor,
             'launched_by' => \Ease\Shared::user()->getMyKey(),
         ]);
+
+        $jobId = $this->insertToSQL();
 
         $environment->addField((new ConfigField('MULTIFLEXI_JOB_ID', 'integer', _('Job ID'), _('Number of job'), '', (string) $jobId))->setSource(self::class));
 
@@ -536,11 +539,11 @@ EOD;
     /**
      * Current Job Environment.
      *
-     * @return array
+     * @return array<string,string>
      */
-    public function getEnv()
+    public function getEnv(): array
     {
-        return $this->environment;
+        return $this->environment->getEnvArray();
     }
 
     /**
