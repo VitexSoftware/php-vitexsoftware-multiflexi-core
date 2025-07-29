@@ -127,7 +127,7 @@ class Job extends Engine
         $this->runTemplate->loadFromSQL($runtemplateId);
         $this->application = $this->runTemplate->getApplication();
         $this->company = $this->runTemplate->getCompany();
-        
+
         $this->setData([
             'runtemplate_id' => $runtemplateId,
             'company_id' => $this->runTemplate->getDataValue('company_id'),
@@ -539,7 +539,7 @@ EOD;
     /**
      * Current Job Environment.
      *
-     * @return array<string,string>
+     * @return array<string, string>
      */
     public function getEnv(): array
     {
