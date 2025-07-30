@@ -663,7 +663,6 @@ EOD;
                 $this->executor = new $executorClass($this);
             } else {
                 $this->addStatusMessage(sprintf(_('Requested Executor %s not availble'), $executorClass), 'warning');
-                $this->executor = new \MultiFlexi\Executor\Native($this);
             }
         }
 
