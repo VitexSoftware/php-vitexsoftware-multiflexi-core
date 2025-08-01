@@ -24,6 +24,7 @@
     "psr-4": {
       "MultiFlexi\\": "./",
       "MultiFlexi\\Env\\": "./Env/",
+      "MultiFlexi\\Action\\": "./Action/",
       "MultiFlexi\\Zabbix\\": "./Zabbix/",
       "MultiFlexi\\Executor\\": "./Executor/",
       "MultiFlexi\\CredentialType\\": "./CredentialType/",
