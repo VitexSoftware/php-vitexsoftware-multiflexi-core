@@ -1,6 +1,13 @@
-php-vitexsoftware-multiflexi-core (0.1.0) UNRELEASED; urgency=low
+php-vitexsoftware-multiflexi-core (0.2.0) UNRELEASED; urgency=medium
 
+  * install path fix
+
+ -- vitex <info@vitexsoftware.cz>  Fri, 01 Aug 2025 22:12:54 +0200
+
+php-vitexsoftware-multiflexi-core (0.1.0) unstable; urgency=low
+
+  [ Vítězslav Dvořák ]
   * Initial release. Closes: #nnnn
     <nnnn is the bug number of your ITP>
 
- -- Vítězslav Dvořák <info@vitexsoftware.cz>  Sat, 19 Jul 2025 11:14:15 +0200
+ -- vitex <info@vitexsoftware.cz>  Fri, 01 Aug 2025 22:12:44 +0200
