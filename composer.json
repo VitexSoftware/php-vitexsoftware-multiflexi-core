@@ -19,6 +19,7 @@
             "MultiFlexi\\Env\\": "src/MultiFlexi/Env",
             "MultiFlexi\\Action\\": "src/MultiFlexi/Action",
             "MultiFlexi\\Zabbix\\": "src/MultiFlexi/Zabbix",
+            "MultiFlexi\\Executor\\": "src/MultiFlexi/Executor",
             "MultiFlexi\\CredentialType\\": "src/MultiFlexi/CredentialType"
         }
     },

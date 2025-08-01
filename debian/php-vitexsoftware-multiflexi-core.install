@@ -1,6 +1,7 @@
 src/MultiFlexi/*.php                      usr/share/php/MultiFlexi/
 src/MultiFlexi/Env/*.php                  usr/share/php/MultiFlexi/Env/
 src/MultiFlexi/Zabbix/*.php               usr/share/php/MultiFlexi/Zabbix/
+src/MultiFlexi/Executor/*.php             usr/share/php/MultiFlexi/Executor/
 src/MultiFlexi/CredentialType/*.php       usr/share/php/MultiFlexi/CredentialType/
 src/MultiFlexi/Zabbix/Request/*.php       usr/share/php/MultiFlexi/Zabbix/Request/
 src/MultiFlexi/Zabbix/Exception/*.php     usr/share/php/MultiFlexi/Zabbix/Exception/
