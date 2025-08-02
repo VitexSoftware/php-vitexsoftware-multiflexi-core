@@ -22,6 +22,19 @@ namespace MultiFlexi;
  */
 class Scheduler extends Engine
 {
+        // Convert 'inter' values to cron expressions
+    public static $intervCron  = [
+            'y' => '0 0 1 1 *',    // yearly
+            'm' => '0 0 1 * *',    // monthly
+            'w' => '0 0 * * 0',    // weekly (Sunday)
+            'd' => '0 0 * * *',    // daily
+            'h' => '0 * * * *',    // hourly
+            'i' => '* * * * *',    // minutely
+            'n' => '',             // disabled
+        ];
+
+
+    
     public function __construct($identifier = null, $options = [])
     {
         $this->myTable = 'schedule';
