@@ -2,6 +2,8 @@
 
 MultiFlexi's Core classes
 
+![MultiFlexi-Chan](multiflexi-chan.png?raw=true)
+
 ## Core Classes Overview
 
 The MultiFlexi core provides a rich set of PHP classes for managing flexible, multi-tenant application environments. Below is a summary of the main classes and their responsibilities:
