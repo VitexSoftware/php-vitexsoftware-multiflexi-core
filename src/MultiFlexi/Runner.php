@@ -38,4 +38,31 @@ class Runner extends \Ease\Sand
     {
         return trim((string) shell_exec("systemctl is-active {$service}")) === 'active';
     }
+
+    /**
+     * Get the status of a systemd service.
+     *
+     * @param string $service Service name (e.g. "ssh.service")
+     *
+     * @return string One of: "active", "inactive", "failed", "unknown"
+     */
+    public function getServiceStatus(string $service): string
+    {
+        // Check if the service is active
+        exec('systemctl is-active '.escapeshellarg($service), $output, $isActiveCode);
+
+        if ($isActiveCode === 0) {
+            return 'active';
+        }
+
+        // Check if the service exists at all
+        exec('systemctl status '.escapeshellarg($service).' 2>&1', $statusOutput, $statusCode);
+
+        if ($statusCode === 4) {
+            return 'unknown'; // Service does not exist
+        }
+
+        // The service exists but is not active; return detailed status
+        return trim(implode("\n", $output));
+    }
 }

@@ -25,7 +25,6 @@ class RunTemplate extends \MultiFlexi\DBEngine
 {
     /**
      * @deprecated since version
-     * @var array
      */
     public static array $intervalCode = [
         'y' => 'yearly',
@@ -36,9 +35,9 @@ class RunTemplate extends \MultiFlexi\DBEngine
         'i' => 'minutly',
         'n' => 'disabled',
     ];
+
     /**
      * @deprecated since version number
-     * @var array
      */
     public static array $intervalSecond = [
         'n' => '0',
