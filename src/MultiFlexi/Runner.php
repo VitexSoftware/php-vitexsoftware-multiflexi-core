@@ -46,7 +46,7 @@ class Runner extends \Ease\Sand
      *
      * @return string One of: "active", "inactive", "failed", "unknown"
      */
-    public function getServiceStatus(string $service): string
+    public static function getServiceStatus(string $service): string
     {
         // Check if the service is active
         exec('systemctl is-active '.escapeshellarg($service), $output, $isActiveCode);
