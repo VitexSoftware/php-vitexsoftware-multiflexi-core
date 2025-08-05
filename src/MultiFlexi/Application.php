@@ -240,6 +240,9 @@ class Application extends DBEngine
 
         $appData['multiflexi'] = \Ease\Shared::appVersion();
 
+        $appData['version'] = '2.0.0'; // Set a default version, can be updated later
+        $appData['artifacts'] = [];
+
         return json_encode($appData, \JSON_PRETTY_PRINT);
     }
 
@@ -264,6 +267,7 @@ class Application extends DBEngine
     {
         $fields = [];
 
+
         // Validate JSON against schema before import using justinrainbow/json-schema
         $schemaFile = self::$appSchema;
 
@@ -274,14 +278,36 @@ class Application extends DBEngine
 
             if (!$validator->isValid()) {
                 $errorMsg = "JSON does not validate. Violations:\n";
-
                 foreach ($validator->getErrors() as $error) {
                     $errorMsg .= sprintf("[%s] %s\n", $error['property'], $error['message']);
                 }
-
                 $this->addStatusMessage($errorMsg, 'error');
-
                 return [];
+            }
+
+            // If schema version is present and > 2.0.0, process artifacts patterns
+            $importData = json_decode(file_get_contents($jsonFile), true);
+            if (isset($importData['version']) && version_compare($importData['version'], '2.0.0', '>')) {
+                $artifactPatterns = [];
+                if (isset($importData['artifacts'])) {
+                    // Support both single and multiple artifact patterns
+                    if (isset($importData['artifacts']['pattern'])) {
+                        $artifactPatterns[] = $importData['artifacts']['pattern'];
+                    }
+                    // If artifacts is an array of objects (future-proof)
+                    if (is_array($importData['artifacts'])) {
+                        foreach ($importData['artifacts'] as $artifact) {
+                            if (is_array($artifact) && isset($artifact['pattern'])) {
+                                $artifactPatterns[] = $artifact['pattern'];
+                            }
+                        }
+                    }
+                }
+                if (!empty($artifactPatterns)) {
+                    // Combine all patterns into a single regex using alternation
+                    $combinedRegex = count($artifactPatterns) === 1 ? $artifactPatterns[0] : '(' . implode(')|(', $artifactPatterns) . ')';
+                    $this->setDataValue('artifacts', $combinedRegex);
+                }
             }
         } else {
             $this->addStatusMessage('JSON schema file not found: '.$schemaFile, 'warning');

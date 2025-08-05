@@ -1,8 +1,14 @@
-php-vitexsoftware-multiflexi-core (2.0.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.0.1) UNRELEASED; urgency=medium
+
+  * added support for "Artifacts" in app json definition
+
+ -- vitex <info@vitexsoftware.cz>  Tue, 05 Aug 2025 18:43:41 +0200
+
+php-vitexsoftware-multiflexi-core (2.0.0) unstable; urgency=medium
 
   * version bump to 2.0.0
 
- -- vitex <info@vitexsoftware.cz>  Tue, 05 Aug 2025 07:45:55 +0200
+ -- vitex <info@vitexsoftware.cz>  Tue, 05 Aug 2025 18:43:37 +0200
 
 php-vitexsoftware-multiflexi-core (0.2.0) unstable; urgency=medium
 
