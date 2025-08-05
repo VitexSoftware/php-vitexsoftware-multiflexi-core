@@ -147,6 +147,8 @@ class LoggerTest extends TestCase
     public function testSomeFunctionality(): void
     {
         $logger = new Logger();
-        // Add assertions for Logger functionality
+        $this->assertInstanceOf(Logger::class, $logger);
+        $this->assertEquals('log', $logger->myTable, 'Logger table name should be log');
+        $this->assertIsArray($logger->getActualMessages(), 'getActualMessages() should return an array');
     }
 }

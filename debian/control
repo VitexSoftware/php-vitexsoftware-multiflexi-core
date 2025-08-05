@@ -19,7 +19,7 @@ Description: VitexSoftware Multiflexi Core Library
 Package: php-vitexsoftware-multiflexi-core-dev
 Architecture: all
 Multi-Arch: foreign
-Depends: php-vitexsoftware-multiflexi-core (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-multiflexi-core
+Depends: php-vitexsoftware-multiflexi-core (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-multiflexi-core, #multiflexi-database
 Description: VitexSoftware Multiflexi Core Library
  This package contains the development files for the VitexSoftware Multiflexi
  Core Library.

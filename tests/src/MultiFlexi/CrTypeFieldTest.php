@@ -29,6 +29,7 @@ class CrTypeFieldTest extends TestCase
     public function testSomeFunctionality(): void
     {
         $crTypeField = new CrTypeField();
-        // Add assertions for CrTypeField functionality
+        $this->assertEquals('crtypefield', $crTypeField->myTable, 'Table name should be crtypefield');
+        $this->assertIsArray($crTypeField->getColumns(), 'getColumns() should return an array');
     }
 }

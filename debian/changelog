@@ -1,8 +1,14 @@
-php-vitexsoftware-multiflexi-core (0.2.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.0.0) UNRELEASED; urgency=medium
+
+  * version bump to 2.0.0
+
+ -- vitex <info@vitexsoftware.cz>  Tue, 05 Aug 2025 07:45:55 +0200
+
+php-vitexsoftware-multiflexi-core (0.2.0) unstable; urgency=medium
 
   * install path fix
 
- -- vitex <info@vitexsoftware.cz>  Fri, 01 Aug 2025 22:12:54 +0200
+ -- vitex <info@vitexsoftware.cz>  Tue, 05 Aug 2025 07:45:27 +0200
 
 php-vitexsoftware-multiflexi-core (0.1.0) unstable; urgency=low
 

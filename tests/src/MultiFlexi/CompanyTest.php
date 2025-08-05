@@ -108,9 +108,9 @@ class CompanyTest extends \PHPUnit\Framework\TestCase
      */
     public function testSleep(): void
     {
-        $this->assertEquals('', $this->object->__sleep());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $result = $this->object->__sleep();
+        $this->assertIsArray($result, '__sleep() should return an array');
+        $this->assertContains('data', $result, '__sleep() should contain "data"');
     }
 
     /**
@@ -180,9 +180,8 @@ class CompanyTest extends \PHPUnit\Framework\TestCase
      */
     public function testsetUp(): void
     {
-        $this->assertEquals('', $this->object->setUp());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $result = $this->object->setUp();
+        $this->assertTrue($result === true || $result === null, 'setUp() should return true or null');
     }
 
     /**

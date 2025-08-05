@@ -58,11 +58,15 @@ class CustomerTest extends \PHPUnit\Framework\TestCase
      *
      * @todo   Implement testcolumns().
      */
+
     public function testcolumns(): void
     {
-        $this->assertEquals('', $this->object->columns());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $columns = $this->object->columns();
+        $this->assertIsArray($columns, 'columns() should return an array');
+        if (is_array($columns)) {
+            $this->assertArrayHasKey('id', $columns, 'columns() should contain id key');
+            $this->assertArrayHasKey('login', $columns, 'columns() should contain login key');
+        }
     }
 
     /**
@@ -70,10 +74,11 @@ class CustomerTest extends \PHPUnit\Framework\TestCase
      *
      * @todo   Implement test__sleep().
      */
+
     public function testSleep(): void
     {
-        $this->assertEquals('', $this->object->__sleep());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $result = $this->object->__sleep();
+        $this->assertIsArray($result, '__sleep() should return an array');
+        $this->assertContains('data', $result, '__sleep() should contain "data"');
     }
 }

@@ -202,6 +202,8 @@ class JobTest extends \PHPUnit\Framework\TestCase
     public function testSomeFunctionality(): void
     {
         $job = new Job();
-        // Add assertions for Job functionality
+        $this->assertInstanceOf(Job::class, $job);
+        $this->assertArrayHasKey('y', Job::$intervalCode, 'intervalCode should have key y for yearly');
+        $this->assertArrayHasKey('n', Job::$intervalSecond, 'intervalSecond should have key n for disabled');
     }
 }
