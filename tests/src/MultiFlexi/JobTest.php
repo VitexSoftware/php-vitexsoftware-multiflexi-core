@@ -50,8 +50,8 @@ class JobTest extends \PHPUnit\Framework\TestCase
         $this->object->company = $mockCompany;
         $this->object->runTemplate = $mockRunTemplate;
         $mockExecutor = $this->getMockBuilder(\MultiFlexi\Executor\Native::class)
-            ->setConstructorArgs([ $this->object ])
-            ->onlyMethods(['commandline','getPid','getExitCode','getOutput','getErrorOutput','setJob','launchJob'])
+            ->setConstructorArgs([$this->object])
+            ->onlyMethods(['commandline', 'getPid', 'getExitCode', 'getOutput', 'getErrorOutput', 'setJob', 'launchJob'])
             ->getMock();
         $mockExecutor->method('commandline')->willReturn('dummy');
         $mockExecutor->method('getPid')->willReturn(1);
