@@ -140,7 +140,7 @@ class Job extends Engine
             'schedule_type' => $scheduleType,
             'executor' => $executor,
             'launched_by' => \Ease\Shared::user()->getMyKey(),
-        ]);
+        ], true);
 
         $jobId = $this->insertToSQL();
 
