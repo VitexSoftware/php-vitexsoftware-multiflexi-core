@@ -58,12 +58,12 @@ class CustomerTest extends \PHPUnit\Framework\TestCase
      *
      * @todo   Implement testcolumns().
      */
-
     public function testcolumns(): void
     {
         $columns = $this->object->columns();
         $this->assertIsArray($columns, 'columns() should return an array');
-        if (is_array($columns)) {
+
+        if (\is_array($columns)) {
             $this->assertArrayHasKey('id', $columns, 'columns() should contain id key');
             $this->assertArrayHasKey('login', $columns, 'columns() should contain login key');
         }
@@ -74,7 +74,6 @@ class CustomerTest extends \PHPUnit\Framework\TestCase
      *
      * @todo   Implement test__sleep().
      */
-
     public function testSleep(): void
     {
         $result = $this->object->__sleep();

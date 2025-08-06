@@ -29,3 +29,4 @@ if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
 \define('EASE_LOGGER', implode('|', $loggers));
 
 // \Ease\Shared::user(null, '\MultiFlexi\User');
+\Ease\Shared::user( new \MultiFlexi\User() );

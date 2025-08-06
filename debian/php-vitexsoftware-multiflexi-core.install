@@ -16,4 +16,7 @@ src/MultiFlexi/Action/Stop.php            usr/share/php/MultiFlexi/Action
 #src/MultiFlexi/Action/TriggerJenkins.php  usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Zabbix.php  	  usr/share/php/MultiFlexi/Action
 
+multiflexi.app.schema.json		  usr/lib/multiflexi
+
+
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/

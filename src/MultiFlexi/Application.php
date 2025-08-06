@@ -241,7 +241,15 @@ class Application extends DBEngine
         $appData['multiflexi'] = \Ease\Shared::appVersion();
 
         $appData['version'] = '2.0.0'; // Set a default version, can be updated later
-        $appData['artifacts'] = [];
+
+        // Only include artifacts if a valid pattern is present in the current data
+        $artifactsPattern = $this->getDataValue('artifacts');
+
+        if (!empty($artifactsPattern) && \is_string($artifactsPattern)) {
+            $appData['artifacts'] = [
+                'pattern' => $artifactsPattern,
+            ];
+        }
 
         return json_encode($appData, \JSON_PRETTY_PRINT);
     }
@@ -267,7 +275,6 @@ class Application extends DBEngine
     {
         $fields = [];
 
-
         // Validate JSON against schema before import using justinrainbow/json-schema
         $schemaFile = self::$appSchema;
 
@@ -278,34 +285,41 @@ class Application extends DBEngine
 
             if (!$validator->isValid()) {
                 $errorMsg = "JSON does not validate. Violations:\n";
+
                 foreach ($validator->getErrors() as $error) {
                     $errorMsg .= sprintf("[%s] %s\n", $error['property'], $error['message']);
                 }
+
                 $this->addStatusMessage($errorMsg, 'error');
+
                 return [];
             }
 
             // If schema version is present and > 2.0.0, process artifacts patterns
             $importData = json_decode(file_get_contents($jsonFile), true);
+
             if (isset($importData['version']) && version_compare($importData['version'], '2.0.0', '>')) {
                 $artifactPatterns = [];
+
                 if (isset($importData['artifacts'])) {
                     // Support both single and multiple artifact patterns
                     if (isset($importData['artifacts']['pattern'])) {
                         $artifactPatterns[] = $importData['artifacts']['pattern'];
                     }
+
                     // If artifacts is an array of objects (future-proof)
-                    if (is_array($importData['artifacts'])) {
+                    if (\is_array($importData['artifacts'])) {
                         foreach ($importData['artifacts'] as $artifact) {
-                            if (is_array($artifact) && isset($artifact['pattern'])) {
+                            if (\is_array($artifact) && isset($artifact['pattern'])) {
                                 $artifactPatterns[] = $artifact['pattern'];
                             }
                         }
                     }
                 }
+
                 if (!empty($artifactPatterns)) {
                     // Combine all patterns into a single regex using alternation
-                    $combinedRegex = count($artifactPatterns) === 1 ? $artifactPatterns[0] : '(' . implode(')|(', $artifactPatterns) . ')';
+                    $combinedRegex = \count($artifactPatterns) === 1 ? $artifactPatterns[0] : '('.implode(')|(', $artifactPatterns).')';
                     $this->setDataValue('artifacts', $combinedRegex);
                 }
             }
@@ -327,7 +341,18 @@ class Application extends DBEngine
                 unset($importData['environment']);
                 $this->addStatusMessage('Importing '.$importData['name'].' from '.$jsonFile.' created by '.$importData['multiflexi'], 'debug');
                 unset($importData['multiflexi']);
-                $importData['requirements'] = \array_key_exists('requirements', $importData) ? (string) ($importData['requirements']) : '';
+                // Ensure requirements is a string
+                $importData['requirements'] = \array_key_exists('requirements', $importData) ? (\is_array($importData['requirements']) ? implode(',', $importData['requirements']) : (string) $importData['requirements']) : '';
+
+                // Ensure topics is a string
+                if (isset($importData['topics']) && \is_array($importData['topics'])) {
+                    $importData['topics'] = implode(',', $importData['topics']);
+                }
+
+                // Ensure artifacts is a string (only pattern)
+                if (isset($importData['artifacts']) && \is_array($importData['artifacts']) && isset($importData['artifacts']['pattern'])) {
+                    $importData['artifacts'] = $importData['artifacts']['pattern'];
+                }
 
                 if (\array_key_exists('uuid', $importData) && !empty($importData['uuid'])) {
                     $candidat = $this->listingQuery()->where('uuid', $importData['uuid']);
