@@ -205,7 +205,7 @@ class Job extends Engine
             $this->setZabbixValue('executor', $this->getDataValue('executor'));
             $this->setZabbixValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
             $this->setZabbixValue('interval', $this->runTemplate->getDataValue('interv'));
-            $this->setZabbixValue('interval_seconds', self::codeToSeconds($this->runTemplate->getDataValue('interv')));
+            $this->setZabbixValue('interval_seconds', RunTemplate::codeToSeconds($this->runTemplate->getDataValue('interv')));
             $this->setZabbixValue('app_name', $this->runTemplate->getApplication()->getRecordName());
             $this->setZabbixValue('app_id', $this->runTemplate->getDataValue('app_id'));
             $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());

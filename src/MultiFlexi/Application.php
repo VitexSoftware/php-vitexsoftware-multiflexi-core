@@ -241,7 +241,6 @@ class Application extends DBEngine
         $appData['multiflexi'] = \Ease\Shared::appVersion();
 
         $appData['version'] = '2.0.0'; // Set a default version, can be updated later
-
         // Only include artifacts if a valid pattern is present in the current data
         $artifactsPattern = $this->getDataValue('artifacts');
 
@@ -265,6 +264,27 @@ class Application extends DBEngine
     }
 
     /**
+     * @param string $jsonFile
+     *
+     * @return array<string> errors
+     */
+    public function validateAppJson($jsonFile): array
+    {
+        $violations = [];
+        $data = json_decode(file_get_contents($jsonFile));
+        $validator = new \JsonSchema\Validator();
+        $validator->validate($data, (object) ['$ref' => 'file://'.realpath($schemaFile)]);
+
+        if (!$validator->isValid()) {
+            foreach ($validator->getErrors() as $error) {
+                $violations[] = sprintf("[%s] %s\n", $error['property'], $error['message']);
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
      * import Json App Definition file.
      *
      * @param string $jsonFile
@@ -279,18 +299,14 @@ class Application extends DBEngine
         $schemaFile = self::$appSchema;
 
         if (file_exists($schemaFile)) {
-            $data = json_decode(file_get_contents($jsonFile));
-            $validator = new \JsonSchema\Validator();
-            $validator->validate($data, (object) ['$ref' => 'file://'.realpath($schemaFile)]);
+            $violations = $this->validateAppJson($jsonFile);
 
-            if (!$validator->isValid()) {
-                $errorMsg = "JSON does not validate. Violations:\n";
+            if ($violations) {
+                $errorMsg = ":\n";
 
-                foreach ($validator->getErrors() as $error) {
-                    $errorMsg .= sprintf("[%s] %s\n", $error['property'], $error['message']);
+                foreach ($violations as $error) {
+                    $this->addStatusMessage(_('JSON does not validate').' Violation: '.$error, 'error');
                 }
-
-                $this->addStatusMessage($errorMsg, 'error');
 
                 return [];
             }
