@@ -273,7 +273,7 @@ class Application extends DBEngine
         $violations = [];
         $data = json_decode(file_get_contents($jsonFile));
         $validator = new \JsonSchema\Validator();
-        $validator->validate($data, (object) ['$ref' => 'file://'.realpath($schemaFile)]);
+        $validator->validate($data, (object) ['$ref' => 'file://'.realpath(self::$appSchema)]);
 
         if (!$validator->isValid()) {
             foreach ($validator->getErrors() as $error) {
