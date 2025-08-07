@@ -45,9 +45,8 @@ class Scheduler extends Engine
      */
     public function addJob(Job $job, \DateTime $when)
     {
-        
-        $job->getRuntemplate()->updateToSQL(['last_schedule'=>$when->format('Y-m-d H:i:s')]);
-        
+        $job->getRuntemplate()->updateToSQL(['last_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
+
         return $this->insertToSQL([
             'after' => $when->format('Y-m-d H:i:s'),
             'job' => $job->getMyKey(),
