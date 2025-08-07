@@ -19,4 +19,4 @@ override_dh_install:
 	jq '.version = "'`dpkg-parsechangelog | sed -n 's/^Version: //p'| sed 's/~.*//'`'"'  debian/conf/composer.json |sponge debian/tmp/composer.json
 	dh_install
 	sed -i "18i require_once '/usr/share/php/JsonSchema/autoload.php';" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php
-	sed -i "s|__DIR__\.'/../../lib/multiflexi.app.schema.json'|'/usr/lib/multiflexi/multiflexi.app.schema.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php
+	sed -i "s|__DIR__\.'/../../multiflexi.app.schema.json'|'/usr/lib/multiflexi/multiflexi.app.schema.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php

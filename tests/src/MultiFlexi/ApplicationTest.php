@@ -109,4 +109,10 @@ EOD, $this->object->getAppJson());
     {
         $this->assertEquals('.multiflexi.app.json', $this->object->jsonFileName());
     }
+
+    public function testimportAppJson(): void
+    {
+        $this->object->importAppJson(__DIR__.'/../../test.multiflexi.app.json');
+        $this->assertEquals('775ed801-2489-4981-bc14-d8a01cba1938', $this->object->getDataValue('uuid'));
+    }
 }

@@ -24,7 +24,7 @@ class Application extends DBEngine
 {
     public ?string $lastModifiedColumn;
     public Company $company;
-    public static string $appSchema = __DIR__.'/../../lib/multiflexi.app.schema.json';
+    public static string $appSchema = __DIR__.'/../../multiflexi.app.schema.json';
 
     /**
      * @param mixed $identifier
