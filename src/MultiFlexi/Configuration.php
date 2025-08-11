@@ -69,6 +69,17 @@ class Configuration extends \Ease\SQL\Engine
         return $result;
     }
 
+    public function getConfigFields(): ConfigFields
+    {
+        $cnf = new ConfigFields('');
+
+        foreach ($this->getData() as $cfgRaw) {
+            $cnf->addField(new ConfigField($cfgRaw['name'], $cfgRaw['type'], $cfgRaw['name'], '', '', $cfgRaw['value']));
+        }
+
+        return $cnf;
+    }
+
     /**
      * Převezme data do aktuálního pole dat.
      *
