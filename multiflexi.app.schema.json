@@ -66,20 +66,18 @@
       "optional": true
     },
     "artifacts": {
-      "type": "object",
-      "properties": {
-        "pattern": {
-          "type": "string",
-          "description": "Regular expression to match artifact files produced by the application. MultiFlexi will look for these files after the application run."
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Name of the artifact." },
+          "path": { "type": "string", "description": "Path to the artifact file." },
+          "type": { "type": "string", "description": "Type of the artifact (e.g., file, directory)." },
+          "description": { "type": "string", "description": "Description of the artifact." }
         },
-        "presence": {
-          "type": "string",
-          "enum": ["optional", "granted"],
-          "description": "Specifies whether the artifact presence is optional or granted."
-        }
-      },
-      "required": ["pattern"],
-      "additionalProperties": false
+        "required": ["name", "path", "type", "description"],
+        "additionalProperties": false
+      }
     },
     "environment": {
       "type": "object",
