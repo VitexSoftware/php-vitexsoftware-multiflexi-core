@@ -31,6 +31,15 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
     private string $commandline;
     private \MultiFlexi\ConfigFields $jobFiles;
 
+    public function __construct(\MultiFlexi\Job &$job)
+    {
+        parent::__construct($job);
+
+        foreach (getenv() as $key => $value) {
+            $this->environment->addField(new \MultiFlexi\ConfigField($key, 'string', $key, '', '', $value));
+        }
+    }
+
     public static function name(): string
     {
         return _('Native');

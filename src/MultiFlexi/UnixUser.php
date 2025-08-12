@@ -29,7 +29,7 @@ class UnixUser extends \MultiFlexi\User
          * If the user does not exist in the 'user' table, create a new one.
          */
         /** @var string $unixUsername */
-        $unixUsername = $userID ?? get_current_user();
+        $unixUsername = $userID ?? $this->getUserLogin();
 
         parent::__construct($unixUsername);
 
@@ -50,5 +50,10 @@ class UnixUser extends \MultiFlexi\User
                 throw new \Exception(_('Failed to create new user for current Unix username.'));
             }
         }
+    }
+
+    public function getUserLogin(): string
+    {
+        return get_current_user();
     }
 }

@@ -34,6 +34,7 @@ abstract class CommonExecutor extends \Ease\Sand
     public function __construct(Job &$job)
     {
         $this->setObjectName();
+        $this->environment = new ConfigFields('Executor'.\Ease\Functions::baseClassName($this));
         $this->setJob($job);
     }
 
@@ -41,7 +42,7 @@ abstract class CommonExecutor extends \Ease\Sand
     {
         $this->job = &$job;
         $this->setObjectName($job->getMyKey().'@'.\Ease\Logger\Message::getCallerName($this));
-        $this->environment = $job->getEnvironment();
+        $this->environment->addFields($job->getEnvironment());
     }
 
     /**
@@ -72,5 +73,10 @@ abstract class CommonExecutor extends \Ease\Sand
     public function getPid(): ?int
     {
         return $this->pid;
+    }
+
+    public function getEnvironment(): ConfigFields
+    {
+        return $this->environment;
     }
 }

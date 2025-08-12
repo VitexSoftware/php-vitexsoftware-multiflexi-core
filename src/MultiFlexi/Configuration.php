@@ -73,10 +73,10 @@ class Configuration extends \Ease\SQL\Engine
     {
         $cnf = new ConfigFields('');
 
-        foreach ((array)$this->getData() as $cfgRaw) {
+        foreach ((array) $this->getData() as $cfgRaw) {
             $cnf->addField(new ConfigField($cfgRaw['name'], $cfgRaw['type'], $cfgRaw['name'], '', '', $cfgRaw['value']));
         }
-        
+
         return $cnf;
     }
 

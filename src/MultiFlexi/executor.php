@@ -40,6 +40,8 @@ interface executor
 
     public function getPid(): ?int;
 
+    public function getEnvironment(): ConfigFields;
+
     /**
      * Can this Executor execute given application ?
      *
