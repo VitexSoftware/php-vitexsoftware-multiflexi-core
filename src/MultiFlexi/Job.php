@@ -612,7 +612,7 @@ EOD;
      */
     public function compileEnv(): array
     {
-        return Environmentor::flatEnv($this->getFullEnvironment());
+        return $this->getFullEnvironment()->getEnvArray();
     }
 
     /**
@@ -856,5 +856,21 @@ EOD;
         $this->runTemplate = $runtemplate;
 
         return $this;
+    }
+
+    public function isJobScheduled(): int
+    {
+        return \count($this->scheduledJobInfo());
+    }
+
+    public function scheduledJobInfo(): array
+    {
+        $scheduler = new Scheduler();
+        return $scheduler->listingQuery()
+            ->where('job', $this->getMyKey())
+            ->leftJoin('job ON job.id = schedule.job')->select(['job.schedule_type'])
+            ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')->select(['runtemplate.name AS runtemplate_name','runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
+            ->orderBy('scheduled')
+            ->fetchAll();
     }
 }

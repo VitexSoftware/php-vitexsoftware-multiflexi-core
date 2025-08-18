@@ -116,6 +116,8 @@ class RunTemplate extends \MultiFlexi\DBEngine
     {
         if ($state === false) {
             $this->setDataValue('interv', 'n');
+        } else {
+            $this->setDataValue('cron', '');
         }
 
         $changed = $this->dbsync();
