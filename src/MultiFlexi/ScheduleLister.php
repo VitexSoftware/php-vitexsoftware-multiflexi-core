@@ -72,7 +72,7 @@ EOD;
     public function listingQuery(): \Envms\FluentPDO\Queries\Select
     {
         return parent::listingQuery()
-            ->leftJoin('job ON job.id = schedule.job')
+            ->leftJoin('job ON job.id = schedule.job')->select(['job.schedule_type'])
             ->leftJoin('user ON user.id = job.launched_by')
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id'])
             ->leftJoin('apps ON apps.id = runtemplate.app_id')->select(['apps.name AS app_name', 'apps.id AS app_id'])

@@ -52,7 +52,7 @@ class Docker extends Native implements \MultiFlexi\executor
     {
         file_put_contents($this->envFile(), $this->job->envFile());
 
-        return 'run --env-file '.$this->envFile().' '.$this->job->application->getDataValue('ociimage');
+        return 'run --env-file '.$this->envFile().' --entrypoint '.$this->commandline().' '.$this->job->application->getDataValue('ociimage');
     }
 
     public function envFile()
