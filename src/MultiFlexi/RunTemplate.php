@@ -596,4 +596,25 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
         return $credentor->listingQuery()->select(['credentials.name AS credential_name', 'credential_type.name AS credential_type_name', 'credential_type.class AS credential_type_class', 'credential_type.uuid AS credential_type_uuid', 'credential_type.logo AS credential_type_logo'])->where('runtemplate_id', $this->getMyKey())->leftJoin('credentials ON credentials.id = runtplcreds.credentials_id')->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')->fetchAll('credential_type_class');
     }
+    
+    public function isScheduled(\DateTime $startTime): bool {
+        $scheduler = new Scheduler();
+        $scheduledJobs = $scheduler->listingQuery()
+            ->where('job', $this->getMyKey())
+            ->where('start_time', $startTime->format('Y-m-d H:i:s'))
+            ->fetchAll();
+
+        return !empty($scheduledJobs);
+    }
+
+    public function getScheduledJobs(): array
+    {
+        $scheduler = new Scheduler();
+        return $scheduler->listingQuery()
+            ->where('job', $this->getMyKey())
+            ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')
+            ->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
+            ->fetchAll();
+    }
+
 }

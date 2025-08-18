@@ -858,7 +858,7 @@ EOD;
         return $this;
     }
 
-    public function isJobScheduled(): int
+    public function isScheduled(): int
     {
         return \count($this->scheduledJobInfo());
     }
