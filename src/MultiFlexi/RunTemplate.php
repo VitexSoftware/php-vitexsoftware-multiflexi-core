@@ -601,7 +601,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
         $scheduler = new Scheduler();
         $scheduledJobs = $scheduler->listingQuery()
             ->where('job', $this->getMyKey())
-            ->where('start_time', $startTime->format('Y-m-d H:i:s'))
+            ->where('after', $startTime->format('Y-m-d H:i:s'))
             ->fetchAll();
 
         return !empty($scheduledJobs);
