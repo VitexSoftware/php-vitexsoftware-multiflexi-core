@@ -1,16 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "MultiFlexi App Definition",
   "type": "object",
   "properties": {
     "image": { "type": "string" },
-    "name": { 
+    "name": {
       "type": "string",
       "description": "The name of the application.",
       "minLength": 1
     },
-    "description": { 
+    "description": {
       "type": "string",
       "description": "A brief description of the application.",
       "optional": true
@@ -33,7 +33,7 @@
       "type": "string",
       "description": "URL of the application's homepage."
     },
-    "ociimage": { 
+    "ociimage": {
       "type": "string",
       "description": "OCI image reference for the application.",
       "default": "",
@@ -79,6 +79,48 @@
         "additionalProperties": false
       }
     },
+    "produces": {
+      "type": "object",
+      "description": "Artifacts or data entities created by the application",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "patterns": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns or MIME types of files"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["file", "json", "text", "url", "custom"],
+              "description": "Output format"
+            }
+          },
+          "required": ["format"]
+        }
+      }
+    },
+    "consumes": {
+      "type": "object",
+      "description": "Artifacts or data entities expected by the application",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "required": { "type": "boolean", "default": true },
+            "format": {
+              "type": "string",
+              "enum": ["file", "json", "text", "url", "custom"],
+              "description": "Input format"
+            }
+          },
+          "required": ["format"]
+        }
+      }
+    },
     "environment": {
       "type": "object",
       "patternProperties": {
@@ -99,11 +141,6 @@
       }
     }
   },
-  "required": [
-    "name",
-    "description",
-    "executable",
-    "environment"
-  ],
+  "required": ["name", "description", "executable", "environment"],
   "additionalProperties": true
 }
