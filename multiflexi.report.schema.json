@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MultiFlexi Application Report Schema",
+  "type": "object",
+
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "error", "warning"],
+      "description": "Výsledek běhu aplikace"
+    },
+
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Čas ukončení běhu aplikace v ISO8601 formátu"
+    },
+
+    "message": {
+      "type": "string",
+      "description": "Lidsky čitelná zpráva o výsledku běhu"
+    },
+
+    "artifacts": {
+      "type": "object",
+      "description": "Artefakty vyprodukované aplikací. Klíče odpovídají jménům deklarovaným v sekci 'produces'.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Seznam cest k souborům, URL nebo jiným výstupům"
+      },
+      "default": {}
+    },
+
+    "metrics": {
+      "type": "object",
+      "description": "Doplňkové metriky běhu (volitelné). Klíče jsou názvy metrik, hodnoty číselné.",
+      "additionalProperties": {
+        "type": ["number", "integer", "string"]
+      }
+    }
+  },
+
+  "required": ["status", "timestamp"]
+}
