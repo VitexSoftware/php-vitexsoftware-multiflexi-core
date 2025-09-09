@@ -41,6 +41,12 @@ abstract class CommonExecutor extends \Ease\Sand
 
     public function setJob(Job &$job): void
     {
+        /**
+         * Ensure environment is initialized before use.
+         */
+        if (!isset($this->environment)) {
+            $this->environment = new ConfigFields('Executor'.\Ease\Functions::baseClassName($this));
+        }
         $this->job = &$job;
         $this->setObjectName($job->getMyKey().'@'.\Ease\Logger\Message::getCallerName($this));
         $this->environment->addFields($job->getEnvironment());

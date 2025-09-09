@@ -27,7 +27,7 @@ use Symfony\Component\Process\Process;
 class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
 {
     public $timeout = 32767;
-    private \Symfony\Component\Process\Process $process;
+    private Process $process;
     private string $commandline;
     private \MultiFlexi\ConfigFields $jobFiles;
 
