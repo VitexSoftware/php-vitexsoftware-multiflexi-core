@@ -2,6 +2,17 @@
 
 declare(strict_types=1);
 
+/**
+ * This file is part of the MultiFlexi package
+ *
+ * https://multiflexi.eu/
+ *
+ * (c) Vítězslav Dvořák <http://vitexsoftware.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Test\MultiFlexi;
 
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -16,10 +27,55 @@ use PHPUnit\Framework\TestCase;
  */
 final class AutoloadAndInheritanceTest extends TestCase
 {
+    #[DataProvider('classMatrix')]
+    public function testClassContracts(string $class, string $expected): void
+    {
+        // Ensure the class/interface can be autoloaded where applicable
+        if ($expected === 'external_optional') {
+            // Skip if external interface required by the class is not present
+            if (!interface_exists('Jalismrs\\Bitwarden\\BitwardenServiceDelegate')) {
+                $this->markTestSkipped('Skipping BitwardenServiceDelegate: external Jalismrs\\Bitwarden dependency not installed.');
+
+                return;
+            }
+        }
+
+        $exists = class_exists($class) || interface_exists($class);
+        $this->assertTrue($exists, "Class or interface {$class} should exist and be autoloadable");
+
+        switch ($expected) {
+            case 'extends_common_action':
+                $this->assertTrue(is_a($class, \MultiFlexi\CommonAction::class, true), sprintf('%s should extend %s', $class, \MultiFlexi\CommonAction::class));
+
+                break;
+            case 'extends_common_executor':
+                $this->assertTrue(is_a($class, \MultiFlexi\CommonExecutor::class, true), sprintf('%s should extend %s', $class, \MultiFlexi\CommonExecutor::class));
+
+                break;
+            case 'extends_credential_common':
+                $extendsCommon = is_a($class, \MultiFlexi\CredentialType\Common::class, true);
+                $implementsIface = interface_exists('MultiFlexi\\credentialTypeInterface') && is_a($class, 'MultiFlexi\\credentialTypeInterface', true);
+                $this->assertTrue($extendsCommon || $implementsIface, sprintf('%s should extend CredentialType\\Common or implement credentialTypeInterface', $class));
+
+                break;
+            case 'exception':
+                $this->assertTrue(is_a($class, \Throwable::class, true), sprintf('%s should be an exception (extend Throwable)', $class));
+
+                break;
+            case 'interface':
+                $this->assertTrue(interface_exists($class), sprintf('%s should be an interface', $class));
+
+                break;
+            case 'exists':
+            default:
+                // nothing else to assert beyond existence
+                break;
+        }
+    }
     /**
-     * @return array<string, array{class: string, expected: 'exists'|'exception'|'extends_common_action'|'extends_common_executor'|'extends_credential_common'|'interface'|'external_optional'}>
+     * @return array<string, array{class: string, expected: 'exception'|'exists'|'extends_common_action'|'extends_common_executor'|'extends_credential_common'|'external_optional'|'interface'}>
      */
-    public static function classMatrix(): array
+    public static function classMatrix(): iterable
     {
         return [
             // Core helpers
@@ -80,50 +136,5 @@ final class AutoloadAndInheritanceTest extends TestCase
             // Misc
             'BitwardenServiceDelegate' => ['class' => 'MultiFlexi\\BitwardenServiceDelegate', 'expected' => 'external_optional'],
         ];
-    }
-
-    #[DataProvider('classMatrix')]
-    public function testClassContracts(string $class, string $expected): void
-    {
-        // Ensure the class/interface can be autoloaded where applicable
-        if ($expected === 'external_optional') {
-            // Skip if external interface required by the class is not present
-            if (!interface_exists('Jalismrs\\Bitwarden\\BitwardenServiceDelegate')) {
-                $this->markTestSkipped('Skipping BitwardenServiceDelegate: external Jalismrs\\Bitwarden dependency not installed.');
-                return;
-            }
-        }
-
-        $exists = class_exists($class) || interface_exists($class);
-        $this->assertTrue($exists, "Class or interface {$class} should exist and be autoloadable");
-
-        switch ($expected) {
-            case 'extends_common_action':
-                $this->assertTrue(is_a($class, \MultiFlexi\CommonAction::class, true), sprintf('%s should extend %s', $class, \MultiFlexi\CommonAction::class));
-                break;
-
-            case 'extends_common_executor':
-                $this->assertTrue(is_a($class, \MultiFlexi\CommonExecutor::class, true), sprintf('%s should extend %s', $class, \MultiFlexi\CommonExecutor::class));
-                break;
-
-            case 'extends_credential_common':
-                $extendsCommon = is_a($class, \MultiFlexi\CredentialType\Common::class, true);
-                $implementsIface = interface_exists('MultiFlexi\\credentialTypeInterface') && is_a($class, 'MultiFlexi\\credentialTypeInterface', true);
-                $this->assertTrue($extendsCommon || $implementsIface, sprintf('%s should extend CredentialType\\Common or implement credentialTypeInterface', $class));
-                break;
-
-            case 'exception':
-                $this->assertTrue(is_a($class, \Throwable::class, true), sprintf('%s should be an exception (extend Throwable)', $class));
-                break;
-
-            case 'interface':
-                $this->assertTrue(interface_exists($class), sprintf('%s should be an interface', $class));
-                break;
-
-            case 'exists':
-            default:
-                // nothing else to assert beyond existence
-                break;
-        }
     }
 }

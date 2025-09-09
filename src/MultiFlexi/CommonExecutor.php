@@ -33,8 +33,9 @@ abstract class CommonExecutor extends \Ease\Sand
 
     public function __construct(Job &$job)
     {
-        $this->setObjectName();
+        // Initialize environment property first before any other operations
         $this->environment = new ConfigFields('Executor'.\Ease\Functions::baseClassName($this));
+        $this->setObjectName();
         $this->setJob($job);
     }
 
