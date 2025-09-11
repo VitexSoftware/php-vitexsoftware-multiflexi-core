@@ -76,7 +76,7 @@ class Docker extends Native implements \MultiFlexi\executor
     /**
      * Can this Executor execute given application ?
      *
-     * @param Application $app
+     * @param \MultiFlexi\Application $app
      */
     public static function usableForApp($app): bool
     {
