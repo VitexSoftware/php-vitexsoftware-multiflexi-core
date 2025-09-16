@@ -27,7 +27,7 @@ class Docker extends Native implements \MultiFlexi\executor
     use \Ease\Logger\Logging;
     public const PULLCOMMAND = 'docker pull docker.io/vitexsoftware/debian:bookworm';
 
-   public function __construct(\MultiFlexi\Job &$job)
+    public function __construct(\MultiFlexi\Job &$job)
     {
         parent::__construct($job);
     }
