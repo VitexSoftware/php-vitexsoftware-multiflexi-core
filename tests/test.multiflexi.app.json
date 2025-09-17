@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
     "image": "",
     "name": "MultiFlexi Probe",
     "description": "Task launcher testing tool",
@@ -67,8 +68,10 @@
         }
     },
     "multiflexi": "2.0.0",
-    "artifacts": {
-        "pattern": ".*\\.json$",
-        "presence": "optional"
-    }
+    "artifacts": [{
+            "name": "SharePoint Upload Log",
+            "type": "file",
+            "path": ".*\\.json$",
+            "description": "Json report"
+    }] 
 }
