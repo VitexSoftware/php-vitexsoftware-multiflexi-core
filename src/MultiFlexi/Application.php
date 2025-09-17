@@ -56,6 +56,7 @@ class Application extends DBEngine
     #[\Override]
     public function takeData(array $data): int
     {
+        unset($data['$schema']);
         $data['enabled'] = \array_key_exists('enabled', $data) ? (($data['enabled'] === 'on') || ($data['enabled'] === 1)) : 0;
 
         if (\array_key_exists('name', $data) && empty($data['name'])) {
