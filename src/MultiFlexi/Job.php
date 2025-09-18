@@ -447,7 +447,7 @@ EOD;
         $cmdparams = $this->application->getDataValue('cmdparams');
 
         foreach ($this->environment as $envKey => $field) {
-            $cmdparams = str_replace('{'.$envKey.'}', (string) $field->getValue(), (string) $cmdparams);
+            $cmdparams = str_replace('{'.$envKey.'}', escapeshellarg((string) $field->getValue()), (string) $cmdparams);
         }
 
         return $cmdparams;
