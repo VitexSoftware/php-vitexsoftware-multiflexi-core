@@ -82,7 +82,15 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
 
     public function launch($command)
     {
-        $this->process = new \Symfony\Component\Process\Process(explode(' ', $command), null, $this->environment->getEnvArray(), null, $this->timeout);
+        $matches = [];
+        preg_match_all('/(?:\\\\ |[^\s])+/', $command, $matches);
+
+        $args = array_map(static function ($arg) {
+            // odstraň escapování mezer: "\ " -> " "
+            return str_replace('\ ', ' ', $arg);
+        }, $matches[0]);
+
+        $this->process = new \Symfony\Component\Process\Process($matches[0], null, $this->environment->getEnvArray(), null, $this->timeout);
 
         try {
             $this->process->run(function ($type, $buffer): void {
