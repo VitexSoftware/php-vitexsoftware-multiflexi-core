@@ -90,7 +90,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
             return str_replace('\ ', ' ', $arg);
         }, $matches[0]);
 
-        $this->process = new \Symfony\Component\Process\Process($matches[0], null, $this->environment->getEnvArray(), null, $this->timeout);
+        $this->process = new \Symfony\Component\Process\Process($args, null, $this->environment->getEnvArray(), null, $this->timeout);
 
         try {
             $this->process->run(function ($type, $buffer): void {
@@ -151,7 +151,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
     {
         $this->commandline = $this->commandline();
         $this->setDataValue('commandline', $this->commandline);
-        $this->addStatusMessage('Job launched: '.$this->job->application->getDataValue('name').'@'.$this->job->company->getDataValue('name').' : '.$this->job->runTemplate->getRecordName().' Runtemplate: #'.$this->job->runTemplate->getMyKey());
+        $this->addStatusMessage('Job launch: '.$this->job->application->getDataValue('name').'@'.$this->job->company->getDataValue('name').' : '.$this->job->runTemplate->getRecordName().' Runtemplate: #'.$this->job->runTemplate->getMyKey());
         $this->launch($this->commandline());
         $this->addStatusMessage('Job launch finished: '.$this->executable().'@'.$this->job->application->getDataValue('name').' '.$this->process->getExitCodeText());
     }

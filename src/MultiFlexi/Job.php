@@ -214,7 +214,7 @@ class Job extends Engine
             $this->setZabbixValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
 
             $this->setZabbixValue('scheduled', $this->getDataValue('schedule'));
-            // $this->zabbixMessageData['schedule_type'] => $scheduleType,
+            $this->setZabbixValue('schedule_type', $this->getDataValue('schedule_type'));
             $this->setZabbixValue('company_id', $this->company->getMyKey());
             $this->setZabbixValue('company_name', $this->company->getDataValue('name'));
             $this->setZabbixValue('company_code', $this->company->getDataValue('code'));
