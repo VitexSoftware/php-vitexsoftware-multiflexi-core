@@ -56,6 +56,7 @@ class Application extends DBEngine
     #[\Override]
     public function takeData(array $data): int
     {
+        unset($data['$schema']);
         $data['enabled'] = \array_key_exists('enabled', $data) ? (($data['enabled'] === 'on') || ($data['enabled'] === 1)) : 0;
 
         if (\array_key_exists('name', $data) && empty($data['name'])) {
@@ -313,6 +314,7 @@ class Application extends DBEngine
 
             // If schema version is present and > 2.0.0, process artifacts patterns
             $importData = json_decode(file_get_contents($jsonFile), true);
+            unset($importData['$schema']);
 
             if (isset($importData['version']) && version_compare($importData['version'], '2.0.0', '>')) {
                 $artifactPatterns = [];
