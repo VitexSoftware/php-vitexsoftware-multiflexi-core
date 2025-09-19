@@ -152,11 +152,13 @@ class CredentialType extends DBEngine
         $fields = new ConfigFields();
         $fielder = new \MultiFlexi\CrTypeField();
 
-        foreach ($this->getHelper()->fieldsProvided() as $providedField) {
-            if ($providedField->isRequired()) {
-                $rField = new ConfigFieldWithHelper($providedField->getCode(), $providedField->getType(), $providedField->getName(), $providedField->getDescription());
-                $rField->setHint($providedField->getHint())->setDefaultValue($providedField->getDefaultValue())->setRequired(true)->setManual($providedField->isManual())->setMultiLine($providedField->isMultiline())->setHelper(\Ease\Functions::baseClassName($this->getHelper()));
-                $fields->addField($rField);
+        if ($this->getHelper()) {
+            foreach ($this->getHelper()->fieldsProvided() as $providedField) {
+                if ($providedField->isRequired()) {
+                    $rField = new ConfigFieldWithHelper($providedField->getCode(), $providedField->getType(), $providedField->getName(), $providedField->getDescription());
+                    $rField->setHint($providedField->getHint())->setDefaultValue($providedField->getDefaultValue())->setRequired(true)->setManual($providedField->isManual())->setMultiLine($providedField->isMultiline())->setHelper(\Ease\Functions::baseClassName($this->getHelper()));
+                    $fields->addField($rField);
+                }
             }
         }
 
