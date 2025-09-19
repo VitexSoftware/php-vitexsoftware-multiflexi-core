@@ -82,15 +82,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
 
     public function launch($command)
     {
-        $matches = [];
-        preg_match_all('/(?:\\\\ |[^\s])+/', $command, $matches);
-
-        $args = array_map(static function ($arg) {
-            // odstraň escapování mezer: "\ " -> " "
-            return str_replace('\ ', ' ', $arg);
-        }, $matches[0]);
-
-        $this->process = new \Symfony\Component\Process\Process($args, null, $this->environment->getEnvArray(), null, $this->timeout);
+        $this->process = Process::fromShellCommandline($command, null, $this->environment->getEnvArray(), null, $this->timeout);
 
         try {
             $this->process->run(function ($type, $buffer): void {
@@ -152,7 +144,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         $this->commandline = $this->commandline();
         $this->setDataValue('commandline', $this->commandline);
         $this->addStatusMessage('Job launch: '.$this->job->application->getDataValue('name').'@'.$this->job->company->getDataValue('name').' : '.$this->job->runTemplate->getRecordName().' Runtemplate: #'.$this->job->runTemplate->getMyKey());
-        $this->launch($this->commandline());
+        $this->launch($this->commandline);
         $this->addStatusMessage('Job launch finished: '.$this->executable().'@'.$this->job->application->getDataValue('name').' '.$this->process->getExitCodeText());
     }
 
