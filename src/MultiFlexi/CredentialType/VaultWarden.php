@@ -24,6 +24,20 @@ namespace MultiFlexi\CredentialType;
  */
 class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\credentialTypeInterface
 {
+    / **
+     * Initialize the VaultWarden credential type.
+     *
+     * Sets up internal configuration fields required to connect to a VaultWarden instance
+     * (URL, user email, user password, and the target folder name) and prepares an empty
+     * container for provided configuration fields that will be populated dynamically from
+     * VaultWarden items.
+     *
+     * Internal fields created:
+     * - VAULTWARDEN_URL: VaultWarden instance URL (default: https://vault.example.com/)
+     * - VAULTWARDEN_EMAIL: user email for VaultWarden authentication
+     * - VAULTWARDEN_PASSWORD: password for VaultWarden authentication
+     * - VAULTWARDEN_FOLDER: folder name within VaultWarden to read items from (default: "MultiFlexi")
+     */
     public function __construct()
     {
         parent::__construct();
@@ -48,6 +62,15 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
         return _('Use VaultWarden secrets');
     }
 
+    /**
+     * Prepare the credential configuration form.
+     *
+     * Currently delegates to the parent implementation. This method exists as the
+     * override point for VaultWarden-specific form adjustments (e.g., adding or
+     * modifying internal fields) if needed in the future.
+     *
+     * @return void
+     */
     #[\Override]
     public function prepareConfigForm(): void
     {
@@ -73,6 +96,17 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
         return 'vaultwarden.svg';
     }
 
+    /**
+     * Loads credential-type data and triggers discovery of VaultWarden-provided fields.
+     *
+     * Calls the parent loader and then, if all required internal VaultWarden configuration
+     * values (URL, email, password, folder) are present, runs query() to populate the
+     * dynamic provided configuration fields from VaultWarden. If any required value is
+     * missing, a warning status message is added.
+     *
+     * @param int $credTypeId Identifier of the credential type to load.
+     * @return mixed The value returned by parent::load($credTypeId).
+     */
     public function load(int $credTypeId)
     {
         $loaded = parent::load($credTypeId);
@@ -93,9 +127,20 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
     }
 
     /**
-     * Query VaultWarden credential values.
+     * Retrieve VaultWarden secrets and populate the provided config fields.
      *
-     * @param bool $checkOnly If true, only check if secrets can be obtained (do not populate values)
+     * If required internal fields (URL, email, password, folder) are present this will either
+     * perform a lightweight connectivity/availability check (when $checkOnly is true) or
+     * query VaultWarden via the Bitwarden service, adding discovered username/password
+     * fields to the provided ConfigFields collection.
+     *
+     * Side effects:
+     * - Adds status messages for success or missing configuration.
+     * - When not in check-only mode, adds one or more ConfigField entries to the returned
+     *   ConfigFields (names derived from each item's name, suffixed with `_USERNAME` and/or `_PASSWORD`).
+     *
+     * @param bool $checkOnly If true, only verify that secrets are accessible (do not add fields).
+     * @return \MultiFlexi\ConfigFields The provided configuration fields (may be populated with discovered secrets).
      */
     public function query(bool $checkOnly = false): \MultiFlexi\ConfigFields
     {
