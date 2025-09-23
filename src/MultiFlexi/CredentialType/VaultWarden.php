@@ -30,9 +30,9 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
         // Přístupové údaje pro VaultWarden
         $this->configFieldsInternal = new \MultiFlexi\ConfigFields('VaultWarden Internal');
         $this->configFieldsInternal->addField(new \MultiFlexi\ConfigField('VAULTWARDEN_URL', 'url', _('VaultWarden URL'), _('URL instance VaultWarden'), 'https://vault.example.com/'));
-        $this->configFieldsInternal->addField(new \MultiFlexi\ConfigField('VAULTWARDEN_API_KEY', 'string', _('VaultWarden API Key'), _('API klíč pro přístup')));
+        $this->configFieldsInternal->addField(new \MultiFlexi\ConfigField('VAULTWARDEN_EMAIL', 'string', _('VaultWarden User login'), _('User e-mail')));
+        $this->configFieldsInternal->addField(new \MultiFlexi\ConfigField('VAULTWARDEN_PASSWORD', 'password', _('VaultWarden User password'), _('Password for user')));
         $this->configFieldsInternal->addField(new \MultiFlexi\ConfigField('VAULTWARDEN_FOLDER', 'string', _('VaultWarden Folder'), _('Název složky s hesly ve VaultWarden'), 'MultiFlexi'));
-        $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_API_KEY')->setSecret(true)->setDefaultValue('MultiFlexi');
 
         // Položky budou naplněny dynamicky podle obsahu VaultWarden
         $this->configFieldsProvided = new \MultiFlexi\ConfigFields('VaultWarden Provided');
@@ -51,11 +51,7 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
     #[\Override]
     public function prepareConfigForm(): void
     {
-        $apiKeyField = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_API_KEY');
-        $apiKeyField->setDescription(_('Obtain API KEY'));
-
         //        $folderField = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_FOLDER');
-
         parent::prepareConfigForm();
     }
 
@@ -83,12 +79,12 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
 
         // Načtení položek z VaultWarden
         $vaultwardenUrl = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_URL')->getValue();
-        $vaultwardenApiKey = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_API_KEY')->getValue();
+        $vaultwardenEmail = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_EMAIL')->getValue();
+        $vaultwardenPassword = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_PASSWORD')->getValue();
         $vaultwardenFolder = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_FOLDER')->getValue();
 
-        if ($vaultwardenUrl && $vaultwardenApiKey && $vaultwardenFolder) {
-            // Zde byste měli implementovat logiku pro načtení položek z VaultWarden
-            // a přidání do configFieldsProvided
+        if ($vaultwardenUrl && $vaultwardenEmail && $vaultwardenPassword && $vaultwardenFolder) {
+            $this->query();
         } else {
             $this->addStatusMessage(_('Missing required fields for VaultWarden'), 'warning');
         }
@@ -105,10 +101,11 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
     {
         // Získání hodnot z VaultWarden pouze pokud nejsou checkOnly
         $vaultwardenUrl = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_URL')->getValue();
-        $vaultwardenApiKey = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_API_KEY')->getValue();
+        $vaultwardenEmail = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_EMAIL')->getValue();
+        $vaultwardenPassword = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_PASSWORD')->getValue();
         $vaultwardenFolder = $this->configFieldsInternal->getFieldByCode('VAULTWARDEN_FOLDER')->getValue();
 
-        if ($vaultwardenUrl && $vaultwardenApiKey && $vaultwardenFolder) {
+        if ($vaultwardenUrl && $vaultwardenEmail && $vaultwardenPassword && $vaultwardenFolder) {
             if ($checkOnly) {
                 // Zde pouze ověřit, že lze získat tajemství (např. test připojení)
                 // Implementujte reálný test podle API VaultWarden
@@ -118,15 +115,19 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
             }
 
             // Use Bitwarden service to get items
-            $service = new \Jalismrs\Bitwarden\BitwardenService(new \MultiFlexi\BitwardenServiceDelegate());
+            $delegate = new \MultiFlexi\BitwardenServiceDelegate($vaultwardenEmail, $vaultwardenPassword);
+            $service = new \Jalismrs\Bitwarden\BitwardenService($delegate);
             $items = $service->searchItems($this->configFieldsInternal->getFieldByCode('VAULTWARDEN_FOLDER')->getValue());
 
-            /** @var BitwardenItem $item */
-            $item = $items[0];
-            var_dump($item->getId());
-            var_dump($item->getName());
-            var_dump($item->getLogin()?->getUsername());
-            var_dump($item->getLogin()?->getPassword());
+            foreach ($items as $item) {
+                $baseName = strtoupper(str_replace(' ', '_', $item->getName()));
+                if ($item->getLogin() && $item->getLogin()->getUsername()) {
+                    $this->configFieldsProvided->addField(new \MultiFlexi\ConfigField($baseName . '_USERNAME', 'string', $item->getName() . ' Username', $item->getName() . ' Username', $item->getLogin()->getUsername()));
+                }
+                if ($item->getLogin() && $item->getLogin()->getPassword()) {
+                    $this->configFieldsProvided->addField(new \MultiFlexi\ConfigField($baseName . '_PASSWORD', 'string', $item->getName() . ' Password', $item->getName() . ' Password', $item->getLogin()->getPassword()));
+                }
+            }
         } else {
             $this->addStatusMessage(_('Missing required fields for VaultWarden'), 'warning');
         }
