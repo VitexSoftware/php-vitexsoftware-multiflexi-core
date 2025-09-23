@@ -22,19 +22,31 @@ namespace MultiFlexi;
  */
 class BitwardenServiceDelegate implements \Jalismrs\Bitwarden\BitwardenServiceDelegate
 {
+    private string $email;
+    private string $password;
+
+    public function __construct(string $email, string $password)
+    {
+        $this->email = $email;
+        $this->password = $password;
+    }
+
     #[\Override]
     public function getOrganizationId(): ?string
     {
+        return null;
     }
 
     #[\Override]
     public function getUserEmail(): string
     {
+        return $this->email;
     }
 
     #[\Override]
     public function getUserPassword(): string
     {
+        return $this->password;
     }
 
     #[\Override]
