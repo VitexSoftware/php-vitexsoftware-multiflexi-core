@@ -121,11 +121,13 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
 
             foreach ($items as $item) {
                 $baseName = strtoupper(str_replace(' ', '_', $item->getName()));
+
                 if ($item->getLogin() && $item->getLogin()->getUsername()) {
-                    $this->configFieldsProvided->addField(new \MultiFlexi\ConfigField($baseName . '_USERNAME', 'string', $item->getName() . ' Username', $item->getName() . ' Username', $item->getLogin()->getUsername()));
+                    $this->configFieldsProvided->addField(new \MultiFlexi\ConfigField($baseName.'_USERNAME', 'string', $item->getName().' Username', $item->getName().' Username', $item->getLogin()->getUsername()));
                 }
+
                 if ($item->getLogin() && $item->getLogin()->getPassword()) {
-                    $this->configFieldsProvided->addField(new \MultiFlexi\ConfigField($baseName . '_PASSWORD', 'string', $item->getName() . ' Password', $item->getName() . ' Password', $item->getLogin()->getPassword()));
+                    $this->configFieldsProvided->addField(new \MultiFlexi\ConfigField($baseName.'_PASSWORD', 'string', $item->getName().' Password', $item->getName().' Password', $item->getLogin()->getPassword()));
                 }
             }
         } else {

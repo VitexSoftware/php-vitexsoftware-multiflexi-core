@@ -23,10 +23,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class CredentialTypeVaultWardenTest extends TestCase
 {
-    /**
-     * @var VaultWarden
-     */
-    protected $object;
+    protected VaultWarden $object;
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -38,9 +35,9 @@ final class CredentialTypeVaultWardenTest extends TestCase
     }
 
     /**
-     * @covers MultiFlexi\CredentialType\VaultWarden::__construct
+     * @covers \MultiFlexi\CredentialType\VaultWarden::__construct
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $this->assertInstanceOf(VaultWarden::class, $this->object);
         $this->assertCount(4, $this->object->fieldsInternal());
@@ -51,25 +48,25 @@ final class CredentialTypeVaultWardenTest extends TestCase
     }
 
     /**
-     * @covers MultiFlexi\CredentialType\VaultWarden::name
+     * @covers \MultiFlexi\CredentialType\VaultWarden::name
      */
-    public function testName()
+    public function testName(): void
     {
         $this->assertIsString(VaultWarden::name());
     }
 
     /**
-     * @covers MultiFlexi\CredentialType\VaultWarden::description
+     * @covers \MultiFlexi\CredentialType\VaultWarden::description
      */
-    public function testDescription()
+    public function testDescription(): void
     {
         $this->assertIsString(VaultWarden::description());
     }
 
     /**
-     * @covers MultiFlexi\CredentialType\VaultWarden::logo
+     * @covers \MultiFlexi\CredentialType\VaultWarden::logo
      */
-    public function testLogo()
+    public function testLogo(): void
     {
         $this->assertIsString(VaultWarden::logo());
     }
