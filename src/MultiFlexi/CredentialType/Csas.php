@@ -164,17 +164,24 @@ class Csas extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\creden
             $subCommand = 'csas-access-token -t'.$tokenUuid.' -o'.$tmpfile;
             $this->addStatusMessage(sprintf(_('Obtaining fresh token using: %s'), $subCommand), 'debug');
             system('XDEBUG_MODE=off '.$subCommand);
-            $envData = EnvFile::readEnvFile($tmpfile);
 
-            if ($checkOnly) {
-                // Only check if token was obtained, do not populate values
-                if (isset($envData['CSAS_ACCESS_TOKEN']) && !empty($envData['CSAS_ACCESS_TOKEN'])) {
-                    $this->addStatusMessage(_('Token successfully obtained.'), 'success');
-                } else {
-                    $this->addStatusMessage(_('Token could not be obtained.'), 'error');
+            if (file_exists($tmpfile)) {
+                $envData = EnvFile::readEnvFile($tmpfile);
+
+                if ($checkOnly) {
+                    // Only check if token was obtained, do not populate values
+                    if (isset($envData['CSAS_ACCESS_TOKEN']) && !empty($envData['CSAS_ACCESS_TOKEN'])) {
+                        $this->addStatusMessage(_('Token successfully obtained.'), 'success');
+                    } else {
+                        $this->addStatusMessage(_('Token could not be obtained.'), 'error');
+                    }
+
+                    unlink($tmpfile);
+
+                    return $this->configFieldsProvided;
                 }
-
-                unlink($tmpfile);
+            } else {
+                $this->addStatusMessage(_('Token file was not created.'), 'error');
 
                 return $this->configFieldsProvided;
             }
