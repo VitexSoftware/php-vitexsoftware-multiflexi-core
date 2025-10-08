@@ -1,150 +1,338 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "version": "2.1.1",
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
+  "schemaVersion": "3.0.0",
   "title": "MultiFlexi App Definition",
   "type": "object",
+  "$defs": {
+    "localizedString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "en": {
+              "type": "string"
+            },
+            "cs": {
+              "type": "string"
+            },
+            "sk": {
+              "type": "string"
+            },
+            "de": {
+              "type": "string"
+            },
+            "fr": {
+              "type": "string"
+            },
+            "es": {
+              "type": "string"
+            },
+            "it": {
+              "type": "string"
+            },
+            "pl": {
+              "type": "string"
+            },
+            "nl": {
+              "type": "string"
+            },
+            "pt": {
+              "type": "string"
+            },
+            "sv": {
+              "type": "string"
+            },
+            "fi": {
+              "type": "string"
+            },
+            "da": {
+              "type": "string"
+            },
+            "no": {
+              "type": "string"
+            },
+            "hu": {
+              "type": "string"
+            },
+            "ro": {
+              "type": "string"
+            },
+            "bg": {
+              "type": "string"
+            },
+            "el": {
+              "type": "string"
+            },
+            "tr": {
+              "type": "string"
+            },
+            "hr": {
+              "type": "string"
+            },
+            "sl": {
+              "type": "string"
+            },
+            "et": {
+              "type": "string"
+            },
+            "lt": {
+              "type": "string"
+            },
+            "lv": {
+              "type": "string"
+            },
+            "ru": {
+              "type": "string"
+            },
+            "uk": {
+              "type": "string"
+            },
+            "ja": {
+              "type": "string"
+            },
+            "zh": {
+              "type": "string"
+            },
+            "ko": {
+              "type": "string"
+            },
+            "ar": {
+              "type": "string"
+            },
+            "he": {
+              "type": "string"
+            },
+            "hi": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
   "properties": {
-    "image": { "type": "string" },
-    "name": {
+    "$schema": {
       "type": "string",
-      "description": "The name of the application.",
-      "minLength": 1
+      "format": "uri",
+      "$comment": "Schema file location",
+      "description": "Schema file location.",
+      "default": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json"
+    },
+    "image": {
+      "type": "string"
+    },
+    "title": {
+      "$ref": "#/$defs/localizedString"
+    },
+    "name": {
+      "$ref": "#/$defs/localizedString"
     },
     "description": {
-      "type": "string",
-      "description": "A brief description of the application.",
-      "optional": true
+      "$ref": "#/$defs/localizedString"
     },
-    "executable": { "type": "string" },
-    "setup": {
+    "author": {
       "type": "string",
-      "description": "Optional setup command or script to be executed when the configuration is applied.",
-      "default": "",
-      "optional": true
+      "description": "Author of the application."
     },
-    "cmdparams": { "type": "string" },
-    "deploy": { "type": "string" },
-    "package": {
+    "license": {
       "type": "string",
-      "description": "Optional name of the installation package.",
-      "optional": true
+      "description": "License identifier or URL."
+    },
+    "category": {
+      "type": "string",
+      "description": "Category of the application."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords or tags related to the application."
     },
     "homepage": {
       "type": "string",
-      "description": "URL of the application's homepage."
+      "format": "uri"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "version": {
+      "type": "string",
+      "description": "Application version."
+    },
+    "schemaVersion": {
+      "type": "string",
+      "description": "Schema version used by this application."
     },
     "ociimage": {
       "type": "string",
       "description": "OCI image reference for the application.",
-      "default": "",
-      "examples": ["docker.io/library/nginx:latest"],
-      "optional": true
+      "pattern": "^[\\w./:-]+(:[\\w.-]+)?$"
     },
-    "uuid": {
+    "executable": {
+      "type": "string"
+    },
+    "cmdparamsTemplate": {
       "type": "string",
-      "description": "Universally unique identifier for the application."
+      "description": "Command line template supporting placeholders like ${VAR}."
     },
-    "topics": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "List of topics related to the application."
-    },
-    "requirements": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "List of requirements needed by the application."
-    },
-    "version": {
-      "type": "string",
-      "description": "The version of the application.",
-      "minLength": 1
-    },
-    "multiflexi": {
-      "type": "string",
-      "description": "Minimal required MultiFlexi version for running this application.",
-      "minLength": 1,
-      "optional": true
+    "environment": {
+      "type": "object",
+      "description": "Configuration keys required by the application.",
+      "patternProperties": {
+        "^[A-Z0-9_]+$": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "string",
+                "file-path",
+                "email",
+                "url",
+                "integer",
+                "float",
+                "bool",
+                "password",
+                "set",
+                "text"
+              ],
+              "description": "The data type of the environment variable."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "API",
+                "Database",
+                "Behavior",
+                "Security",
+                "Other"
+              ],
+              "description": "Group or category of this configuration key."
+            },
+            "description": {
+              "$ref": "#/$defs/localizedString"
+            },
+            "hint": {
+              "$ref": "#/$defs/localizedString"
+            },
+            "defval": {},
+            "required": {
+              "type": "boolean"
+            },
+            "options": {
+              "type": [
+                "object",
+                "array"
+              ]
+            }
+          },
+          "additionalProperties": true
+        }
+      }
     },
     "artifacts": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "description": "Name of the artifact." },
-          "path": { "type": "string", "description": "Path to the artifact file." },
-          "type": { "type": "string", "description": "Type of the artifact (e.g., file, directory)." },
-          "description": { "type": "string", "description": "Description of the artifact." }
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "$ref": "#/$defs/localizedString"
+          }
         },
-        "required": ["name", "path", "type", "description"],
+        "required": [
+          "name",
+          "path",
+          "type"
+        ],
         "additionalProperties": false
       }
     },
     "produces": {
       "type": "object",
-      "description": "Artifacts or data entities created by the application",
       "patternProperties": {
         "^[a-zA-Z0-9_-]+$": {
           "type": "object",
           "properties": {
-            "description": { "type": "string" },
+            "description": {
+              "$ref": "#/$defs/localizedString"
+            },
             "patterns": {
               "type": "array",
-              "items": { "type": "string" },
-              "description": "Glob patterns or MIME types of files"
+              "items": {
+                "type": "string"
+              }
             },
             "format": {
               "type": "string",
-              "enum": ["file", "json", "text", "url", "custom"],
-              "description": "Output format"
+              "enum": [
+                "file",
+                "json",
+                "text",
+                "url",
+                "custom"
+              ]
             }
           },
-          "required": ["format"]
+          "required": [
+            "format"
+          ]
         }
       }
     },
     "consumes": {
       "type": "object",
-      "description": "Artifacts or data entities expected by the application",
       "patternProperties": {
         "^[a-zA-Z0-9_-]+$": {
           "type": "object",
           "properties": {
-            "description": { "type": "string" },
-            "required": { "type": "boolean", "default": true },
+            "description": {
+              "$ref": "#/$defs/localizedString"
+            },
+            "required": {
+              "type": "boolean",
+              "default": true
+            },
             "format": {
               "type": "string",
-              "enum": ["file", "json", "text", "url", "custom"],
-              "description": "Input format"
+              "enum": [
+                "file",
+                "json",
+                "text",
+                "url",
+                "custom"
+              ]
             }
           },
-          "required": ["format"]
-        }
-      }
-    },
-    "environment": {
-      "type": "object",
-      "patternProperties": {
-        "^[A-Z0-9_]+$": {
-          "type": "object",
-          "properties": {
-            "type": { 
-              "type": "string",
-              "enum": ["string", "file-path", "email", "url", "integer", "float", "bool", "password", "set", "text"],
-              "description": "The data type of the environment variable"
-            },
-            "description": { "type": "string" },
-            "defval": {},
-            "required": { "type": "boolean" },
-            "hint": { "type": "string" },
-            "options": {
-              "type": ["object", "array"]
-            }
-          },
-          "additionalProperties": true
+          "required": [
+            "format"
+          ]
         }
       }
     }
   },
-  "required": ["name", "description", "executable", "environment"],
+  "required": [
+    "$schema",
+    "name",
+    "description",
+    "executable",
+    "environment"
+  ],
   "additionalProperties": true
 }
