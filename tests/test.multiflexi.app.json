@@ -1,8 +1,14 @@
 {
     "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
     "image": "",
-    "name": "MultiFlexi Probe",
-    "description": "Task launcher testing tool",
+    "name": {
+        "en": "MultiFlexi Probe",
+        "cs": "MultiFlexi Sonda"
+    },
+    "description": {
+        "en": "Task launcher testing tool",
+        "cs": "Nástroj pro testování spouštěče úloh"
+    },
     "executable": "multiflexi-probe",
     "setup": "ls -la {FILE_UPLOAD}",
     "requirements": [
@@ -32,37 +38,55 @@
     "environment": {
         "FILE_UPLOAD": {
             "type": "file-path",
-            "description": "Testing file upload field",
-            "defval": "\/etc\/fstab",
+            "description": {
+                "en": "Testing file upload field",
+                "cs": "Testovací pole pro nahrávání souborů"
+            },
+            "defval": "/etc/fstab",
             "required": true
         },
         "PASSWORD": {
             "type": "password",
-            "description": "An example of secret",
+            "description": {
+                "en": "An example of secret",
+                "cs": "Příklad tajemství"
+            },
             "defval": "donotcare",
             "required": false
         },
         "APP_DEBUG": {
             "type": "bool",
-            "description": "Show debug messages",
+            "description": {
+                "en": "Show debug messages",
+                "cs": "Zobrazit ladicí zprávy"
+            },
             "defval": "False",
             "required": true
         },
         "RESULT_FILE": {
             "type": "string",
-            "description": "write output json data to",
+            "description": {
+                "en": "write output json data to",
+                "cs": "zapsat výstupní json data do"
+            },
             "defval": "env_report.json",
             "required": false
-        }, 
+        },
         "FORCE_EXITCODE": {
-            "type": "number",
-            "description": "Force exit code",
+            "type": "integer",
+            "description": {
+                "en": "Force exit code",
+                "cs": "Vynutit výstupní kód"
+            },
             "defval": "0",
             "required": false
         },
         "ZABBIX_KEY": {
             "type": "string",
-            "description": "Default name for Zabbix Item key name",
+            "description": {
+                "en": "Default name for Zabbix Item key name",
+                "cs": "Výchozí název pro název klíče položky Zabbix"
+            },
             "defval": "multiflexi-probe-{PASSWORD}",
             "required": false
         }
@@ -72,6 +96,9 @@
             "name": "SharePoint Upload Log",
             "type": "file",
             "path": ".*\\.json$",
-            "description": "Json report"
-    }] 
+            "description": {
+                "en": "Json report",
+                "cs": "Jsonová zpráva"
+            }
+    }]
 }

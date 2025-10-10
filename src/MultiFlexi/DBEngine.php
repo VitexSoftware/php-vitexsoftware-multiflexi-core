@@ -34,7 +34,7 @@ class DBEngine extends \Ease\SQL\Engine
     /**
      * Filter results by.
      */
-    public ?array $filter = null;
+    public array $filter = [];
 
     /**
      * PreFill new Record form with values.

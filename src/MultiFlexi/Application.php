@@ -82,6 +82,8 @@ class Application extends DBEngine
             //            $data['code'] = substr(substr(strtoupper($data['executable'] ? basename($data['executable']) : $data['name']), -7), 0, 6);
         }
 
+        $data['image'] = array_key_exists('image', $data) ? strval($data['image']) : '';
+        
         unset($data['class']);
 
         return parent::takeData($data);
@@ -290,293 +292,144 @@ class Application extends DBEngine
      * import Json App Definition file.
      *
      * @param string $jsonFile
-     *
-     * @return array
      */
-    public function importAppJson($jsonFile)
+    public function importAppJson($jsonFile): array
     {
         $fields = [];
 
-        // Validate JSON against schema before import using justinrainbow/json-schema
+        // Validate JSON against schema before import
         $schemaFile = self::$appSchema;
 
-        if (file_exists($schemaFile)) {
-            $violations = $this->validateAppJson($jsonFile);
-
-            if ($violations) {
-                $errorMsg = ":\n";
-
-                foreach ($violations as $error) {
-                    $this->addStatusMessage(_('JSON does not validate').' Violation: '.$error, 'error');
-                }
-
-                return [];
-            }
-
-            // If schema version is present and > 2.0.0, process artifacts patterns
-            $importData = json_decode(file_get_contents($jsonFile), true);
-            unset($importData['$schema']);
-
-            if (isset($importData['version']) && version_compare($importData['version'], '2.0.0', '>')) {
-                $artifactPatterns = [];
-
-                if (isset($importData['artifacts'])) {
-                    // Support both single and multiple artifact patterns
-                    if (isset($importData['artifacts']['pattern'])) {
-                        $artifactPatterns[] = $importData['artifacts']['pattern'];
-                    }
-
-                    // If artifacts is an array of objects (future-proof)
-                    if (\is_array($importData['artifacts'])) {
-                        foreach ($importData['artifacts'] as $artifact) {
-                            if (\is_array($artifact) && isset($artifact['pattern'])) {
-                                $artifactPatterns[] = $artifact['pattern'];
-                            }
-                        }
-                    }
-                }
-
-                if (!empty($artifactPatterns)) {
-                    // Combine all patterns into a single regex using alternation
-                    $combinedRegex = \count($artifactPatterns) === 1 ? $artifactPatterns[0] : '('.implode(')|(', $artifactPatterns).')';
-                    $this->setDataValue('artifacts', $combinedRegex);
-                }
-            }
-        } else {
-            $this->addStatusMessage('JSON schema file not found: '.$schemaFile, 'warning');
+        if (!file_exists($schemaFile)) {
+            throw new \RuntimeException(_('Schema file not found: ').$schemaFile);
         }
-
-        $codes = $this->listingQuery()->select('code', true)->fetchAll('code');
 
         $appSpecRaw = file_get_contents($jsonFile);
 
-        if (empty($appSpecRaw) === false) {
-            $importData = json_decode($appSpecRaw, true);
+        if (empty($appSpecRaw)) {
+            throw new \RuntimeException(_('App definition file is empty: ').$jsonFile);
+        }
 
-            if (\is_array($importData)) {
-                $importData['enabled'] = 'on';
-                $importData['image'] = '';
-                $environment = \array_key_exists('environment', $importData) ? $importData['environment'] : [];
-                unset($importData['environment']);
-                $this->addStatusMessage('Importing '.$importData['name'].' from '.$jsonFile.' created by '.$importData['multiflexi'], 'debug');
-                unset($importData['multiflexi']);
-                // Ensure requirements is a string
-                $importData['requirements'] = \array_key_exists('requirements', $importData) ? (\is_array($importData['requirements']) ? implode(',', $importData['requirements']) : (string) $importData['requirements']) : '';
+        $appSpec = json_decode($appSpecRaw, true);
 
-                // Ensure topics is a string
-                if (isset($importData['topics']) && \is_array($importData['topics'])) {
-                    $importData['topics'] = implode(',', $importData['topics']);
-                }
+        if (json_last_error() !== \JSON_ERROR_NONE) {
+            throw new \RuntimeException(_('Invalid JSON: ').json_last_error_msg());
+        }
 
-                // Ensure artifacts is a string (only pattern)
-                if (isset($importData['artifacts']) && \is_array($importData['artifacts']) && isset($importData['artifacts']['pattern'])) {
-                    $importData['artifacts'] = $importData['artifacts']['pattern'];
-                }
+        // Extract localized fields
+        $localizedFields = ['name', 'title', 'description'];
+        $defaultLang = 'en'; // Default language
+        $translations = [];
 
-                if (\array_key_exists('uuid', $importData) && !empty($importData['uuid'])) {
-                    $candidat = $this->listingQuery()->where('uuid', $importData['uuid']);
-                    $this->setDataValue('uuid', $importData['uuid']);
-                } else {
-                    $this->addStatusMessage(_('UUID field not present. '), 'error');
+        foreach ($localizedFields as $field) {
+            if (isset($appSpec[$field])) {
+                if (\is_string($appSpec[$field])) {
+                    // Legacy string format
+                    $fields[$field] = $appSpec[$field];
+                } elseif (\is_array($appSpec[$field])) {
+                    // Localized object format
+                    $fields[$field] = $appSpec[$field][$defaultLang] ?? reset($appSpec[$field]);
 
-                    exit(1);
-                }
-
-                $newVersion = \array_key_exists('version', $importData) ? $importData['version'] : 'n/a';
-                $newName = $importData['name'];
-
-                if ($candidat->count()) { // Update
-                    $this->setMyKey($candidat->fetchColumn());
-                    $currentData = $candidat->fetchAll();
-                    $currentVersion = \array_key_exists('version', $currentData[0]) ? $currentData[0]['version'] : 'n/a';
-                    $currentName = $currentData[0]['name'];
-                    // $this->addStatusMessage(sprintf(_('Current Record: #%s - %s'), $currentData[0]['id'], $currentData[0]['name']), 'debug');
-                } else { // Insert
-                    $currentVersion = 'n/a';
-                    $currentName = '';
-                    $currentData[0] = [];
-
-                    if ((\array_key_exists('code', $importData) === false) || empty($importData['code'])) {
-                        $importData['code'] = substr(substr(strtoupper($importData['executable'] ? basename($importData['executable']) : $importData['name']), -7), 0, 6);
-                        $pos = 0;
-
-                        while (\array_key_exists($importData['code'], $codes)) {
-                            $importData['code'] = substr(substr(strtoupper($importData['executable'] ? basename($importData['executable']) : $importData['name']), -7), 0, 5).$pos++;
-                        }
-                    }
-                }
-
-                if (\array_key_exists('topics', $importData) === false) {
-                    $this->addStatusMessage(_('Topics field not present. '), 'warning');
-                }
-
-                if (($currentVersion !== 'n/a') && $currentVersion === $newVersion) {
-                    $this->addStatusMessage('🧩📦 '.$importData['name'].' ('.$currentVersion.') already present', 'info');
-                    $fields = [true];
-                } else {
-                    if ($currentName === $newName) {
-                        unset($importData['name']);
-                    }
-
-                    $this->takeData($importData);
-
-                    try {
-                        // $this->addStatusMessage(sprintf(_('Saving #%s - %s'), $this->getMyKey(), $this->getRecordName() . ' ' . $this->getDataValue('uuid')), 'debug');
-
-                        if ($this->dbsync()) {
-                            unset($currentData[0]['id'], $currentData[0]['name'], $currentData[0]['DatCreate'], $currentData[0]['DatUpdate'], $currentData[0]['code']);
-                            $fields = array_diff(array_keys($currentData[0]), array_keys($importData));
-
-                            if (empty($environment) === false) {
-                                $confField = new Conffield();
-
-                                foreach ($environment as $envName => $envProperties) {
-                                    if ($confField->addAppConfig($this->getMyKey(), $envName, $envProperties)) {
-                                        $fields[] = $envName;
-                                    }
-                                }
-                            }
-
-                            $this->addStatusMessage('🧩📦 '.$this->getRecordName().'('.$currentVersion.' ➟ '.$newVersion.'): '.implode(',', $fields), 'success');
-                            $executable = self::findBinaryInPath($this->getDataValue('executable'));
-
-                            if (empty($executable)) {
-                                $this->addStatusMessage(sprintf(_('executable %s not found'), $this->getDataValue('executable')), 'warning');
-
-                                if (\array_key_exists('deploy', $importData) && !empty($envProperties['deploy'])) {
-                                    $this->addStatusMessage(sprintf(_('consider: %s'), $importData['deploy']), 'info');
-                                }
-                            }
-
-                            if (empty($fields)) {
-                                $fields = [true];
-                            }
-
-                            $topics = $this->getDataValue('topics');
-
-                            if ($topics) {
-                                $toptopic = new TopicManger();
-                                $toptopic->add(strstr($topics, ',') ? explode(',', $topics) : [$topics]);
-                            }
-                        }
-                    } catch (\PDOException $exc) {
-                        echo $exc->getTraceAsString();
-                        $problemData = $this->getData();
-
-                        if (\array_key_exists('image', $currentData)) {
-                            $problemData['image'] = substr((string) $problemData['image'], 0, 20).' ...';
-                        }
-
-                        fwrite(\STDERR, print_r($problemData, true).\PHP_EOL);
-                        echo $exc->getMessage();
+                    foreach ($appSpec[$field] as $lang => $value) {
+                        $translations[$lang][$field] = $value;
                     }
                 }
             }
+        }
+
+        // Extract non-localized fields
+        $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements', 
+                               'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
+        foreach ($nonLocalizedFields as $field) {
+            if (isset($appSpec[$field])) {
+                $fields[$field] = $appSpec[$field];
+            }
+        }
+
+        // Set defaults for required fields if not present
+        if (!isset($fields['deploy'])) {
+            $fields['deploy'] = ''; // Empty string as default
+        }
+        if (!isset($fields['homepage'])) {
+            $fields['homepage'] = ''; // Empty string as default
+        }
+        if (!isset($fields['requirements'])) {
+            $fields['requirements'] = ''; // Empty string as default
+        }
+        if (!isset($fields['topics'])) {
+            $fields['topics'] = ''; // Empty string as default
+        }
+
+        // Handle artifacts field (convert array to string if needed)
+        if (isset($appSpec['artifacts'])) {
+            if (\is_array($appSpec['artifacts'])) {
+                // Convert artifacts array to a pattern string
+                $patterns = [];
+                foreach ($appSpec['artifacts'] as $artifact) {
+                    if (isset($artifact['path'])) {
+                        $patterns[] = $artifact['path'];
+                    }
+                }
+                $fields['artifacts'] = implode(',', $patterns);
+            } else {
+                $fields['artifacts'] = $appSpec['artifacts'];
+            }
+        }
+
+        // Handle environment configurations
+        if (isset($appSpec['environment']) && \is_array($appSpec['environment'])) {
+            // We'll handle environment import after saving the app
+            $environmentConfigs = $appSpec['environment'];
+        }
+
+        // Check if app already exists by name
+        $existingApp = null;
+        if (isset($fields['name'])) {
+            $existingApp = $this->getFluentPDO()
+                ->from('apps')
+                ->where('name', $fields['name'])
+                ->fetch();
+        }
+
+        if ($existingApp) {
+            // Update existing app
+            $appId = $existingApp['id'];
+            $this->setMyKey($appId);
+            $this->takeData($fields);
+            $this->saveToSQL();
         } else {
-            $this->addStatusMessage(sprintf(_('The %s does not contain valid json').' '.json_last_error_msg(), $jsonFile), 'error');
+            // Create new app
+            $this->takeData($fields);
+            $appId = $this->saveToSQL();
+        }
+
+        // Save translations to app_translations table
+        foreach ($translations as $lang => $data) {
+            $this->getFluentPDO()
+                ->insertInto('app_translations', array_merge($data, [
+                    'app_id' => $appId,
+                    'lang' => $lang,
+                ]))
+                ->onDuplicateKeyUpdate($data)
+                ->execute();
+        }
+
+        // Import environment configurations if present
+        if (isset($environmentConfigs)) {
+            $this->importEnvironmentConfigs($appId, $environmentConfigs);
         }
 
         return $fields;
     }
 
     /**
-     * Remove Application by its json definition.
-     *
-     * @param string $jsonFile path to definition
-     *
-     * @return bool app removal status
+     * Get localized data value for a given key.
      */
-    public function jsonAppRemove($jsonFile)
+    public function getLocalizedDataValue(string $key): ?string
     {
-        $success = true;
-        $importData = json_decode(file_get_contents($jsonFile), true);
+        $localizedData = $this->getDataValue('localized');
 
-        if (\is_array($importData)) {
-            $candidat = $this->listingQuery()->where('uuid', $importData['uuid']);
-
-            if ($candidat->count()) {
-                foreach ($candidat as $candidatData) {
-                    $this->setMyKey($candidatData['id']);
-                    $removed = $this->deleteFromSQL();
-
-                    if (null === $removed) {
-                        $success = false;
-                    }
-
-                    $this->addStatusMessage(sprintf(_('Application removal %d %s'), $candidatData['id'], $candidatData['name']), \is_int($removed) ? 'success' : 'error');
-                }
-            }
-        }
-
-        return $success;
-    }
-
-    /**
-     * Smaže záznam z SQL.
-     *
-     * @param array|int $data
-     *
-     * @return bool
-     */
-    public function deleteFromSQL($data = null)
-    {
-        if (null === $data) {
-            $data = $this->getData();
-        }
-
-        $appId = $this->getMyKey($data);
-
-        $a2c = $this->getFluentPDO()->deleteFrom('companyapp')->where('app_id', $appId)->execute();
-
-        if ($a2c !== 0) {
-            $this->addStatusMessage(sprintf(_('Unassigned from %d companies'), $a2c), null === $a2c ? 'error' : 'success');
-        }
-
-        $runtemplates = $this->getFluentPDO()->from('runtemplate')->where('app_id', $appId)->fetchAll();
-
-        foreach ($runtemplates as $runtemplate) {
-            $rt2ac = $this->getFluentPDO()->deleteFrom('actionconfig')->where('runtemplate_id', $runtemplate['id'])->execute();
-
-            if ($rt2ac !== 0) {
-                $this->addStatusMessage(sprintf(_('%s Action Config removal'), $runtemplate['name']), null === $rt2ac ? 'error' : 'success');
-            }
-        }
-
-        $runtemplater = new RunTemplate();
-
-        foreach ($runtemplater->listingQuery()->where('app_id', $appId) as $runtemplateData) {
-            $this->addStatusMessage(sprintf(_('#%d %s RunTemplate removal'), $runtemplateData['id'], $runtemplateData['name']), $runtemplater->deleteFromSQL($runtemplateData['id']) ? 'error' : 'success');
-        }
-
-        $a2cf = $this->getFluentPDO()->deleteFrom('conffield')->where('app_id', $appId)->execute();
-
-        if ($a2cf !== 0) {
-            $this->addStatusMessage(sprintf(_('%d Config fields removed'), $a2cf), null === $a2cf ? 'error' : 'success');
-        }
-
-        $a2cfg = $this->getFluentPDO()->deleteFrom('configuration')->where('app_id', $appId)->execute();
-
-        if ($a2cfg !== 0) {
-            $this->addStatusMessage(sprintf(_('%d Configurations removed'), $a2cfg), null === $a2cfg ? 'error' : 'success');
-        }
-
-        $a2job = $this->getFluentPDO()->deleteFrom('job')->where('app_id', $appId)->execute();
-
-        if ($a2job !== 0) {
-            $this->addStatusMessage(sprintf(_('%d Jobs removed'), $a2job), null === $a2job ? 'error' : 'success');
-        }
-
-        return parent::deleteFromSQL($this->getMyKey($data));
-    }
-
-    /**
-     * Configuration Fields with metadata.
-     *
-     * @return array
-     */
-    public function getAppEnvironmentFields()
-    {
-        return Conffield::getAppConfigs($this);
+        return $localizedData[$key] ?? $this->getDataValue($key);
     }
 
     /**
@@ -592,72 +445,93 @@ class Application extends DBEngine
     }
 
     /**
-     * @param array $columns
+     * Import environment configurations from app JSON.
      *
-     * @return array
+     * @param int $appId
+     * @param array $environmentConfigs
      */
-    public function columns($columns = [])
+    protected function importEnvironmentConfigs(int $appId, array $environmentConfigs): void
     {
-        return parent::columns([
-            ['name' => 'id', 'type' => 'text', 'label' => _('ID'),
-                'detailPage' => 'app.php', 'valueColumn' => 'apps.id', 'idColumn' => 'apps.id', ],
-            ['name' => 'icon', 'type' => 'text', 'label' => _('Icon'), 'searchable' => false],
-            ['name' => 'name', 'type' => 'text', 'label' => _('Name')],
-            ['name' => 'description', 'type' => 'text', 'label' => _('Description')],
-            ['name' => 'version', 'type' => 'text', 'label' => _('Version')],
-            ['name' => 'topics', 'type' => 'text', 'label' => _('Topics')],
-            ['name' => 'executable', 'type' => 'text', 'label' => _('Executable')],
-            ['name' => 'uuid', 'type' => 'text', 'label' => _('UUID')],
-            ['name' => 'ociimage', 'type' => 'text', 'label' => _('OCI Image')],
-        ]);
-    }
+        $defaultLang = 'en';
+        
+        foreach ($environmentConfigs as $key => $config) {
+            // Prepare data for conffield table
+            $configData = [
+                'app_id' => $appId,
+                'keyname' => $key,
+                'type' => $config['type'] ?? 'string',
+                'defval' => $this->convertDefval($config['defval'] ?? '', $config['type'] ?? 'string'),
+                'required' => isset($config['required']) ? (int)$config['required'] : 0,
+            ];
 
-    public function completeDataRow(array $dataRowRaw)
-    {
-        $dataRow = current(Ui\AppsSelector::translateColumns([$dataRowRaw], ['name', 'description']));
-        $dataRow['name'] = '<a title="'.$dataRowRaw['name'].'" href="app.php?id='.$dataRowRaw['id'].'">'.$dataRowRaw['name'].'</a>';
-        $dataRow['icon'] = '<a title="'.$dataRowRaw['name'].'" href="app.php?id='.$dataRowRaw['id'].'"><img src="appimage.php?uuid='.$dataRowRaw['uuid'].'" height="50">';
-
-        $topics = new \Ease\Html\DivTag();
-
-        if (empty($dataRow['topics']) === false) {
-            foreach (explode(',', $dataRow['topics']) as $topic) {
-                $topics->addItem(new \Ease\TWB4\Badge('secondary', $topic));
+            // Handle localized description field
+            if (isset($config['description'])) {
+                if (\is_string($config['description'])) {
+                    // Legacy string format
+                    $configData['description'] = $config['description'];
+                } elseif (\is_array($config['description'])) {
+                    // Localized object format - use default language for main table
+                    $configData['description'] = $config['description'][$defaultLang] ?? reset($config['description']);
+                }
+            } else {
+                $configData['description'] = '';
             }
 
-            $dataRow['topics'] = (string) $topics;
-        }
-
-        //        $dataRowRaw['created'] = (new LiveAge((new DateTime($dataRowRaw['created']))))->__toString();
-
-        return parent::completeDataRow($dataRow);
-    }
-
-    public function checkRequiredFields(array $keysValues, bool $verbose = false): bool
-    {
-        $ok = true;
-
-        foreach ($this->getAppEnvironmentFields() as $fieldName => $field) {
-            if ($field->isRequired() && empty($field->getValue())) {
-                $this->addStatusMessage(sprintf(_('the required configuration key `%s` was not filled'), $fieldName), 'warning');
-                $ok = false;
+            // Insert or update configuration field definition
+            try {
+                $configId = $this->getFluentPDO()
+                    ->insertInto('conffield', $configData)
+                    ->execute();
+            } catch (\PDOException $e) {
+                if ($e->getCode() == '23000') { // Duplicate entry
+                    // Update existing record
+                    $this->getFluentPDO()
+                        ->update('conffield')
+                        ->set($configData)
+                        ->where('app_id', $appId)
+                        ->where('keyname', $key)
+                        ->execute();
+                    
+                    // Get the ID of the existing record
+                    $existing = $this->getFluentPDO()
+                        ->from('conffield')
+                        ->where('app_id', $appId)
+                        ->where('keyname', $key)
+                        ->fetch();
+                    if ($existing) {
+                        $configId = $existing['id'];
+                    }
+                } else {
+                    throw $e;
+                }
             }
-        }
 
-        return $ok;
+            // TODO: Save localized descriptions when conffield_translations table is created
+            // For now, we're using the default language description in the main table
+        }
     }
 
-    public function loadImage($uuid, $prefix): bool
+    /**
+     * Convert default value based on type.
+     *
+     * @param mixed $defval
+     * @param string $type
+     * @return string
+     */
+    protected function convertDefval($defval, string $type): string
     {
-        $imageFile = $prefix.$this->getDataValue('uuid').'.svg';
-
-        if (file_exists($imageFile)) {
-            $this->setDataValue('icon', 'data:image/svg+xml;base64,'.file_get_contents($filename));
-            $result = true;
-        } else {
-            $result = false;
+        switch ($type) {
+            case 'bool':
+            case 'boolean':
+                return $defval === true || $defval === 'true' || $defval === 1 || $defval === '1' ? '1' : '0';
+            case 'int':
+            case 'integer':
+                return (string) (int) $defval;
+            case 'float':
+            case 'double':
+                return (string) (float) $defval;
+            default:
+                return (string) $defval;
         }
-
-        return $result;
     }
 }

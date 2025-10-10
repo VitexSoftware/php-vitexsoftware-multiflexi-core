@@ -51,10 +51,14 @@ class RunTemplate extends \MultiFlexi\DBEngine
     public Application $application;
 
     /**
-     * @param mixed $identifier
-     * @param array $options
+     * @var array the environment for the run template
      */
-    public function __construct($identifier = null, $options = [])
+    private array $environment;
+
+    /**
+     * @param mixed $identifier
+     */
+    public function __construct($identifier = null, array $options = [])
     {
         $this->nameColumn = 'name';
         $this->myTable = 'runtemplate';
@@ -144,11 +148,9 @@ class RunTemplate extends \MultiFlexi\DBEngine
     /**
      * Delete record ignoring interval.
      *
-     * @param array $data
-     *
-     * @return int
+     * @param mixed $data
      */
-    public function deleteFromSQL($data = null)
+    public function deleteFromSQL($data = null): int
     {
         if (null === $data) {
             $data = $this->getData();
@@ -165,7 +167,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
         $rtpl->setmyTable('runtemplate_topics');
         $rtpl->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
 
-        return parent::deleteFromSQL($data);
+        return (int) parent::deleteFromSQL($data);
     }
 
     public function getCompanyEnvironment()
@@ -183,13 +185,14 @@ class RunTemplate extends \MultiFlexi\DBEngine
     }
 
     /**
-     * @param int $companyId
-     *
-     * @return \Envms\FluentPDO\Query
+     * Get company templates.
      */
-    public function getCompanyTemplates($companyId)
+    public function getCompanyTemplates(int $companyId): \Envms\FluentPDO\Queries\Select
     {
-        return $this->listingQuery()->select(['apps.name AS app_name', 'apps.description', 'apps.homepage', 'apps.uuid'])->leftJoin('apps ON apps.id = runtemplate.app_id')->where('company_id', $companyId);
+        return $this->listingQuery()
+            ->select(['apps.name AS app_name', 'apps.description', 'apps.homepage', 'apps.uuid'])
+            ->leftJoin('apps ON apps.id = runtemplate.app_id')
+            ->where('company_id', $companyId);
     }
 
     /**
@@ -247,7 +250,13 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
     public function loadEnvironment(): void
     {
-        $this->setEnvironment($this->getRuntemplateEnvironment());
+        $environment = $this->getRuntemplateEnvironment();
+
+        if ($environment instanceof \MultiFlexi\ConfigFields) {
+            $environment = $environment->getFields();
+        }
+
+        $this->setEnvironment($environment);
     }
 
     /**
@@ -271,26 +280,26 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
     /**
      * All RunTemplates for GivenCompany.
-     *
-     * @param int $companyID
-     *
-     * @return array
      */
-    public function getRunTemplatesForCompany($companyID)
+    public function getRunTemplatesForCompany(int $companyID): array
     {
-        return $this->listingQuery()->select(['app_id', 'interv', 'id'])->where(['company_id' => $companyID]);
+        $query = $this->listingQuery()
+            ->select(['app_id', 'interv', 'id'])
+            ->where(['company_id' => $companyID]);
+
+        return $query->fetchAll() ?: [];
     }
 
     /**
-     * All RunTemplates for GivenCompany.
-     *
-     * @param int $companyID
-     *
-     * @return array
+     * All Active RunTemplates for GivenCompany.
      */
-    public function getActiveRunTemplatesForCompany($companyID)
+    public function getActiveRunTemplatesForCompany(int $companyID): array
     {
-        return $this->getRunTemplatesForCompany($companyID)->where('runtemplate.active', true);
+        $templates = $this->getRunTemplatesForCompany($companyID);
+
+        return array_filter($templates, static function ($template) {
+            return $template['active'] ?? false;
+        });
     }
 
     /**
@@ -461,66 +470,6 @@ class RunTemplate extends \MultiFlexi\DBEngine
     }
 
     /**
-     * @deprecated since version 1.27
-     */
-    public function legacyCredentialsEnvironment(): ConfigFields
-    {
-        $credentialsEnv = new ConfigFields(_('RunTemplate Legacy Credentials'));
-
-        $credentials = [];
-        $rtplCrds = new RunTplCreds();
-        $kredenc = new Credential();
-
-        foreach ($rtplCrds->getCredentialsForRuntemplate($this->getMyKey())->select(['name', 'formType', 'credentials_id'])->leftJoin('credentials ON credentials.id = runtplcreds.credentials_id')->where('credential_type_id', 0) as $crds) {
-            $kredenc->dataReset();
-            $kredenc->loadFromSQL($crds['credentials_id']);
-            $creds = $kredenc->getData();
-            unset($creds['id'], $creds['name'], $creds['company_id'], $creds['formType']);
-            $this->addStatusMessage('Legacy Credentials: '.$crds['formType'].' "'.$crds['name'].'" '.implode(',', array_keys($creds)), 'debug');
-
-            foreach ($creds as $key => $value) {
-                $credentials[$key]['credential_type'] = $crds['formType'];
-                $credentials[$key]['credential_id'] = $crds['id'];
-                $field = new ConfigField($key, 'string', $crds['name'], '');
-                $field->setSource((string) $crds['formType'])->setValue((string) $value);
-                $credentialsEnv->addField($field);
-            }
-        }
-
-        return $credentialsEnv;
-    }
-
-    public function columns($columns = [])
-    {
-        return parent::columns([
-            ['name' => 'id', 'type' => 'text', 'label' => _('ID')],
-            ['name' => 'active', 'type' => 'boolean', 'label' => _('Active')],
-            ['name' => 'interv', 'type' => 'text', 'label' => _('Interval')],
-            ['name' => 'name', 'type' => 'text', 'label' => _('Name')],
-            //                    ['name' => 'resolved', 'type' => 'datetime', 'label' => _('Resolved')],
-            ['name' => 'app_id', 'type' => 'selectize', 'label' => _('Application'),
-                'listingPage' => 'apps.php',
-                'detailPage' => 'app.php',
-                //                'idColumn' => 'apps.id',
-                //                'valueColumn' => 'apps.name',
-                'engine' => '\MultiFlexi\Application',
-                'filterby' => 'name',
-            ],
-            ['name' => 'company_id', 'type' => 'selectize', 'label' => _('Company'),
-                'listingPage' => 'companies.php',
-                'detailPage' => 'company.php',
-                //                'idColumn' => 'company',
-                //                'valueColumn' => 'company.name',
-                'engine' => '\MultiFlexi\Company',
-                'filterby' => 'name',
-            ],
-            ['name' => 'delay', 'type' => 'text', 'label' => _('Delay')],
-            ['name' => 'executor', 'type' => 'text', 'label' => _('Executor')],
-            //            ['name' => 'created', 'type' => 'datetime', 'label' => _('Created')],
-        ]);
-    }
-
-    /**
      * export .env file content.
      */
     public function envFile(): string
@@ -534,20 +483,6 @@ class RunTemplate extends \MultiFlexi\DBEngine
         }
 
         return implode("\n", $launcher);
-    }
-
-    public function completeDataRow(array $dataRowRaw): array
-    {
-        $dataRowRaw['interv'] = '<span title="'._(self::codeToInterval($dataRowRaw['interv'])).'">'.self::getIntervalEmoji($dataRowRaw['interv']).' '._(self::codeToInterval($dataRowRaw['interv'])).'</span>';
-        $dataRowRaw['active'] = (string) $dataRowRaw['active'] ? '&nbsp;<a href="schedule.php?id='.$dataRowRaw['id'].'&when=now&executor=Native" title="'._('Launch now').'"><span style="color: green; font-weight: xx-large;">▶</span></a> ' : '<span style="color: lightgray; font-weight: xx-large;" title="'._('Disabled').'">🚧</span>';
-        $dataRowRaw['name'] = (string) new \Ease\Html\ATag('runtemplate.php?id='.$dataRowRaw['id'], '<strong>'.$dataRowRaw['name'].'</strong>');
-        $dataRowRaw['id'] = (string) new \Ease\Html\ATag('runtemplate.php?id='.$dataRowRaw['id'], '⚗️ #'.$dataRowRaw['id']);
-
-        $dataRowRaw['executor'] = (string) new Ui\ExecutorImage($dataRowRaw['executor'], ['style' => 'height: 40px;']);
-        $dataRowRaw['app_id'] = (string) new Ui\AppLinkButton(new Application((int) $dataRowRaw['app_id']), ['style' => 'height: 40px;']);
-        $dataRowRaw['company_id'] = (string) new Ui\CompanyLinkButton(new Company((int) $dataRowRaw['company_id']), ['style' => 'height: 40px;']);
-
-        return $dataRowRaw;
     }
 
     public function getAssignedCredentials(): array
@@ -617,5 +552,16 @@ class RunTemplate extends \MultiFlexi\DBEngine
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')
             ->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
             ->fetchAll();
+    }
+
+    /**
+     * Placeholder for legacy credentials environment.
+     *
+     * @return array
+     */
+    public function legacyCredentialsEnvironment(): \MultiFlexi\ConfigFields
+    {
+        return new \MultiFlexi\ConfigFields('Legacy Credentials');
+        // Populate $configFields with necessary fields.
     }
 }

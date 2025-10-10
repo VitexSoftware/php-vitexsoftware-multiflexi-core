@@ -1,0 +1,27 @@
+{
+    "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
+    "name": {
+        "en": "Test App",
+        "cs": "Testovac\u00ed Aplikace"
+    },
+    "title": {
+        "en": "Test Title",
+        "cs": "Testovac\u00ed Titulek"
+    },
+    "description": {
+        "en": "This is a test app.",
+        "cs": "Toto je testovac\u00ed aplikace."
+    },
+    "uuid": "123e4567-e89b-12d3-a456-426614174000",
+    "executable": "/bin/test",
+    "environment": {
+        "TEST_VAR": {
+            "type": "string",
+            "description": {
+                "en": "Test environment variable",
+                "cs": "Testovac\u00ed prom\u011bnn\u00e1 prost\u0159ed\u00ed"
+            },
+            "required": false
+        }
+    }
+}

@@ -199,7 +199,6 @@ class Job extends Engine
 
         $jobId = $this->getMyKey();
 
-        // $this->addStatusMessage('JOB: ' . $jobId . ' ' . json_encode($this->environment), 'debug');
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->setZabbixValue('phase', 'jobStart');
             $this->setZabbixValue('executor', $this->getDataValue('executor'));
@@ -221,7 +220,13 @@ class Job extends Engine
             $this->reportToZabbix($this->zabbixMessageData);
         }
 
-        $this->updateToSQL(['id' => $this->getMyKey(), 'env' => serialize($this->environment), 'command' => $this->executor->commandline(), 'runtemplate_id' => $this->runTemplate->getMyKey(), 'begin' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()')]);
+        $this->updateToSQL([
+            'id' => $this->getMyKey(),
+            'env' => serialize($this->environment),
+            'command' => $this->executor->commandline(),
+            'runtemplate_id' => $this->runTemplate->getMyKey(),
+            'begin' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
+        ]);
 
         return $jobId;
     }
