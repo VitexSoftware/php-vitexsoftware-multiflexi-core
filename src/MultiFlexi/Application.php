@@ -534,4 +534,25 @@ class Application extends DBEngine
                 return (string) $defval;
         }
     }
+
+    /**
+     * Load application image from file.
+     *
+     * @param string $uuid Application UUID
+     * @param string $prefix Path prefix where to look for the image
+     * @return bool Success
+     */
+    public function loadImage($uuid, $prefix): bool
+    {
+        $imageFile = $prefix.$this->getDataValue('uuid').'.svg';
+
+        if (file_exists($imageFile)) {
+            $this->setDataValue('image', 'data:image/svg+xml;base64,'.base64_encode(file_get_contents($imageFile)));
+            $result = true;
+        } else {
+            $result = false;
+        }
+
+        return $result;
+    }
 }
