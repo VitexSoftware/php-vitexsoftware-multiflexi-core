@@ -310,9 +310,17 @@ class Application extends DBEngine
             throw new \RuntimeException(_('App definition file is empty: ').$jsonFile);
         }
 
+
         $appSpec = json_decode($appSpecRaw, true);
 
-        unset($appSpec['$schema'], $appSpec['produces']);
+        // Remove all keys starting with '$' to prevent SQL errors
+        foreach (array_keys($appSpec) as $key) {
+            if (str_starts_with($key, '$')) {
+                unset($appSpec[$key]);
+            }
+        }
+        // Also remove any other known non-database keys
+        unset($appSpec['produces']);
 
         if (json_last_error() !== \JSON_ERROR_NONE) {
             throw new \RuntimeException(_('Invalid JSON: ').json_last_error_msg());
