@@ -312,6 +312,8 @@ class Application extends DBEngine
 
         $appSpec = json_decode($appSpecRaw, true);
 
+        unset($appSpec['$schema'], $appSpec['produces']);
+
         if (json_last_error() !== \JSON_ERROR_NONE) {
             throw new \RuntimeException(_('Invalid JSON: ').json_last_error_msg());
         }
@@ -338,7 +340,7 @@ class Application extends DBEngine
         }
 
         // Extract non-localized fields
-        $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements', 
+        $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements',
                                'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
         foreach ($nonLocalizedFields as $field) {
             if (isset($appSpec[$field])) {
