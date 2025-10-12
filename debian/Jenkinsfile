@@ -104,8 +104,8 @@ distributions.each { distro ->
 }
 parallel branches
 
-// node {
-//    stage('Publish to Aptly') {
-//        publishDebToAptly()
-//    }
-// }
+node {
+    stage('Publish to Aptly') {
+	publishDebToAptly()
+    }
+}
