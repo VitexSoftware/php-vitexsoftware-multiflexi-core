@@ -265,16 +265,20 @@ class RunTemplate extends \MultiFlexi\DBEngine
     public function getAppInfo()
     {
         return $this->listingQuery()
-            ->select('apps.*')
-            ->select('apps.id as apps_id')
-            ->select('apps.name as app_name')
-            ->select('runtemplate.name as runtemplate_name')
-            ->select('company.*')
-            ->select('servers.*')
+            ->select(['apps.*'])
+            ->select(['apps.id AS apps_id'])
+            ->select(['apps.name AS app_name'])
+            ->select(['runtemplate.name AS runtemplate_name'])
+            ->select(['company.*'])
+            ->select(['servers.*'])
+            ->select(['credential_type.config_type AS type'])
             ->where([$this->getMyTable().'.'.$this->getKeyColumn() => $this->getMyKey()])
             ->leftJoin('apps ON apps.id = runtemplate.app_id')
             ->leftJoin('company ON company.id = runtemplate.company_id')
             ->leftJoin('servers ON servers.id = company.server')
+            ->leftJoin('runtplcreds ON runtplcreds.runtemplate_id = runtemplate.id')
+            ->leftJoin('credentials ON credentials.id = runtplcreds.credentials_id')
+            ->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')
             ->fetch();
     }
 
