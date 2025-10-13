@@ -82,8 +82,8 @@ class Application extends DBEngine
             //            $data['code'] = substr(substr(strtoupper($data['executable'] ? basename($data['executable']) : $data['name']), -7), 0, 6);
         }
 
-        $data['image'] = array_key_exists('image', $data) ? strval($data['image']) : '';
-        
+        $data['image'] = \array_key_exists('image', $data) ? (string) ($data['image']) : '';
+
         unset($data['class']);
 
         return parent::takeData($data);
@@ -310,7 +310,6 @@ class Application extends DBEngine
             throw new \RuntimeException(_('App definition file is empty: ').$jsonFile);
         }
 
-
         $appSpec = json_decode($appSpecRaw, true);
 
         // Remove all keys starting with '$' to prevent SQL errors
@@ -319,6 +318,7 @@ class Application extends DBEngine
                 unset($appSpec[$key]);
             }
         }
+
         // Also remove any other known non-database keys
         unset($appSpec['produces']);
 
@@ -349,7 +349,8 @@ class Application extends DBEngine
 
         // Extract non-localized fields
         $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements',
-                               'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
+            'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
+
         foreach ($nonLocalizedFields as $field) {
             if (isset($appSpec[$field])) {
                 $fields[$field] = $appSpec[$field];
@@ -360,12 +361,15 @@ class Application extends DBEngine
         if (!isset($fields['deploy'])) {
             $fields['deploy'] = ''; // Empty string as default
         }
+
         if (!isset($fields['homepage'])) {
             $fields['homepage'] = ''; // Empty string as default
         }
+
         if (!isset($fields['requirements'])) {
             $fields['requirements'] = ''; // Empty string as default
         }
+
         if (!isset($fields['topics'])) {
             $fields['topics'] = ''; // Empty string as default
         }
@@ -375,11 +379,13 @@ class Application extends DBEngine
             if (\is_array($appSpec['artifacts'])) {
                 // Convert artifacts array to a pattern string
                 $patterns = [];
+
                 foreach ($appSpec['artifacts'] as $artifact) {
                     if (isset($artifact['path'])) {
                         $patterns[] = $artifact['path'];
                     }
                 }
+
                 $fields['artifacts'] = implode(',', $patterns);
             } else {
                 $fields['artifacts'] = $appSpec['artifacts'];
@@ -394,6 +400,7 @@ class Application extends DBEngine
 
         // Check if app already exists by name
         $existingApp = null;
+
         if (isset($fields['name'])) {
             $existingApp = $this->getFluentPDO()
                 ->from('apps')
@@ -455,15 +462,34 @@ class Application extends DBEngine
     }
 
     /**
-     * Import environment configurations from app JSON.
+     * Load application image from file.
      *
-     * @param int $appId
-     * @param array $environmentConfigs
+     * @param string $uuid   Application UUID
+     * @param string $prefix Path prefix where to look for the image
+     *
+     * @return bool Success
+     */
+    public function loadImage($uuid, $prefix): bool
+    {
+        $imageFile = $prefix.$this->getDataValue('uuid').'.svg';
+
+        if (file_exists($imageFile)) {
+            $this->setDataValue('image', 'data:image/svg+xml;base64,'.base64_encode(file_get_contents($imageFile)));
+            $result = true;
+        } else {
+            $result = false;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Import environment configurations from app JSON.
      */
     protected function importEnvironmentConfigs(int $appId, array $environmentConfigs): void
     {
         $defaultLang = 'en';
-        
+
         foreach ($environmentConfigs as $key => $config) {
             // Prepare data for conffield table
             $configData = [
@@ -471,7 +497,7 @@ class Application extends DBEngine
                 'keyname' => $key,
                 'type' => $config['type'] ?? 'string',
                 'defval' => $this->convertDefval($config['defval'] ?? '', $config['type'] ?? 'string'),
-                'required' => isset($config['required']) ? (int)$config['required'] : 0,
+                'required' => isset($config['required']) ? (int) $config['required'] : 0,
             ];
 
             // Handle localized description field
@@ -493,7 +519,7 @@ class Application extends DBEngine
                     ->insertInto('conffield', $configData)
                     ->execute();
             } catch (\PDOException $e) {
-                if ($e->getCode() == '23000') { // Duplicate entry
+                if ($e->getCode() === '23000') { // Duplicate entry
                     // Update existing record
                     $this->getFluentPDO()
                         ->update('conffield')
@@ -501,13 +527,14 @@ class Application extends DBEngine
                         ->where('app_id', $appId)
                         ->where('keyname', $key)
                         ->execute();
-                    
+
                     // Get the ID of the existing record
                     $existing = $this->getFluentPDO()
                         ->from('conffield')
                         ->where('app_id', $appId)
                         ->where('keyname', $key)
                         ->fetch();
+
                     if ($existing) {
                         $configId = $existing['id'];
                     }
@@ -525,8 +552,6 @@ class Application extends DBEngine
      * Convert default value based on type.
      *
      * @param mixed $defval
-     * @param string $type
-     * @return string
      */
     protected function convertDefval($defval, string $type): string
     {
@@ -540,29 +565,9 @@ class Application extends DBEngine
             case 'float':
             case 'double':
                 return (string) (float) $defval;
+
             default:
                 return (string) $defval;
         }
-    }
-
-    /**
-     * Load application image from file.
-     *
-     * @param string $uuid Application UUID
-     * @param string $prefix Path prefix where to look for the image
-     * @return bool Success
-     */
-    public function loadImage($uuid, $prefix): bool
-    {
-        $imageFile = $prefix.$this->getDataValue('uuid').'.svg';
-
-        if (file_exists($imageFile)) {
-            $this->setDataValue('image', 'data:image/svg+xml;base64,'.base64_encode(file_get_contents($imageFile)));
-            $result = true;
-        } else {
-            $result = false;
-        }
-
-        return $result;
     }
 }
