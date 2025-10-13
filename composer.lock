@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0e2f5e1b16f12361f2662d5dfaa70b01",
+    "content-hash": "8ddf44b13f0bfbfdc4dec7d26bc605cd",
     "packages": [
         {
             "name": "fpdo/fluentpdo",
@@ -597,16 +597,16 @@
         },
         {
             "name": "vitexsoftware/ease-core",
-            "version": "dev-main",
+            "version": "1.49.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/VitexSoftware/php-ease-core.git",
-                "reference": "d37772a4007f40078b68ebd5c112566ef4dff1ca"
+                "reference": "0bd73be2a42d53d6fb67e9f97f30c05dea8d116d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/VitexSoftware/php-ease-core/zipball/d37772a4007f40078b68ebd5c112566ef4dff1ca",
-                "reference": "d37772a4007f40078b68ebd5c112566ef4dff1ca",
+                "url": "https://api.github.com/repos/VitexSoftware/php-ease-core/zipball/0bd73be2a42d53d6fb67e9f97f30c05dea8d116d",
+                "reference": "0bd73be2a42d53d6fb67e9f97f30c05dea8d116d",
                 "shasum": ""
             },
             "require": {
@@ -620,15 +620,14 @@
                 "vitexsoftware/ease-framework": "*"
             },
             "require-dev": {
-                "ergebnis/composer-normalize": "^2.48",
-                "ergebnis/php-cs-fixer-config": "^6.54",
-                "friendsofphp/php-cs-fixer": "^3.88",
+                "ergebnis/composer-normalize": "^2.47",
+                "ergebnis/php-cs-fixer-config": "^6.51",
+                "friendsofphp/php-cs-fixer": "^3.85",
                 "phpstan/phpstan": "*",
                 "phpunit/phpunit": "*",
-                "rector/rector": "^2.2",
+                "rector/rector": "^2.1",
                 "roave/security-advisories": "dev-latest"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -651,7 +650,7 @@
             "homepage": "http://v.s.cz/ease.php",
             "support": {
                 "issues": "https://github.com/VitexSoftware/php-ease-core/issues",
-                "source": "https://github.com/VitexSoftware/php-ease-core/tree/main"
+                "source": "https://github.com/VitexSoftware/php-ease-core/tree/1.49.0"
             },
             "funding": [
                 {
@@ -659,7 +658,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-10-08T13:04:43+00:00"
+            "time": "2025-08-11T09:34:34+00:00"
         },
         {
             "name": "vitexsoftware/ease-fluentpdo",
@@ -724,22 +723,27 @@
         },
         {
             "name": "vitexsoftware/ease-html",
-            "version": "1.31",
+            "version": "1.40.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/VitexSoftware/php-ease-html.git",
-                "reference": "6a541b3f32bb5ceefaa56286a2925d4be3b8a2d5"
+                "reference": "10ed0bd0b30e2f3aed91471f8dbcb40ed692c06a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/VitexSoftware/php-ease-html/zipball/6a541b3f32bb5ceefaa56286a2925d4be3b8a2d5",
-                "reference": "6a541b3f32bb5ceefaa56286a2925d4be3b8a2d5",
+                "url": "https://api.github.com/repos/VitexSoftware/php-ease-html/zipball/10ed0bd0b30e2f3aed91471f8dbcb40ed692c06a",
+                "reference": "10ed0bd0b30e2f3aed91471f8dbcb40ed692c06a",
                 "shasum": ""
             },
             "require": {
-                "vitexsoftware/ease-core": ">= 1.8"
+                "php": ">=8.1",
+                "vitexsoftware/ease-core": "^1.49"
             },
             "require-dev": {
+                "ergebnis/composer-normalize": "^2.48",
+                "ergebnis/php-cs-fixer-config": "^6.53",
+                "friendsofphp/php-cs-fixer": "^3.87",
+                "phpstan/phpstan": "*",
                 "phpunit/phpunit": "*"
             },
             "type": "library",
@@ -762,7 +766,7 @@
             "description": "Set of HTML rendering objects",
             "support": {
                 "issues": "https://github.com/VitexSoftware/php-ease-html/issues",
-                "source": "https://github.com/VitexSoftware/php-ease-html/tree/1.31"
+                "source": "https://github.com/VitexSoftware/php-ease-html/tree/1.40.5"
             },
             "funding": [
                 {
@@ -770,7 +774,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2021-05-21T10:39:09+00:00"
+            "time": "2025-09-15T15:06:24+00:00"
         }
     ],
     "packages-dev": [
