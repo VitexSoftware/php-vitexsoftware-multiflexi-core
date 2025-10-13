@@ -416,10 +416,10 @@ class RunTemplate extends \MultiFlexi\DBEngine
     {
         $runtemplateEnv = new ConfigFields(sprintf(_('RunTemplate %s'), $this->getRecordName()));
         $configurator = new Configuration();
-        $cfg = $configurator->listingQuery()->select(['name', 'value', 'type'], true)->where(['runtemplate_id' => $this->getMyKey()])->fetchAll('name');
+        $cfg = $configurator->listingQuery()->select(['name', 'value', 'config_type'], true)->where(['runtemplate_id' => $this->getMyKey()])->fetchAll('name');
 
         foreach ($cfg as $conf) {
-            $field = new ConfigField($conf['name'], \MultiFlexi\Conffield::fixType($conf['type']), $conf['name']);
+            $field = new ConfigField($conf['name'], \MultiFlexi\Conffield::fixType($conf['config_type']), $conf['name']);
             $field->setValue($conf['value']);
             $runtemplateEnv->addField($field);
         }
