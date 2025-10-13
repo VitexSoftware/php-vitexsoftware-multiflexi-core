@@ -21,11 +21,12 @@ use Ease\SQL\Orm;
  * MultiFlexi - Instance Management Class.
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
- * @copyright  2015-2023 Vitex Software
+ * @copyright  2015-2025 Vitex Software
  */
 class User extends \Ease\User
 {
     use Orm;
+    use \Ease\recordkey;
     public $useKeywords = [
         'login' => 'STRING',
         'firstname' => 'STRING',
@@ -84,7 +85,7 @@ class User extends \Ease\User
         $this->pdo = null;
         $this->fluent = null;
 
-        return parent::__sleep();
+        return array_merge(parent::__sleep(), ['myTable', 'keyColumn', 'createColumn', 'lastModifiedColumn']);
     }
 
     public function getNameColumn(): string

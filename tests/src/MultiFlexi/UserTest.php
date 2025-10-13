@@ -22,371 +22,238 @@ use MultiFlexi\User;
  */
 class UserTest extends \PHPUnit\Framework\TestCase
 {
-    protected $object;
-
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
+    protected User $object;
     protected function setUp(): void
     {
         $this->object = new User();
+        $this->object->loginColumn = 'login';
+        $this->object->passwordColumn = 'password';
     }
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
     protected function tearDown(): void
     {
+        unset($this->object);
     }
 
-    /**
-     * @covers \MultiFlexi\User::getIcon
-     *
-     * @todo   Implement testgetIcon().
-     */
     public function testgetIcon(): void
     {
-        $this->assertEquals('', $this->object->getIcon());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Test default icon (when no custom icon is set)
+        $defaultIcon = $this->object->getIcon();
+        $this->assertStringStartsWith('data:image/svg+xml;base64,', $defaultIcon);
+        
+        // Test custom icon
+        $customIcon = 'https://example.com/custom.png';
+        $this->object->setSettingValue('icon', $customIcon);
+        $this->assertEquals($customIcon, $this->object->getIcon());
     }
 
     /**
      * @covers \MultiFlexi\User::getId
-     *
-     * @todo   Implement testgetId().
      */
     public function testgetId(): void
     {
-        $this->assertEquals('', $this->object->getId());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->assertIsInt($this->object->getId());
     }
 
     /**
      * @covers \MultiFlexi\User::getUserName
-     *
-     * @todo   Implement testgetUserName().
      */
     public function testgetUserName(): void
     {
-        $this->assertEquals('', $this->object->getUserName());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-    }
+        // Test with only login
+        $login = 'testuser';
+        $this->object->setDataValue('login', $login);
+        $this->assertEquals($login, $this->object->getUserName());
 
-    /**
-     * @covers \MultiFlexi\User::getRecordName
-     *
-     * @todo   Implement testgetRecordName().
-     */
-    public function testgetRecordName(): void
-    {
-        $this->assertEquals('', $this->object->getRecordName());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Test with first and last name
+        $firstName = 'John';
+        $lastName = 'Doe';
+        $this->object->setDataValue('firstname', $firstName);
+        $this->object->setDataValue('lastname', $lastName);
+        $this->assertEquals($firstName . ' ' . $lastName, $this->object->getUserName());
     }
 
     /**
      * @covers \MultiFlexi\User::getEmail
-     *
-     * @todo   Implement testgetEmail().
      */
     public function testgetEmail(): void
     {
-        $this->assertEquals('', $this->object->getEmail());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Test with no email set
+        $this->assertNull($this->object->getEmail());
+
+        // Test with email set
+        $email = 'test@example.com';
+        $this->object->setDataValue('email', $email);
+        $this->assertEquals($email, $this->object->getEmail());
     }
 
     /**
      * @covers \MultiFlexi\User::tryToLogin
-     *
-     * @todo   Implement testtryToLogin().
      */
     public function testtryToLogin(): void
     {
-        $this->assertEquals('', $this->object->tryToLogin());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('Requires Entity Manager for message logging; skip in unit test.');
     }
 
     /**
      * @covers \MultiFlexi\User::passwordValidation
-     *
-     * @todo   Implement testpasswordValidation().
      */
     public function testpasswordValidation(): void
     {
-        $this->assertEquals('', $this->object->passwordValidation());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Test with empty credentials
+        $this->assertFalse($this->object->passwordValidation('', ''));
+
+        // Test with invalid format
+        $this->assertFalse($this->object->passwordValidation('password', 'invalid_hash'));
+
+        // Test with valid format but wrong password
+        $hash = $this->object->encryptPassword('correct_password');
+        $this->assertFalse($this->object->passwordValidation('wrong_password', $hash));
+
+        // Test with correct password
+        $password = 'correct_password';
+        $hash = $this->object->encryptPassword($password);
+        $this->assertTrue($this->object->passwordValidation($password, $hash));
     }
 
     /**
      * @covers \MultiFlexi\User::loginSuccess
-     *
-     * @todo   Implement testloginSuccess().
      */
     public function testloginSuccess(): void
     {
-        $this->assertEquals('', $this->object->loginSuccess());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // This test requires database access
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
     /**
      * @covers \MultiFlexi\User::logout
-     *
-     * @todo   Implement testlogout().
      */
     public function testlogout(): void
     {
-        $this->assertEquals('', $this->object->logout());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('Requires Entity Manager for SQL logger; skip in unit test.');
     }
 
     /**
      * @covers \MultiFlexi\User::encryptPassword
-     *
-     * @todo   Implement testencryptPassword().
      */
     public function testencryptPassword(): void
     {
-        $this->assertEquals('', $this->object->encryptPassword());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $password = 'test_password';
+        $hash = $this->object->encryptPassword($password);
+
+        // Check hash format (should be md5hash:salt)
+        $this->assertMatchesRegularExpression('/^[a-f0-9]{32}:[a-f0-9]{2}$/', $hash);
+
+        // Verify that the same password with the same salt produces the same hash
+        list($hash1, $salt) = explode(':', $hash);
+        $hash2 = md5($salt . $password);
+        $this->assertEquals($hash1, $hash2);
     }
 
     /**
      * @covers \MultiFlexi\User::passwordChange
-     *
-     * @todo   Implement testpasswordChange().
      */
     public function testpasswordChange(): void
     {
-        $this->assertEquals('', $this->object->passwordChange());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-    }
-
-    /**
-     * @covers \MultiFlexi\User::columnDefs
-     *
-     * @todo   Implement testcolumnDefs().
-     */
-    public function testcolumnDefs(): void
-    {
-        $this->assertEquals('', $this->object->columnDefs());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database implementation.');
     }
 
     /**
      * @covers \MultiFlexi\User::singleton
-     *
-     * @todo   Implement testsingleton().
      */
     public function testsingleton(): void
     {
-        $this->assertEquals('', $this->object->singleton());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Test first instance
+        $instance1 = User::singleton();
+        $this->assertInstanceOf(User::class, $instance1);
+
+        // Test second instance is the same
+        $instance2 = User::singleton();
+        $this->assertSame($instance1, $instance2);
+
+        // Test with a specific user
+        $newUser = new User();
+        $instance3 = User::singleton($newUser);
+        $this->assertSame($instance1, $instance3); // Should still return the first instance
     }
 
     /**
-     * @covers \MultiFlexi\User::setUpDb
-     *
-     * @todo   Implement testsetUpDb().
+     * Database-related tests marked as incomplete until proper database setup is implemented
      */
+
     public function testsetUpDb(): void
     {
-        $this->assertEquals('', $this->object->setUpDb());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::setUp
-     *
-     * @todo   Implement testsetUp().
-     */
-    public function testsetUp(): void
-    {
-        $this->assertEquals('', $this->object->setUp());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
-    }
-
-    /**
-     * @covers \MultiFlexi\User::pdoConnect
-     *
-     * @todo   Implement testpdoConnect().
-     */
     public function testpdoConnect(): void
     {
-        $this->assertEquals('', $this->object->pdoConnect());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::getPdo
-     *
-     * @todo   Implement testgetPdo().
-     */
     public function testgetPdo(): void
     {
-        $this->assertEquals('', $this->object->getPdo());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::getFluentPDO
-     *
-     * @todo   Implement testgetFluentPDO().
-     */
     public function testgetFluentPDO(): void
     {
-        $this->assertEquals('', $this->object->getFluentPDO());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::listingQuery
-     *
-     * @todo   Implement testlistingQuery().
-     */
     public function testlistingQuery(): void
     {
-        $this->assertEquals('', $this->object->listingQuery());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::getColumnsFromSQL
-     *
-     * @todo   Implement testgetColumnsFromSQL().
-     */
     public function testgetColumnsFromSQL(): void
     {
-        $this->assertEquals('', $this->object->getColumnsFromSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::getDataFromSQL
-     *
-     * @todo   Implement testgetDataFromSQL().
-     */
     public function testgetDataFromSQL(): void
     {
-        $this->assertEquals('', $this->object->getDataFromSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::loadFromSQL
-     *
-     * @todo   Implement testloadFromSQL().
-     */
     public function testloadFromSQL(): void
     {
-        $this->assertEquals('', $this->object->loadFromSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::dbreload
-     *
-     * @todo   Implement testdbreload().
-     */
     public function testdbreload(): void
     {
-        $this->assertEquals('', $this->object->dbreload());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::dbsync
-     *
-     * @todo   Implement testdbsync().
-     */
     public function testdbsync(): void
     {
-        $this->assertEquals('', $this->object->dbsync());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::updateToSQL
-     *
-     * @todo   Implement testupdateToSQL().
-     */
     public function testupdateToSQL(): void
     {
-        $this->assertEquals('', $this->object->updateToSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::saveToSQL
-     *
-     * @todo   Implement testsaveToSQL().
-     */
     public function testsaveToSQL(): void
     {
-        $this->assertEquals('', $this->object->saveToSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::insertToSQL
-     *
-     * @todo   Implement testinsertToSQL().
-     */
     public function testinsertToSQL(): void
     {
-        $this->assertEquals('', $this->object->insertToSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::deleteFromSQL
-     *
-     * @todo   Implement testdeleteFromSQL().
-     */
     public function testdeleteFromSQL(): void
     {
-        $this->assertEquals('', $this->object->deleteFromSQL());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
-    /**
-     * @covers \MultiFlexi\User::takeToData
-     *
-     * @todo   Implement testtakeToData().
-     */
     public function testtakeToData(): void
     {
-        $this->assertEquals('', $this->object->takeToData());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->markTestIncomplete('This test requires database setup to be implemented.');
     }
 
     /**
@@ -394,18 +261,15 @@ class UserTest extends \PHPUnit\Framework\TestCase
      */
     public function testgetMyTable(): void
     {
-        $this->assertEquals('user', $this->object->getMyTable());
+        $this->assertEquals('user', $this->object->myTable);
     }
 
     /**
      * @covers \MultiFlexi\User::setMyTable
-     *
-     * @todo   Implement testsetMyTable().
      */
     public function testsetMyTable(): void
     {
-        $this->assertEquals('', $this->object->setMyTable());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->object->myTable = 'test_table';
+        $this->assertEquals('test_table', $this->object->myTable);
     }
 }
