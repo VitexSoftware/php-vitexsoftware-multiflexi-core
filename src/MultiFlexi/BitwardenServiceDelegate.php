@@ -24,17 +24,27 @@ class BitwardenServiceDelegate implements \Jalismrs\Bitwarden\BitwardenServiceDe
 {
     private string $email;
     private string $password;
+    private ?string $url;
 
-    public function __construct(string $email, string $password)
+    public function __construct(string $email, string $password, ?string $url = null)
     {
         $this->email = $email;
         $this->password = $password;
+        $this->url = $url;
     }
 
     #[\Override]
     public function getOrganizationId(): ?string
     {
         return null;
+    }
+    
+    /**
+     * Get the URL for the Bitwarden server
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
     }
 
     #[\Override]

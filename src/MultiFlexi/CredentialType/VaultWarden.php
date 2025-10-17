@@ -115,7 +115,7 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
             }
 
             // Use Bitwarden service to get items
-            $delegate = new \MultiFlexi\BitwardenServiceDelegate($vaultwardenEmail, $vaultwardenPassword);
+            $delegate = new \MultiFlexi\BitwardenServiceDelegate($vaultwardenEmail, $vaultwardenPassword, $vaultwardenUrl);
             $service = new \Jalismrs\Bitwarden\BitwardenService($delegate);
             $items = $service->searchItems($this->configFieldsInternal->getFieldByCode('VAULTWARDEN_FOLDER')->getValue());
 
