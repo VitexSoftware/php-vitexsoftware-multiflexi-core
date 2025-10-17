@@ -106,12 +106,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "1ed72392105ee98ce8b18c3a2b5dbe096c9af27f"
+                "reference": "68ba7677532803cc0c5900dd5a4d730537f2b2f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/1ed72392105ee98ce8b18c3a2b5dbe096c9af27f",
-                "reference": "1ed72392105ee98ce8b18c3a2b5dbe096c9af27f",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/68ba7677532803cc0c5900dd5a4d730537f2b2f3",
+                "reference": "68ba7677532803cc0c5900dd5a4d730537f2b2f3",
                 "shasum": ""
             },
             "require": {
@@ -174,7 +174,7 @@
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
                 "source": "https://github.com/jsonrainbow/json-schema/tree/master"
             },
-            "time": "2025-09-20T10:54:20+00:00"
+            "time": "2025-10-10T11:34:09+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -1070,12 +1070,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/composer-normalize.git",
-                "reference": "332e67c5cead2d7767b6eba86dd7a6fe9247f838"
+                "reference": "17058d89e302d3e65fb6c0b04edfa02732640767"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/composer-normalize/zipball/332e67c5cead2d7767b6eba86dd7a6fe9247f838",
-                "reference": "332e67c5cead2d7767b6eba86dd7a6fe9247f838",
+                "url": "https://api.github.com/repos/ergebnis/composer-normalize/zipball/17058d89e302d3e65fb6c0b04edfa02732640767",
+                "reference": "17058d89e302d3e65fb6c0b04edfa02732640767",
                 "shasum": ""
             },
             "require": {
@@ -1102,7 +1102,7 @@
                 "phpstan/phpstan-phpunit": "^2.0.7",
                 "phpstan/phpstan-strict-rules": "^2.0.7",
                 "phpunit/phpunit": "^9.6.20",
-                "rector/rector": "^2.2.1",
+                "rector/rector": "^2.2.3",
                 "symfony/filesystem": "^5.4.41"
             },
             "default-branch": true,
@@ -1147,7 +1147,7 @@
                 "security": "https://github.com/ergebnis/composer-normalize/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/composer-normalize"
             },
-            "time": "2025-10-06T22:08:12+00:00"
+            "time": "2025-10-13T22:03:03+00:00"
         },
         {
             "name": "ergebnis/json",
@@ -1155,12 +1155,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/json.git",
-                "reference": "e78b01a70bbe04fbb149b120a2d75dab9d8cdf48"
+                "reference": "946ae32a87848f80e7e12357c9f4f5226a3716ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/json/zipball/e78b01a70bbe04fbb149b120a2d75dab9d8cdf48",
-                "reference": "e78b01a70bbe04fbb149b120a2d75dab9d8cdf48",
+                "url": "https://api.github.com/repos/ergebnis/json/zipball/946ae32a87848f80e7e12357c9f4f5226a3716ed",
+                "reference": "946ae32a87848f80e7e12357c9f4f5226a3716ed",
                 "shasum": ""
             },
             "require": {
@@ -1221,7 +1221,7 @@
                 "security": "https://github.com/ergebnis/json/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/json"
             },
-            "time": "2025-09-29T07:02:50+00:00"
+            "time": "2025-10-13T06:05:27+00:00"
         },
         {
             "name": "ergebnis/json-normalizer",
@@ -1229,12 +1229,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/json-normalizer.git",
-                "reference": "ad6cd7130a4b46bb36fc60e5c8115ab5a424bfc8"
+                "reference": "a5b48daba17e53b0a7785787527716eea17ec89e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/json-normalizer/zipball/ad6cd7130a4b46bb36fc60e5c8115ab5a424bfc8",
-                "reference": "ad6cd7130a4b46bb36fc60e5c8115ab5a424bfc8",
+                "url": "https://api.github.com/repos/ergebnis/json-normalizer/zipball/a5b48daba17e53b0a7785787527716eea17ec89e",
+                "reference": "a5b48daba17e53b0a7785787527716eea17ec89e",
                 "shasum": ""
             },
             "require": {
@@ -1304,7 +1304,7 @@
                 "security": "https://github.com/ergebnis/json-normalizer/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/json-normalizer"
             },
-            "time": "2025-09-29T23:31:47+00:00"
+            "time": "2025-10-13T20:03:15+00:00"
         },
         {
             "name": "ergebnis/json-pointer",
@@ -1312,12 +1312,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/json-pointer.git",
-                "reference": "4d165fc77c67e96e2df928be24468135e0a7e976"
+                "reference": "c3a4f70bd9c97a00a8a989ce574129ca370eeaa4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/json-pointer/zipball/4d165fc77c67e96e2df928be24468135e0a7e976",
-                "reference": "4d165fc77c67e96e2df928be24468135e0a7e976",
+                "url": "https://api.github.com/repos/ergebnis/json-pointer/zipball/c3a4f70bd9c97a00a8a989ce574129ca370eeaa4",
+                "reference": "c3a4f70bd9c97a00a8a989ce574129ca370eeaa4",
                 "shasum": ""
             },
             "require": {
@@ -1378,7 +1378,7 @@
                 "security": "https://github.com/ergebnis/json-pointer/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/json-pointer"
             },
-            "time": "2025-09-29T18:46:21+00:00"
+            "time": "2025-10-13T15:31:26+00:00"
         },
         {
             "name": "ergebnis/json-printer",
@@ -1386,12 +1386,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/json-printer.git",
-                "reference": "8966374214b90498e2c8e90d50e87d012f255461"
+                "reference": "784ddd8d845f28db7b1e58cca64791c8348ebac1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/json-printer/zipball/8966374214b90498e2c8e90d50e87d012f255461",
-                "reference": "8966374214b90498e2c8e90d50e87d012f255461",
+                "url": "https://api.github.com/repos/ergebnis/json-printer/zipball/784ddd8d845f28db7b1e58cca64791c8348ebac1",
+                "reference": "784ddd8d845f28db7b1e58cca64791c8348ebac1",
                 "shasum": ""
             },
             "require": {
@@ -1454,7 +1454,7 @@
                 "security": "https://github.com/ergebnis/json-printer/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/json-printer"
             },
-            "time": "2025-09-29T09:24:19+00:00"
+            "time": "2025-10-13T08:21:10+00:00"
         },
         {
             "name": "ergebnis/json-schema-validator",
@@ -1462,12 +1462,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/json-schema-validator.git",
-                "reference": "78f2adea03953605e3019063ca7c49495ba4be67"
+                "reference": "4599ac7f07efa29b2b5b15d23c4180585ade5456"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/json-schema-validator/zipball/78f2adea03953605e3019063ca7c49495ba4be67",
-                "reference": "78f2adea03953605e3019063ca7c49495ba4be67",
+                "url": "https://api.github.com/repos/ergebnis/json-schema-validator/zipball/4599ac7f07efa29b2b5b15d23c4180585ade5456",
+                "reference": "4599ac7f07efa29b2b5b15d23c4180585ade5456",
                 "shasum": ""
             },
             "require": {
@@ -1532,7 +1532,7 @@
                 "security": "https://github.com/ergebnis/json-schema-validator/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/json-schema-validator"
             },
-            "time": "2025-09-29T22:56:51+00:00"
+            "time": "2025-10-13T22:02:36+00:00"
         },
         {
             "name": "ergebnis/php-cs-fixer-config",
@@ -2235,8 +2235,8 @@
             "version": "2.1.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d78a5d837c7642c68943977b751b84d680f003e3",
-                "reference": "d78a5d837c7642c68943977b751b84d680f003e3",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/bab0af7cae967fcbdf859845dad5bc18cb0498ae",
+                "reference": "bab0af7cae967fcbdf859845dad5bc18cb0498ae",
                 "shasum": ""
             },
             "require": {
@@ -2282,7 +2282,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-08T16:15:34+00:00"
+            "time": "2025-10-16T10:18:07+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2290,12 +2290,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "c54a26903d4a34b6d2a13b004f505ba340aabcf4"
+                "reference": "39950c70b6a4faa36567b83b8c4b32f889c68e03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/c54a26903d4a34b6d2a13b004f505ba340aabcf4",
-                "reference": "c54a26903d4a34b6d2a13b004f505ba340aabcf4",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/39950c70b6a4faa36567b83b8c4b32f889c68e03",
+                "reference": "39950c70b6a4faa36567b83b8c4b32f889c68e03",
                 "shasum": ""
             },
             "require": {
@@ -2336,7 +2336,7 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
             },
-            "time": "2025-09-24T11:42:52+00:00"
+            "time": "2025-10-14T10:27:41+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2731,12 +2731,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "e294589ec7d702bb7b69667206d9c17bb502e85a"
+                "reference": "57a61cf48fd7f03090fd4f6a60285fa1c34f959b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/e294589ec7d702bb7b69667206d9c17bb502e85a",
-                "reference": "e294589ec7d702bb7b69667206d9c17bb502e85a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/57a61cf48fd7f03090fd4f6a60285fa1c34f959b",
+                "reference": "57a61cf48fd7f03090fd4f6a60285fa1c34f959b",
                 "shasum": ""
             },
             "require": {
@@ -2828,7 +2828,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-08T05:59:53+00:00"
+            "time": "2025-10-16T06:58:50+00:00"
         },
         {
             "name": "psr/container",
@@ -2994,12 +2994,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/cache.git",
-                "reference": "36c51f36d5f3c23cfcc2b5dc5e443bb5ff085605"
+                "reference": "0156560fabadb75faa57ca8a34b335e51305ff9b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/cache/zipball/36c51f36d5f3c23cfcc2b5dc5e443bb5ff085605",
-                "reference": "36c51f36d5f3c23cfcc2b5dc5e443bb5ff085605",
+                "url": "https://api.github.com/repos/reactphp/cache/zipball/0156560fabadb75faa57ca8a34b335e51305ff9b",
+                "reference": "0156560fabadb75faa57ca8a34b335e51305ff9b",
                 "shasum": ""
             },
             "require": {
@@ -3058,7 +3058,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-01-04T09:16:03+00:00"
+            "time": "2025-10-15T07:30:12+00:00"
         },
         {
             "name": "react/child-process",
@@ -3141,12 +3141,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/dns.git",
-                "reference": "eb8ae001b5a455665c89c1df97f6fb682f8fb0f5"
+                "reference": "30c355a16e4a6be09c45ed291d2dfb5cf5295ace"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/dns/zipball/eb8ae001b5a455665c89c1df97f6fb682f8fb0f5",
-                "reference": "eb8ae001b5a455665c89c1df97f6fb682f8fb0f5",
+                "url": "https://api.github.com/repos/reactphp/dns/zipball/30c355a16e4a6be09c45ed291d2dfb5cf5295ace",
+                "reference": "30c355a16e4a6be09c45ed291d2dfb5cf5295ace",
                 "shasum": ""
             },
             "require": {
@@ -3201,7 +3201,7 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/dns/issues",
-                "source": "https://github.com/reactphp/dns/tree/v1.13.0"
+                "source": "https://github.com/reactphp/dns/tree/1.x"
             },
             "funding": [
                 {
@@ -3209,7 +3209,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-06-13T14:18:03+00:00"
+            "time": "2025-10-13T11:10:50+00:00"
         },
         {
             "name": "react/event-loop",
@@ -3443,12 +3443,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/stream.git",
-                "reference": "1e5b0acb8fe55143b5b426817155190eb6f5b18d"
+                "reference": "9decb8fa54f361877ba62c2d5e46bb4401779fb1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/stream/zipball/1e5b0acb8fe55143b5b426817155190eb6f5b18d",
-                "reference": "1e5b0acb8fe55143b5b426817155190eb6f5b18d",
+                "url": "https://api.github.com/repos/reactphp/stream/zipball/9decb8fa54f361877ba62c2d5e46bb4401779fb1",
+                "reference": "9decb8fa54f361877ba62c2d5e46bb4401779fb1",
                 "shasum": ""
             },
             "require": {
@@ -3505,7 +3505,7 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/stream/issues",
-                "source": "https://github.com/reactphp/stream/tree/v1.4.0"
+                "source": "https://github.com/reactphp/stream/tree/1.x"
             },
             "funding": [
                 {
@@ -3513,7 +3513,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-06-11T12:45:25+00:00"
+            "time": "2025-10-15T07:30:20+00:00"
         },
         {
             "name": "rector/rector",
@@ -3521,12 +3521,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "3176cfd0b40cadc6d81307d66adb00d25a962253"
+                "reference": "44c127ea886e878626ac2a894574cdc61275c3aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/3176cfd0b40cadc6d81307d66adb00d25a962253",
-                "reference": "3176cfd0b40cadc6d81307d66adb00d25a962253",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/44c127ea886e878626ac2a894574cdc61275c3aa",
+                "reference": "44c127ea886e878626ac2a894574cdc61275c3aa",
                 "shasum": ""
             },
             "require": {
@@ -3574,7 +3574,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-08T07:57:36+00:00"
+            "time": "2025-10-17T06:23:08+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -4616,12 +4616,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "8294fbe48814e9e313f5af7adcd2ce3d49fcba84"
+                "reference": "c3da86291d89157fe2a9ba2401c4acf1a7c93eba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/8294fbe48814e9e313f5af7adcd2ce3d49fcba84",
-                "reference": "8294fbe48814e9e313f5af7adcd2ce3d49fcba84",
+                "url": "https://api.github.com/repos/symfony/console/zipball/c3da86291d89157fe2a9ba2401c4acf1a7c93eba",
+                "reference": "c3da86291d89157fe2a9ba2401c4acf1a7c93eba",
                 "shasum": ""
             },
             "require": {
@@ -4706,7 +4706,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-08T10:26:29+00:00"
+            "time": "2025-10-15T08:15:57+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -5021,12 +5021,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "c1a41e8ecb0f76b9e6d93deaeb5b85718975b12a"
+                "reference": "38665c9607ce1fd17beaab3ea5d68e87ac5ed385"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/c1a41e8ecb0f76b9e6d93deaeb5b85718975b12a",
-                "reference": "c1a41e8ecb0f76b9e6d93deaeb5b85718975b12a",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/38665c9607ce1fd17beaab3ea5d68e87ac5ed385",
+                "reference": "38665c9607ce1fd17beaab3ea5d68e87ac5ed385",
                 "shasum": ""
             },
             "require": {
@@ -5081,7 +5081,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-09-08T21:17:01+00:00"
+            "time": "2025-10-15T18:49:39+00:00"
         },
         {
             "name": "symfony/options-resolver",

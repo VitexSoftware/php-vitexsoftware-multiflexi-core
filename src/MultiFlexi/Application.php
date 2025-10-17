@@ -448,6 +448,33 @@ class Application extends DBEngine
 
         return $localizedData[$key] ?? $this->getDataValue($key);
     }
+    
+    /**
+     * Check if all required environment fields have values.
+     * 
+     * @param array $keysValues Additional key/value pairs to consider
+     * @param bool $verbose Whether to add status messages
+     * 
+     * @return bool True if all required fields have values
+     */
+    public function checkRequiredFields(array $keysValues = [], bool $verbose = false): bool
+    {
+        $ok = true;
+        
+        $confField = new Conffield();
+        $appEnvironmentFields = $confField->getAppConfigs($this);
+        
+        foreach ($appEnvironmentFields as $fieldName => $field) {
+            if ($field->isRequired() && empty($field->getValue())) {
+                if ($verbose) {
+                    $this->addStatusMessage(sprintf(_('The required configuration key `%s` was not filled'), $fieldName), 'warning');
+                }
+                $ok = false;
+            }
+        }
+        
+        return $ok;
+    }
 
     /**
      * Application Requirements as Array.

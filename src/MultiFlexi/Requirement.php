@@ -30,13 +30,106 @@ class Requirement
     public static function getCredentialProviders(): array
     {
         $forms = [];
-        \Ease\Functions::loadClassesInNamespace('MultiFlexi\CredentialType');
-
-        foreach (\Ease\Functions::classesInNamespace('MultiFlexi\CredentialType') as $form) {
-            $forms[$form] = '\MultiFlexi\CredentialType\\'.$form;
+        $namespace = 'MultiFlexi\CredentialType';
+        
+        // Get current loaded classes in namespace
+        $alreadyLoaded = [];
+        foreach (get_declared_classes() as $class) {
+            if (strpos($class, $namespace.'\\') === 0) {
+                $parts = explode('\\', $class);
+                $className = end($parts);
+                $forms[$className] = $class;
+                $alreadyLoaded[strtolower($className)] = true;
+            }
         }
-
+        
+        // Find PSR-4 autoload directories for the namespace
+        $dirs = self::getPsr4DirsForNamespace($namespace);
+        $processedFiles = [];
+        
+        // Process each directory
+        foreach ($dirs as $dir) {
+            if (!is_dir($dir) || !is_readable($dir)) {
+                continue;
+            }
+            
+            // Process PHP files in the directory
+            foreach (new \DirectoryIterator($dir) as $file) {
+                if ($file->isFile() && $file->getExtension() === 'php') {
+                    $basename = $file->getBasename('.php');
+                    $filePath = $file->getRealPath();
+                    
+                    // Skip already processed files by basename (case insensitive)
+                    $fileKey = strtolower($basename);
+                    if (isset($processedFiles[$fileKey]) || isset($alreadyLoaded[$fileKey])) {
+                        continue;
+                    }
+                    $processedFiles[$fileKey] = true;
+                    
+                    // Try PSR-4 autoloading first
+                    $className = $namespace . '\\' . $basename;
+                    if (!class_exists($className, false)) {
+                        // Attempt to autoload the class
+                        $wasLoaded = @class_exists($className, true);
+                        
+                        if ($wasLoaded) {
+                            $parts = explode('\\', $className);
+                            $shortName = end($parts);
+                            $forms[$shortName] = $className;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // If no classes were found, fallback to the original method
+        if (empty($forms)) {
+            foreach (\Ease\Functions::classesInNamespace($namespace) as $form) {
+                $forms[$form] = '\\'.$namespace.'\\'.$form;
+            }
+        }
+        
         return $forms;
+    }
+    
+    /**
+     * Get PSR-4 directories for a namespace.
+     * 
+     * @param string $namespace The namespace to find directories for
+     * @return array List of directory paths
+     */
+    private static function getPsr4DirsForNamespace(string $namespace): array
+    {
+        $dirs = [];
+        
+        // Find the composer autoloader
+        $autoloaderFiles = array_filter(get_included_files(), function($file) {
+            return strpos($file, 'autoload.php') !== false;
+        });
+        
+        if (empty($autoloaderFiles)) {
+            return $dirs;
+        }
+        
+        // Get the PSR-4 mappings
+        $autoloaderFile = reset($autoloaderFiles);
+        $psr4File = dirname($autoloaderFile) . '/composer/autoload_psr4.php';
+        
+        if (!file_exists($psr4File)) {
+            return $dirs;
+        }
+        
+        $psr4 = include $psr4File;
+        $namespaceWithBackslash = $namespace . '\\';
+        
+        // Find case-insensitive match for the namespace
+        foreach ($psr4 as $prefix => $paths) {
+            if (strtolower($prefix) === strtolower($namespaceWithBackslash)) {
+                $dirs = array_merge($dirs, (array)$paths);
+            }
+        }
+        
+        return $dirs;
     }
 
     /**
