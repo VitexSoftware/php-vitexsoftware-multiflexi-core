@@ -32,7 +32,7 @@ class UserTest extends \PHPUnit\Framework\TestCase
 
     protected function tearDown(): void
     {
-        unset($this->object);
+        $this->object = null;
     }
 
     public function testgetIcon(): void
@@ -40,7 +40,7 @@ class UserTest extends \PHPUnit\Framework\TestCase
         // Test default icon (when no custom icon is set)
         $defaultIcon = $this->object->getIcon();
         $this->assertStringStartsWith('data:image/svg+xml;base64,', $defaultIcon);
-        
+
         // Test custom icon
         $customIcon = 'https://example.com/custom.png';
         $this->object->setSettingValue('icon', $customIcon);
@@ -70,7 +70,7 @@ class UserTest extends \PHPUnit\Framework\TestCase
         $lastName = 'Doe';
         $this->object->setDataValue('firstname', $firstName);
         $this->object->setDataValue('lastname', $lastName);
-        $this->assertEquals($firstName . ' ' . $lastName, $this->object->getUserName());
+        $this->assertEquals($firstName.' '.$lastName, $this->object->getUserName());
     }
 
     /**
@@ -145,8 +145,8 @@ class UserTest extends \PHPUnit\Framework\TestCase
         $this->assertMatchesRegularExpression('/^[a-f0-9]{32}:[a-f0-9]{2}$/', $hash);
 
         // Verify that the same password with the same salt produces the same hash
-        list($hash1, $salt) = explode(':', $hash);
-        $hash2 = md5($salt . $password);
+        [$hash1, $salt] = explode(':', $hash);
+        $hash2 = md5($salt.$password);
         $this->assertEquals($hash1, $hash2);
     }
 
@@ -178,9 +178,8 @@ class UserTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Database-related tests marked as incomplete until proper database setup is implemented
+     * Database-related tests marked as incomplete until proper database setup is implemented.
      */
-
     public function testsetUpDb(): void
     {
         $this->markTestIncomplete('This test requires database setup to be implemented.');

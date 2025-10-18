@@ -38,9 +38,9 @@ class BitwardenServiceDelegate implements \Jalismrs\Bitwarden\BitwardenServiceDe
     {
         return null;
     }
-    
+
     /**
-     * Get the URL for the Bitwarden server
+     * Get the URL for the Bitwarden server.
      */
     public function getUrl(): ?string
     {

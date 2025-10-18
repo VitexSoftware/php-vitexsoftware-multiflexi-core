@@ -107,46 +107,6 @@ class CredentialType extends DBEngine
         return $this->helper;
     }
 
-    /**
-     * @param array $columns
-     *
-     * @return array
-     */
-    public function columns($columns = [])
-    {
-        return parent::columns([
-            ['name' => 'id', 'type' => 'text', 'label' => _('ID'),
-                'detailPage' => 'credentialtype.php', 'valueColumn' => 'credential_type.id', 'idColumn' => 'credential_type.id', ],
-            ['name' => 'logo', 'type' => 'text', 'label' => _('Logo'), 'searchable' => false],
-            ['name' => 'name', 'type' => 'text', 'label' => _('Name')],
-            ['name' => 'uuid', 'type' => 'text', 'label' => _('UUID')],
-            ['name' => 'company_id', 'type' => 'text', 'label' => _('Company')],
-        ]);
-    }
-
-    #[\Override]
-    public function completeDataRow(array $dataRowRaw): array
-    {
-        $this->setData($dataRowRaw);
-        $data = parent::completeDataRow($dataRowRaw);
-
-        $helperClass = \get_class($this->getHelper() ?? new CredentialType\Common());
-
-        if (empty($data['logo'])) {
-            $data['logo'] = 'images/'.$helperClass::logo();
-        }
-
-        if (empty($data['name'])) {
-            $data['name'] = $helperClass::name();
-        }
-
-        $data['logo'] = (string) new \Ease\Html\ATag('credentialtype.php?id='.$this->getMyKey(), new \Ease\Html\ImgTag($data['logo'], $data['name'], ['title' => $data['name'], 'style' => 'height: 50px;']));
-
-        $data['company_id'] = (string) new Ui\CompanyLinkButton(new Company($dataRowRaw['company_id']), ['style' => 'height: 50px;']);
-
-        return $data;
-    }
-
     public function getFields(): ConfigFields
     {
         $fields = new ConfigFields();
@@ -203,5 +163,17 @@ class CredentialType extends DBEngine
     public function getLogo(): string
     {
         return (string) $this->getDataValue('logo');
+    }
+
+    public function importCredTypeJson(string $jsonFile): void
+    {
+        $jsonData = file_get_contents($jsonFile);
+        $data = json_decode($jsonData, true);
+
+        if (json_last_error() !== \JSON_ERROR_NONE) {
+            throw new \Exception('Invalid JSON data');
+        }
+
+        $this->setData($data);
     }
 }
