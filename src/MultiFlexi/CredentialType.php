@@ -22,6 +22,8 @@ namespace MultiFlexi;
  */
 class CredentialType extends DBEngine
 {
+    public static string $credTypeSchema = __DIR__.'/../../multiflexi.credential-type.schema.json';
+
     /**
      * @var string Name Column
      */
@@ -165,15 +167,77 @@ class CredentialType extends DBEngine
         return (string) $this->getDataValue('logo');
     }
 
-    public function importCredTypeJson(string $jsonFile): void
+    /**
+     * Import credential type from JSON file with validation.
+     *
+     * @param string $jsonFile Path to JSON file
+     *
+     * @throws \Exception on validation errors or duplicate entries
+     *
+     * @return bool Success status
+     */
+    public function importCredTypeJson(string $jsonFile): bool
     {
-        $jsonData = file_get_contents($jsonFile);
-        $data = json_decode($jsonData, true);
-
-        if (json_last_error() !== \JSON_ERROR_NONE) {
-            throw new \Exception('Invalid JSON data');
+        if (!file_exists($jsonFile)) {
+            throw new \Exception("File not found: {$jsonFile}");
         }
 
-        $this->setData($data);
+        $jsonContent = file_get_contents($jsonFile);
+
+        if ($jsonContent === false) {
+            throw new \Exception("Cannot read file: {$jsonFile}");
+        }
+
+        $data = json_decode($jsonContent, true);
+
+        if (json_last_error() !== \JSON_ERROR_NONE) {
+            throw new \Exception('Invalid JSON data: '.json_last_error_msg());
+        }
+
+        // Validate required fields
+        $requiredFields = ['id', 'uuid', 'name', 'description', 'fields'];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field])) {
+                throw new \Exception("Missing required field: {$field}");
+            }
+        }
+
+        // Check if credential type with this UUID already exists
+        $existing = $this->listingQuery()->where(['uuid' => $data['uuid']])->fetch();
+
+        if ($existing) {
+            throw new \Exception("Credential type with UUID {$data['uuid']} already exists");
+        }
+
+        // Check if credential type with this ID already exists
+        $existing = $this->listingQuery()->where(['id' => $data['id']])->fetch();
+
+        if ($existing) {
+            throw new \Exception("Credential type with ID {$data['id']} already exists");
+        }
+
+        // Prepare data for database insertion
+        $insertData = [
+            'id' => $data['id'],
+            'uuid' => $data['uuid'],
+            'name' => \is_array($data['name']) ? json_encode($data['name']) : $data['name'],
+            'description' => \is_array($data['description']) ? json_encode($data['description']) : $data['description'],
+            'fields' => json_encode($data['fields']),
+        ];
+
+        // Add optional fields if present
+        if (isset($data['code'])) {
+            $insertData['code'] = $data['code'];
+        }
+
+        // Clear current data and set new data
+        $this->unsetDataValue($this->getKeyColumn());
+        $this->setData($insertData);
+
+        // Insert into database
+        $result = $this->insertToSQL($insertData);
+
+        return $result !== false;
     }
 }

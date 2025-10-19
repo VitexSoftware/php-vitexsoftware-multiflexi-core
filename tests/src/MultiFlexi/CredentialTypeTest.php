@@ -455,4 +455,90 @@ EOD);
         $method->setAccessible(true);
         $method->invoke($credType);
     }
+
+    public function testImportCredTypeJsonWithValidFile(): void
+    {
+        // Create a temporary JSON file
+        $testData = [
+            'id' => 'test-import-credential',
+            'uuid' => 'test-uuid-12345',
+            'code' => 'TEST',
+            'name' => [
+                'en' => 'Test Import Credential',
+                'cs' => 'Testovací Import Credential',
+            ],
+            'description' => [
+                'en' => 'Test description',
+                'cs' => 'Testovací popis',
+            ],
+            'fields' => [
+                [
+                    'keyword' => 'TEST_USER',
+                    'name' => ['en' => 'Username'],
+                    'type' => 'string',
+                    'required' => true,
+                ],
+            ],
+        ];
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'credential_type_test_');
+        file_put_contents($tempFile, json_encode($testData));
+
+        $credentialType = new CredentialType();
+        $result = $credentialType->importCredTypeJson($tempFile);
+
+        $this->assertTrue($result, 'Import should return true on success');
+        $this->assertEquals('test-import-credential', $credentialType->getDataValue('id'));
+        $this->assertEquals('test-uuid-12345', $credentialType->getDataValue('uuid'));
+        $this->assertEquals('TEST', $credentialType->getDataValue('code'));
+
+        // Clean up
+        unlink($tempFile);
+    }
+
+    public function testImportCredTypeJsonWithInvalidJson(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'credential_type_test_');
+        file_put_contents($tempFile, 'invalid json content');
+
+        $credentialType = new CredentialType();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Invalid JSON data:');
+
+        $credentialType->importCredTypeJson($tempFile);
+
+        unlink($tempFile);
+    }
+
+    public function testImportCredTypeJsonWithMissingRequiredField(): void
+    {
+        $testData = [
+            'id' => 'test-credential',
+            'uuid' => 'test-uuid',
+            // Missing 'name', 'description', 'fields'
+        ];
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'credential_type_test_');
+        file_put_contents($tempFile, json_encode($testData));
+
+        $credentialType = new CredentialType();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Missing required field:');
+
+        $credentialType->importCredTypeJson($tempFile);
+
+        unlink($tempFile);
+    }
+
+    public function testImportCredTypeJsonWithNonExistentFile(): void
+    {
+        $credentialType = new CredentialType();
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('File not found:');
+
+        $credentialType->importCredTypeJson('/non/existent/file.json');
+    }
 }

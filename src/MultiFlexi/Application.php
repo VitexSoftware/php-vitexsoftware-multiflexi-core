@@ -268,24 +268,11 @@ class Application extends DBEngine
     }
 
     /**
-     * @param string $jsonFile
-     *
      * @return array<string> errors
      */
-    public function validateAppJson($jsonFile): array
+    public function validateAppJson(string $jsonFile): array
     {
-        $violations = [];
-        $data = json_decode(file_get_contents($jsonFile));
-        $validator = new \JsonSchema\Validator();
-        $validator->validate($data, (object) ['$ref' => 'file://'.realpath(self::$appSchema)]);
-
-        if (!$validator->isValid()) {
-            foreach ($validator->getErrors() as $error) {
-                $violations[] = sprintf("[%s] %s\n", $error['property'], $error['message']);
-            }
-        }
-
-        return $violations;
+        return self::validateJson($jsonFile, self::$appSchema);
     }
 
     /**
