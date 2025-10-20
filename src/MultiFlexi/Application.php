@@ -416,13 +416,30 @@ class Application extends DBEngine
 
         // Save translations to app_translations table
         foreach ($translations as $lang => $data) {
-            $this->getFluentPDO()
-                ->insertInto('app_translations', array_merge($data, [
-                    'app_id' => $appId,
-                    'lang' => $lang,
-                ]))
-                ->onDuplicateKeyUpdate($data)
-                ->execute();
+            // Check if translation already exists
+            $existingTranslation = $this->getFluentPDO()
+                ->from('app_translations')
+                ->where('app_id', $appId)
+                ->where('lang', $lang)
+                ->fetch();
+            
+            if ($existingTranslation) {
+                // Update existing translation
+                $this->getFluentPDO()
+                    ->update('app_translations')
+                    ->set($data)
+                    ->where('app_id', $appId)
+                    ->where('lang', $lang)
+                    ->execute();
+            } else {
+                // Insert new translation
+                $this->getFluentPDO()
+                    ->insertInto('app_translations', array_merge($data, [
+                        'app_id' => $appId,
+                        'lang' => $lang,
+                    ]))
+                    ->execute();
+            }
         }
 
         // Import environment configurations if present
