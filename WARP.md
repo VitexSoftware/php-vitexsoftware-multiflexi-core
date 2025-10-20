@@ -15,6 +15,7 @@ Project overview
 
 High-level architecture
 - Data/ORM base: Engine is the base for DB-backed entities. DBEngine/DatabaseEngine provide table definitions and rendering, integrating with DataTables.
+- **Multi-Database Support**: Full abstraction layer supports MySQL, PostgreSQL, SQLite, and SQL Server with database-specific query optimization.
 - Domain model:
   - Company, CompanyApp, CompanyEnv, CompanyJob represent tenants, their apps, environments, and scheduled jobs.
   - Application encapsulates app metadata/config; Requirement discovers dependencies/credential providers.
@@ -67,6 +68,16 @@ Paths and layout
 - Tests: tests/src/MultiFlexi/
 - Config: phpunit.xml, phpstan.neon.dist
 - Packaging (optional/maintainer-focused): debian/
+
+Application Import System
+- The Application class supports repeated imports of the same application JSON without database constraint violations
+- Import logic in importAppJson() method:
+  1. Uses UUID as primary identifier for existing applications (name as fallback)
+  2. Updates existing applications instead of creating duplicates
+  3. Cleanly replaces environment configurations by deleting existing ones first
+  4. Handles translations with ON DUPLICATE KEY UPDATE
+- The importEnvironmentConfigs() method ensures clean environment configuration imports by removing existing configs before inserting new ones
+- This design supports package reinstallation and application definition updates
 
 Notes
 - There is no Makefile in this repo; use Composer binaries under vendor/bin/ as shown above.
