@@ -385,10 +385,17 @@ class Application extends DBEngine
             $environmentConfigs = $appSpec['environment'];
         }
 
-        // Check if app already exists by name
+        // Check if app already exists by UUID first, then by name as fallback
         $existingApp = null;
 
-        if (isset($fields['name'])) {
+        if (isset($fields['uuid'])) {
+            $existingApp = $this->getFluentPDO()
+                ->from('apps')
+                ->where('uuid', $fields['uuid'])
+                ->fetch();
+        }
+
+        if (!$existingApp && isset($fields['name'])) {
             $existingApp = $this->getFluentPDO()
                 ->from('apps')
                 ->where('name', $fields['name'])
@@ -505,6 +512,12 @@ class Application extends DBEngine
     {
         $defaultLang = 'en';
 
+        // First, delete existing environment configurations for this app to ensure clean import
+        $this->getFluentPDO()
+            ->deleteFrom('conffield')
+            ->where('app_id', $appId)
+            ->execute();
+
         foreach ($environmentConfigs as $key => $config) {
             // Prepare data for conffield table
             $configData = [
@@ -528,35 +541,10 @@ class Application extends DBEngine
                 $configData['description'] = '';
             }
 
-            // Insert or update configuration field definition
-            try {
-                $configId = $this->getFluentPDO()
-                    ->insertInto('conffield', $configData)
-                    ->execute();
-            } catch (\PDOException $e) {
-                if ($e->getCode() === 23000) { // Duplicate entry
-                    // Update existing record
-                    $this->getFluentPDO()
-                        ->update('conffield')
-                        ->set($configData)
-                        ->where('app_id', $appId)
-                        ->where('keyname', $key)
-                        ->execute();
-
-                    // Get the ID of the existing record
-                    $existing = $this->getFluentPDO()
-                        ->from('conffield')
-                        ->where('app_id', $appId)
-                        ->where('keyname', $key)
-                        ->fetch();
-
-                    if ($existing) {
-                        $configId = $existing['id'];
-                    }
-                } else {
-                    throw $e;
-                }
-            }
+            // Insert configuration field definition
+            $configId = $this->getFluentPDO()
+                ->insertInto('conffield', $configData)
+                ->execute();
 
             // TODO: Save localized descriptions when conffield_translations table is created
             // For now, we're using the default language description in the main table

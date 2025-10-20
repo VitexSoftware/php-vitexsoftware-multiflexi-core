@@ -194,8 +194,8 @@ class CredentialType extends DBEngine
             throw new \Exception('Invalid JSON data: '.json_last_error_msg());
         }
 
-        // Validate required fields
-        $requiredFields = ['id', 'uuid', 'name', 'description', 'fields'];
+        // Validate required fields - code is now required instead of id
+        $requiredFields = ['code', 'uuid', 'name', 'description', 'fields'];
 
         foreach ($requiredFields as $field) {
             if (!isset($data[$field])) {
@@ -210,26 +210,44 @@ class CredentialType extends DBEngine
             throw new \Exception("Credential type with UUID {$data['uuid']} already exists");
         }
 
-        // Check if credential type with this ID already exists
-        $existing = $this->listingQuery()->where(['id' => $data['id']])->fetch();
+        // Check if credential type with this code already exists (if code column exists)
+        // For now, we'll check by name since code column may not exist yet
+        $nameToCheck = \is_array($data['name']) ? $data['name']['en'] ?? json_encode($data['name']) : $data['name'];
+        $existing = $this->listingQuery()->where(['name' => $nameToCheck])->fetch();
 
         if ($existing) {
-            throw new \Exception("Credential type with ID {$data['id']} already exists");
+            throw new \Exception("Credential type with name '{$nameToCheck}' already exists");
         }
 
-        // Prepare data for database insertion
+        // Prepare data for database insertion - adapt to current schema
+        // Current schema has: id, name, url, logo, uuid, class, company_id
         $insertData = [
-            'id' => $data['id'],
             'uuid' => $data['uuid'],
-            'name' => \is_array($data['name']) ? json_encode($data['name']) : $data['name'],
-            'description' => \is_array($data['description']) ? json_encode($data['description']) : $data['description'],
-            'fields' => json_encode($data['fields']),
         ];
-
-        // Add optional fields if present
-        if (isset($data['code'])) {
-            $insertData['code'] = $data['code'];
+        
+        // Handle name - combine code with localized name
+        if (\is_array($data['name'])) {
+            $insertData['name'] = $data['code'] . ' - ' . ($data['name']['en'] ?? reset($data['name']));
+        } else {
+            $insertData['name'] = $data['code'] . ' - ' . $data['name'];
         }
+        
+        // Note: description field doesn't exist in current schema
+        // It will need to be stored in translations table
+
+        // Add optional fields if present in current schema
+        if (isset($data['class'])) {
+            $insertData['class'] = $data['class'];
+        }
+        if (isset($data['logo'])) {
+            $insertData['logo'] = $data['logo'];
+        }
+        if (isset($data['url'])) {
+            $insertData['url'] = $data['url'];
+        }
+        
+        // Set default company_id to 1 (or handle this properly)
+        $insertData['company_id'] = 1; // TODO: This should be configurable
 
         // Clear current data and set new data
         $this->unsetDataValue($this->getKeyColumn());
@@ -237,6 +255,119 @@ class CredentialType extends DBEngine
 
         // Insert into database
         $result = $this->insertToSQL($insertData);
+
+        if ($result !== false) {
+            $credentialTypeId = $this->getMyKey();
+
+            // Handle localized translations if they exist
+            $translationEngine = new \Ease\SQL\Engine();
+            $translationEngine->myTable = 'credential_type_translations';
+            
+            // Store name translations
+            if (\is_array($data['name']) && $credentialTypeId) {
+                foreach ($data['name'] as $lang => $value) {
+                    if (!empty($value)) {
+                        $translationData = [
+                            'credential_type_id' => $credentialTypeId,
+                            'lang' => $lang,
+                            'name' => $value,
+                        ];
+                        $translationEngine->insertToSQL($translationData);
+                    }
+                }
+            }
+
+            // Store description translations (since description doesn't exist in main table)
+            if (\is_array($data['description']) && $credentialTypeId) {
+                foreach ($data['description'] as $lang => $value) {
+                    if (!empty($value)) {
+                        // Check if we already have a record for this lang, update it
+                        $existing = $translationEngine->listingQuery()
+                            ->where(['credential_type_id' => $credentialTypeId, 'lang' => $lang])
+                            ->fetch();
+                        
+                        if ($existing) {
+                            $translationEngine->updateToSQL(
+                                ['description' => $value], 
+                                ['credential_type_id' => $credentialTypeId, 'lang' => $lang]
+                            );
+                        } else {
+                            $translationData = [
+                                'credential_type_id' => $credentialTypeId,
+                                'lang' => $lang,
+                                'description' => $value,
+                            ];
+                            $translationEngine->insertToSQL($translationData);
+                        }
+                    }
+                }
+            }
+
+            // Handle fields - insert into crtypefield table
+            if (isset($data['fields']) && \is_array($data['fields'])) {
+                $crTypeField = new \MultiFlexi\CrTypeField();
+
+                foreach ($data['fields'] as $field) {
+                    $fieldData = [
+                        'credential_type_id' => $credentialTypeId,
+                        'keyname' => $field['keyword'],
+                        'type' => $field['type'],
+                        'description' => \is_array($field['description'] ?? []) ? json_encode($field['description']) : ($field['description'] ?? ''),
+                        'hint' => $field['hint'] ?? null,
+                        'defval' => $field['default'] ?? null,
+                        'required' => $field['required'] ?? false,
+                    ];
+
+                    $crTypeField->takeData($fieldData);
+                    $fieldId = $crTypeField->saveToSQL();
+
+                    // Handle field name and description translations
+                    $fieldTranslationEngine = new \Ease\SQL\Engine();
+                    $fieldTranslationEngine->myTable = 'credential_type_field_translations';
+                    
+                    if ($fieldId && isset($field['name']) && \is_array($field['name'])) {
+                        foreach ($field['name'] as $lang => $value) {
+                            if (!empty($value)) {
+                                $fieldTranslationData = [
+                                    'crtypefield_id' => $fieldId,
+                                    'lang' => $lang,
+                                    'name' => $value,
+                                ];
+                                $fieldTranslationEngine->insertToSQL($fieldTranslationData);
+                            }
+                        }
+                    }
+
+                    if ($fieldId && isset($field['description']) && \is_array($field['description'])) {
+                        foreach ($field['description'] as $lang => $value) {
+                            if (!empty($value)) {
+                                // Check if we already have a record for this field+lang, update it
+                                $existing = $fieldTranslationEngine->listingQuery()
+                                    ->where(['crtypefield_id' => $fieldId, 'lang' => $lang])
+                                    ->fetch();
+                                    
+                                if ($existing) {
+                                    $fieldTranslationEngine->updateToSQL(
+                                        ['description' => $value], 
+                                        ['crtypefield_id' => $fieldId, 'lang' => $lang]
+                                    );
+                                } else {
+                                    $fieldTranslationData = [
+                                        'crtypefield_id' => $fieldId,
+                                        'lang' => $lang,
+                                        'description' => $value,
+                                    ];
+                                    $fieldTranslationEngine->insertToSQL($fieldTranslationData);
+                                }
+                            }
+                        }
+                    }
+
+                    // Reset for next field
+                    $crTypeField = new \MultiFlexi\CrTypeField();
+                }
+            }
+        }
 
         return $result !== false;
     }
