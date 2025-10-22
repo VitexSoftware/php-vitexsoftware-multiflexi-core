@@ -4,42 +4,47 @@
   "type": "object",
 
   "properties": {
+    "producer": {
+      "type": "string",
+      "description": "Name of the script/application that generated the report"
+    },
+
     "status": {
       "type": "string",
       "enum": ["success", "error", "warning"],
-      "description": "Výsledek běhu aplikace"
+      "description": "Application execution result"
     },
 
     "timestamp": {
       "type": "string",
       "format": "date-time",
-      "description": "Čas ukončení běhu aplikace v ISO8601 formátu"
+      "description": "Application execution completion time in ISO8601 format"
     },
 
     "message": {
       "type": "string",
-      "description": "Lidsky čitelná zpráva o výsledku běhu"
+      "description": "Human-readable message about the execution result"
     },
 
     "artifacts": {
       "type": "object",
-      "description": "Artefakty vyprodukované aplikací. Klíče odpovídají jménům deklarovaným v sekci 'produces'.",
+      "description": "Artifacts produced by the application. Keys correspond to names declared in the 'produces' section.",
       "additionalProperties": {
         "type": "array",
         "items": { "type": "string" },
-        "description": "Seznam cest k souborům, URL nebo jiným výstupům"
+        "description": "List of file paths, URLs, or other outputs"
       },
       "default": {}
     },
 
     "metrics": {
       "type": "object",
-      "description": "Doplňkové metriky běhu (volitelné). Klíče jsou názvy metrik, hodnoty číselné.",
+      "description": "Additional execution metrics (optional). Keys are metric names, values are numeric.",
       "additionalProperties": {
         "type": ["number", "integer", "string"]
       }
     }
   },
 
-  "required": ["status", "timestamp"]
+  "required": ["producer", "status", "timestamp"]
 }
