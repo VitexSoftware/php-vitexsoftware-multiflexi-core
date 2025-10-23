@@ -157,6 +157,39 @@ class User extends \Ease\User
 
         $login = addslashes($formData[$this->loginColumn]);
         $password = addslashes($formData[$this->passwordColumn]);
+        
+        // Initialize brute force protection if available
+        $bruteForceProtection = null;
+        if (class_exists('\\MultiFlexi\\Security\\BruteForceProtection') && isset($GLOBALS['bruteForceProtection'])) {
+            $bruteForceProtection = $GLOBALS['bruteForceProtection'];
+            
+            // Check if login attempt is allowed
+            $canAttempt = $bruteForceProtection->canAttemptLogin($login);
+            if (!$canAttempt['allowed']) {
+                $lockoutInfo = $canAttempt['lockout_info'];
+                if ($canAttempt['reason'] === 'ip_locked') {
+                    $this->addStatusMessage(
+                        sprintf(
+                            _('Too many failed login attempts from your IP address. Please try again in %d minutes.'),
+                            ceil($lockoutInfo['remaining_time'] / 60)
+                        ),
+                        'error'
+                    );
+                } else {
+                    $this->addStatusMessage(
+                        sprintf(
+                            _('Too many failed login attempts for this username. Please try again in %d minutes.'),
+                            ceil($lockoutInfo['remaining_time'] / 60)
+                        ),
+                        'error'
+                    );
+                }
+                
+                // Enforce progressive delay
+                $bruteForceProtection->enforceDelay($lockoutInfo['attempts']);
+                return false;
+            }
+        }
 
         if (empty($login)) {
             $this->addStatusMessage(_('missing login'), 'event');
@@ -172,20 +205,49 @@ class User extends \Ease\User
 
         if ($this->loadFromSQL([$this->loginColumn => $login])) {
             $this->setObjectName();
+            $currentHash = $this->getDataValue($this->passwordColumn);
 
             if (
                 $this->passwordValidation(
                     $password,
-                    $this->getDataValue($this->passwordColumn),
+                    $currentHash,
                 )
             ) {
                 if ($this->isAccountEnabled()) {
+                    // Record successful login attempt
+                    if ($bruteForceProtection) {
+                        $bruteForceProtection->recordAttempt($login, true);
+                        $bruteForceProtection->clearAttempts($login);
+                    }
+                    
+                    // Log successful login
+                    if (isset($GLOBALS['securityAuditLogger'])) {
+                        $GLOBALS['securityAuditLogger']->logLoginSuccess($this->getUserID());
+                    }
+                    
+                    // Automatically rehash password if needed (legacy MD5 or outdated bcrypt)
+                    $this->rehashPasswordIfNeeded($password, $currentHash);
                     return $this->loginSuccess();
+                }
+                
+                // Record failed login attempt (account disabled)
+                if ($bruteForceProtection) {
+                    $bruteForceProtection->recordAttempt($login, false);
                 }
 
                 $this->userID = null;
 
                 return false;
+            }
+            
+            // Record failed login attempt (invalid password)
+            if ($bruteForceProtection) {
+                $bruteForceProtection->recordAttempt($login, false);
+            }
+            
+            // Log failed login attempt
+            if (isset($GLOBALS['securityAuditLogger'])) {
+                $GLOBALS['securityAuditLogger']->logLoginFailure($login, 'Invalid password');
             }
 
             $this->userID = null;
@@ -197,6 +259,16 @@ class User extends \Ease\User
             $this->dataReset();
             $result = false;
         } else {
+            // Record failed login attempt (user not found)
+            if ($bruteForceProtection) {
+                $bruteForceProtection->recordAttempt($login, false);
+            }
+            
+            // Log failed login attempt
+            if (isset($GLOBALS['securityAuditLogger'])) {
+                $GLOBALS['securityAuditLogger']->logLoginFailure($login, 'User not found');
+            }
+            
             $this->addStatusMessage(sprintf(
                 _('user %s does not exist'),
                 $login,
@@ -219,6 +291,12 @@ class User extends \Ease\User
     public static function passwordValidation($plainPassword, $encryptedPassword)
     {
         if ($plainPassword && $encryptedPassword) {
+            // Check if it's a new bcrypt hash
+            if (str_starts_with($encryptedPassword, '$2y$') || str_starts_with($encryptedPassword, '$2a$') || str_starts_with($encryptedPassword, '$2b$')) {
+                return password_verify($plainPassword, $encryptedPassword);
+            }
+            
+            // Legacy MD5 hash support for backward compatibility
             $passwordStack = explode(':', $encryptedPassword);
 
             if (\count($passwordStack) !== 2) {
@@ -269,15 +347,8 @@ class User extends \Ease\User
      */
     public static function encryptPassword($plainTextPassword)
     {
-        $encryptedPassword = '';
-
-        for ($i = 0; $i < 10; ++$i) {
-            $encryptedPassword .= \Ease\Functions::randomNumber();
-        }
-
-        $passwordSalt = substr(md5($encryptedPassword), 0, 2);
-
-        return md5($passwordSalt.$plainTextPassword).':'.$passwordSalt;
+        // Use bcrypt with cost factor 12 for strong security
+        return password_hash($plainTextPassword, PASSWORD_BCRYPT, ['cost' => 12]);
     }
 
     /**
@@ -290,6 +361,30 @@ class User extends \Ease\User
     public function passwordChange($newPassword): bool
     {
         return $this->dbsync([$this->passwordColumn => $this->encryptPassword($newPassword), $this->getKeyColumn() => $this->getUserID()]);
+    }
+    
+    /**
+     * Check if password needs rehashing and rehash if necessary.
+     *
+     * @param string $plainPassword
+     * @param string $currentHash
+     * @return bool true if password was rehashed
+     */
+    public function rehashPasswordIfNeeded($plainPassword, $currentHash): bool
+    {
+        // If it's a legacy MD5 hash, rehash it with bcrypt
+        if (!str_starts_with($currentHash, '$2y$') && !str_starts_with($currentHash, '$2a$') && !str_starts_with($currentHash, '$2b$')) {
+            $newHash = $this->encryptPassword($plainPassword);
+            return $this->dbsync([$this->passwordColumn => $newHash, $this->getKeyColumn() => $this->getUserID()]);
+        }
+        
+        // Check if bcrypt hash needs rehashing (e.g., cost factor changed)
+        if (password_needs_rehash($currentHash, PASSWORD_BCRYPT, ['cost' => 12])) {
+            $newHash = $this->encryptPassword($plainPassword);
+            return $this->dbsync([$this->passwordColumn => $newHash, $this->getKeyColumn() => $this->getUserID()]);
+        }
+        
+        return false;
     }
 
     /**

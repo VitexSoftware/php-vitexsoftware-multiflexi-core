@@ -1,8 +1,14 @@
-php-vitexsoftware-multiflexi-core (2.1.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.1.1) UNRELEASED; urgency=medium
+
+  * update for vitexsoftware/fluentpdo
+
+ -- vitex <info@vitexsoftware.cz>  Thu, 23 Oct 2025 10:51:19 +0200
+
+php-vitexsoftware-multiflexi-core (2.1.0) unstable; urgency=medium
 
   * UnixUser class added
 
- -- vitex <info@vitexsoftware.cz>  Fri, 08 Aug 2025 22:53:37 +0200
+ -- vitex <info@vitexsoftware.cz>  Thu, 23 Oct 2025 10:50:56 +0200
 
 php-vitexsoftware-multiflexi-core (2.0.1) unstable; urgency=medium
 

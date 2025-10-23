@@ -276,6 +276,104 @@ class Application extends DBEngine
     }
 
     /**
+     * Remove application based on JSON file definition.
+     *
+     * @param string $jsonFile Path to the JSON file
+     *
+     * @return bool True if application was removed successfully
+     */
+    public function jsonAppRemove($jsonFile)
+    {
+        $success = true;
+        $importData = json_decode(file_get_contents($jsonFile), true);
+
+        if (\is_array($importData)) {
+            $candidat = $this->listingQuery()->where('uuid', $importData['uuid']);
+
+            if ($candidat->count()) {
+                foreach ($candidat as $candidatData) {
+                    $this->setMyKey($candidatData['id']);
+                    $removed = $this->deleteFromSQL();
+
+                    if (null === $removed) {
+                        $success = false;
+                    }
+
+                    $this->addStatusMessage(sprintf(_('Application removal %d %s'), $candidatData['id'], $candidatData['name']), \is_int($removed) ? 'success' : 'error');
+                }
+            }
+        }
+
+        return $success;
+    }
+
+    /**
+     * Delete application record from SQL including all related data.
+     *
+     * @param array|int $data
+     *
+     * @return int|null Number of deleted records or null on error
+     */
+    public function deleteFromSQL($data = null)
+    {
+        if (null === $data) {
+            $data = $this->getData();
+        }
+
+        $appId = $this->getMyKey($data);
+
+        // Delete company-app associations
+        $a2c = $this->getFluentPDO()->deleteFrom('companyapp')->where('app_id', $appId)->execute();
+
+        if ($a2c !== 0) {
+            $this->addStatusMessage(sprintf(_('Unassigned from %d companies'), $a2c), null === $a2c ? 'error' : 'success');
+        }
+
+        // Get all runtemplates for this app
+        $runtemplates = $this->getFluentPDO()->from('runtemplate')->where('app_id', $appId)->fetchAll();
+
+        // Delete action configs for each runtemplate
+        foreach ($runtemplates as $runtemplate) {
+            $rt2ac = $this->getFluentPDO()->deleteFrom('actionconfig')->where('runtemplate_id', $runtemplate['id'])->execute();
+
+            if ($rt2ac !== 0) {
+                $this->addStatusMessage(sprintf(_('%s Action Config removal'), $runtemplate['name']), null === $rt2ac ? 'error' : 'success');
+            }
+        }
+
+        // Delete all runtemplates for this app
+        $runtemplater = new RunTemplate();
+
+        foreach ($runtemplater->listingQuery()->where('app_id', $appId) as $runtemplateData) {
+            $this->addStatusMessage(sprintf(_('#%d %s RunTemplate removal'), $runtemplateData['id'], $runtemplateData['name']), $runtemplater->deleteFromSQL($runtemplateData['id']) ? 'error' : 'success');
+        }
+
+        // Delete config fields
+        $a2cf = $this->getFluentPDO()->deleteFrom('conffield')->where('app_id', $appId)->execute();
+
+        if ($a2cf !== 0) {
+            $this->addStatusMessage(sprintf(_('%d Config fields removed'), $a2cf), null === $a2cf ? 'error' : 'success');
+        }
+
+        // Delete configurations
+        $a2cfg = $this->getFluentPDO()->deleteFrom('configuration')->where('app_id', $appId)->execute();
+
+        if ($a2cfg !== 0) {
+            $this->addStatusMessage(sprintf(_('%d Configurations removed'), $a2cfg), null === $a2cfg ? 'error' : 'success');
+        }
+
+        // Delete jobs
+        $a2job = $this->getFluentPDO()->deleteFrom('job')->where('app_id', $appId)->execute();
+
+        if ($a2job !== 0) {
+            $this->addStatusMessage(sprintf(_('%d Jobs removed'), $a2job), null === $a2job ? 'error' : 'success');
+        }
+
+        // Finally delete the application itself
+        return parent::deleteFromSQL($this->getMyKey($data));
+    }
+
+    /**
      * import Json App Definition file.
      *
      * @param string $jsonFile
