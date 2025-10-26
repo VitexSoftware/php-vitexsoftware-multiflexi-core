@@ -451,11 +451,21 @@ class Application extends DBEngine
             $fields['homepage'] = ''; // Empty string as default
         }
 
-        if (!isset($fields['requirements'])) {
+        // Handle requirements field (convert array to comma-separated string if needed)
+        if (isset($fields['requirements'])) {
+            if (\is_array($fields['requirements'])) {
+                $fields['requirements'] = implode(',', array_filter($fields['requirements']));
+            }
+        } else {
             $fields['requirements'] = ''; // Empty string as default
         }
 
-        if (!isset($fields['topics'])) {
+        // Handle topics field (convert array to comma-separated string if needed)
+        if (isset($fields['topics'])) {
+            if (\is_array($fields['topics'])) {
+                $fields['topics'] = implode(',', array_filter($fields['topics']));
+            }
+        } else {
             $fields['topics'] = ''; // Empty string as default
         }
 
