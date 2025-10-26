@@ -59,24 +59,29 @@ class Scheduler extends Engine
     public function getCurrentJobs()
     {
         $databaseType = $this->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        
+
         switch ($databaseType) {
             case 'mysql':
                 $condition = 'UNIX_TIMESTAMP(after) < UNIX_TIMESTAMP(NOW())';
+
                 break;
             case 'sqlite':
                 $condition = "strftime('%s', after) < strftime('%s', 'now')";
+
                 break;
             case 'pgsql':
-                $condition = "EXTRACT(EPOCH FROM after) < EXTRACT(EPOCH FROM NOW())";
+                $condition = 'EXTRACT(EPOCH FROM after) < EXTRACT(EPOCH FROM NOW())';
+
                 break;
             case 'sqlsrv':
                 $condition = "DATEDIFF(second, '1970-01-01', after) < DATEDIFF(second, '1970-01-01', GETDATE())";
+
                 break;
+
             default:
                 throw new \Exception('Unsupported database type '.$databaseType);
         }
-        
+
         return $this->listingQuery()->orderBy('after')->where($condition);
     }
 }

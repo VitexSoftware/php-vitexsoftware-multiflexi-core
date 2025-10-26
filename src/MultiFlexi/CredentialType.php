@@ -224,14 +224,14 @@ class CredentialType extends DBEngine
         $insertData = [
             'uuid' => $data['uuid'],
         ];
-        
+
         // Handle name - combine code with localized name
         if (\is_array($data['name'])) {
-            $insertData['name'] = $data['code'] . ' - ' . ($data['name']['en'] ?? reset($data['name']));
+            $insertData['name'] = $data['code'].' - '.($data['name']['en'] ?? reset($data['name']));
         } else {
-            $insertData['name'] = $data['code'] . ' - ' . $data['name'];
+            $insertData['name'] = $data['code'].' - '.$data['name'];
         }
-        
+
         // Note: description field doesn't exist in current schema
         // It will need to be stored in translations table
 
@@ -239,13 +239,15 @@ class CredentialType extends DBEngine
         if (isset($data['class'])) {
             $insertData['class'] = $data['class'];
         }
+
         if (isset($data['logo'])) {
             $insertData['logo'] = $data['logo'];
         }
+
         if (isset($data['url'])) {
             $insertData['url'] = $data['url'];
         }
-        
+
         // Set default company_id to 1 (or handle this properly)
         $insertData['company_id'] = 1; // TODO: This should be configurable
 
@@ -262,7 +264,7 @@ class CredentialType extends DBEngine
             // Handle localized translations if they exist
             $translationEngine = new \Ease\SQL\Engine();
             $translationEngine->myTable = 'credential_type_translations';
-            
+
             // Store name translations
             if (\is_array($data['name']) && $credentialTypeId) {
                 foreach ($data['name'] as $lang => $value) {
@@ -285,11 +287,11 @@ class CredentialType extends DBEngine
                         $existing = $translationEngine->listingQuery()
                             ->where(['credential_type_id' => $credentialTypeId, 'lang' => $lang])
                             ->fetch();
-                        
+
                         if ($existing) {
                             $translationEngine->updateToSQL(
-                                ['description' => $value], 
-                                ['credential_type_id' => $credentialTypeId, 'lang' => $lang]
+                                ['description' => $value],
+                                ['credential_type_id' => $credentialTypeId, 'lang' => $lang],
                             );
                         } else {
                             $translationData = [
@@ -324,7 +326,7 @@ class CredentialType extends DBEngine
                     // Handle field name and description translations
                     $fieldTranslationEngine = new \Ease\SQL\Engine();
                     $fieldTranslationEngine->myTable = 'credential_type_field_translations';
-                    
+
                     if ($fieldId && isset($field['name']) && \is_array($field['name'])) {
                         foreach ($field['name'] as $lang => $value) {
                             if (!empty($value)) {
@@ -345,11 +347,11 @@ class CredentialType extends DBEngine
                                 $existing = $fieldTranslationEngine->listingQuery()
                                     ->where(['crtypefield_id' => $fieldId, 'lang' => $lang])
                                     ->fetch();
-                                    
+
                                 if ($existing) {
                                     $fieldTranslationEngine->updateToSQL(
-                                        ['description' => $value], 
-                                        ['crtypefield_id' => $fieldId, 'lang' => $lang]
+                                        ['description' => $value],
+                                        ['crtypefield_id' => $fieldId, 'lang' => $lang],
                                     );
                                 } else {
                                     $fieldTranslationData = [

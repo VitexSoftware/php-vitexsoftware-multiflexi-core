@@ -312,7 +312,7 @@ class Application extends DBEngine
      *
      * @param array|int $data
      *
-     * @return int|null Number of deleted records or null on error
+     * @return null|int Number of deleted records or null on error
      */
     public function deleteFromSQL($data = null)
     {
@@ -520,7 +520,7 @@ class Application extends DBEngine
                 ->where('app_id', $appId)
                 ->where('lang', $lang)
                 ->fetch();
-            
+
             if ($existingTranslation) {
                 // Update existing translation
                 $this->getFluentPDO()

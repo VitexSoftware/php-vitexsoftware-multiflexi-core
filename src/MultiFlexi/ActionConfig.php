@@ -20,6 +20,8 @@ declare(strict_types=1);
 
 namespace MultiFlexi;
 
+use Envms\FluentPDO\Queries\Select;
+
 /**
  * Description of ActionConfig.
  *
@@ -107,7 +109,7 @@ class ActionConfig extends Engine
     /**
      * @return array
      */
-    public function getRuntemplateConfig(int $runtemplateId)
+    public function getRuntemplateConfig(int $runtemplateId): Select
     {
         return $this->listingQuery()->where('runtemplate_id', $runtemplateId);
     }

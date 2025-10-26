@@ -96,14 +96,22 @@ class LogToSQL extends \Ease\SQL\Engine implements \Ease\Logger\Loggingable
      */
     public function addToLog($caller, $message, $type = 'message')
     {
-        return $this->insertToSQL([
+        $logRecord = [
             'venue' => self::venuize($caller),
             'severity' => $type,
             'message' => $this->getPdo()->quote(self::removeEmoji($message)),
-            'apps_id' => $this->applicationId,
             'user_id' => $this->userId,
-            'company_id' => $this->companyId,
-        ]);
+        ];
+
+        if ($this->applicationId) {
+            $logRecord['apps_id'] = $this->applicationId;
+        }
+
+        if ($this->companyId) {
+            $logRecord['company_id'] = $this->companyId;
+        }
+
+        return $this->insertToSQL($logRecord);
     }
 
     /**
