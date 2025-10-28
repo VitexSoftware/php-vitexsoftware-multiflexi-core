@@ -40,7 +40,7 @@ class DBEngine extends \Ease\SQL\Engine
      * PreFill new Record form with values.
      */
     public ?array $defaults = null;
-    public ?string $lastModifiedColumn; // 'updated_at';
+    public ?string $lastModifiedColumn = null; // 'updated_at';
 
     /**
      * Search results targeting to index.php here.
