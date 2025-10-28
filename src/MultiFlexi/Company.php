@@ -25,6 +25,7 @@ class Company extends \MultiFlexi\Engine
 {
     use \Ease\SQL\Orm;
     public string $keyword = 'company';
+    public ?string $createColumn = null;
     public string $lastModifiedColumn = 'DatUpdate';
     public int $abraflexiId;
 
