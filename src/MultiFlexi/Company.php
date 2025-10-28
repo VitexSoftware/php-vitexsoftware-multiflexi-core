@@ -27,7 +27,6 @@ class Company extends \MultiFlexi\Engine
     public string $keyword = 'company';
     public ?string $createColumn = null;
     public string $lastModifiedColumn = 'DatUpdate';
-    public ?string $myTable = null;
     public ?string $nameColumn = null;
     public ?string $objectName = null;
     public int $abraflexiId;
