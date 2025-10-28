@@ -22,7 +22,7 @@ namespace MultiFlexi;
  */
 class Application extends DBEngine
 {
-    public ?string $lastModifiedColumn;
+    public ?string $lastModifiedColumn = null;
     public Company $company;
     public static string $appSchema = __DIR__.'/../../multiflexi.app.schema.json';
 
