@@ -228,6 +228,24 @@ class Job extends Engine
             'begin' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
         ]);
 
+        // OpenTelemetry metrics export
+        if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
+            try {
+                $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
+                $otelExporter->recordJobStart(
+                    $jobId,
+                    $this->application->getMyKey(),
+                    $this->application->getRecordName(),
+                    $this->company->getMyKey(),
+                    $this->company->getRecordName(),
+                    $this->runTemplate->getMyKey(),
+                    $this->runTemplate->getRecordName()
+                );
+            } catch (\Exception $e) {
+                $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
+            }
+        }
+
         return $jobId;
     }
 
@@ -277,6 +295,30 @@ class Job extends Engine
         ]);
 
         $this->performActions($statusCode === 0 ? 'success' : 'fail');
+
+        // OpenTelemetry metrics export
+        if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
+            try {
+                $begin = new \DateTime($this->getDataValue('begin'));
+                $end = new \DateTime();
+                $duration = $end->getTimestamp() - $begin->getTimestamp();
+
+                $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
+                $otelExporter->recordJobEnd($statusCode, (float) $duration, [
+                    'job_id' => $this->getMyKey(),
+                    'app_id' => $this->application->getMyKey(),
+                    'app_name' => $this->application->getRecordName(),
+                    'company_id' => $this->company->getMyKey(),
+                    'company_name' => $this->company->getRecordName(),
+                    'runtemplate_id' => $this->runTemplate->getMyKey(),
+                    'runtemplate_name' => $this->runTemplate->getRecordName(),
+                    'executor' => $this->getDataValue('executor'),
+                ]);
+                $otelExporter->flush();
+            } catch (\Exception $e) {
+                $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
+            }
+        }
 
         // TODO
         //        if (file_exists($resultfile)) {
