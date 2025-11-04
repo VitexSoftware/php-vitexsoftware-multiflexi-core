@@ -53,7 +53,7 @@ class ActionConfig extends Engine
 
     public function saveActionFields(string $module, string $mode, int $runtempate, array $configs): void
     {
-        if (is_array($configs)) {
+        if (\is_array($configs)) {
             foreach ($configs as $key => $value) {
                 $this->saveActionConfig($module, $key, $value, $mode, $runtempate);
             }

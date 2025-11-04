@@ -69,8 +69,7 @@ class Engine extends \Ease\SQL\Engine
     public function takeData(array $data): int
     {
         // Remove CSRF token and other security fields that shouldn't be saved
-        unset($data['csrf_token']);
-        unset($data['class']);
+        unset($data['csrf_token'], $data['class']);
 
         return parent::takeData($data);
     }

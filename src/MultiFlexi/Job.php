@@ -239,7 +239,7 @@ class Job extends Engine
                     $this->company->getMyKey(),
                     $this->company->getRecordName(),
                     $this->runTemplate->getMyKey(),
-                    $this->runTemplate->getRecordName()
+                    $this->runTemplate->getRecordName(),
                 );
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
