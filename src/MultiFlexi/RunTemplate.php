@@ -27,6 +27,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
      * @deprecated since version
      */
     public static array $intervalCode = [
+        'c' => 'custom',
         'y' => 'yearly',
         'm' => 'monthly',
         'w' => 'weekly',
@@ -40,6 +41,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
      * @deprecated since version number
      */
     public static array $intervalSecond = [
+        'c' => '',
         'n' => '0',
         'i' => '60',
         'h' => '3600',
@@ -203,6 +205,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
     public function getCompanyRunTemplatesByInterval(int $companyId)
     {
         $runtemplates = [
+            'c' => [],
             'i' => [],
             'h' => [],
             'd' => [],
@@ -221,6 +224,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
     public static function getIntervalEmoji(string $interval): string
     {
         $emojis = [
+            'c' => '🔵',
             'n' => '🔴',
             'i' => '⏳',
             'h' => '🕰️',
