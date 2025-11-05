@@ -84,7 +84,7 @@ abstract class CredentialProtoType extends \Ease\Sand
      */
     public function providedFieldsSelect(string $name, string $defaultValue = '', array $properties = []): \Ease\Html\SelectTag
     {
-        $items = ['' => _('Choose Provided field')];
+        $items = ['' => _('Manually entered value')];
 
         foreach ($this->configFieldsProvided as $configField) {
             $items[$configField->getCode()] = $configField->getName();

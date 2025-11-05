@@ -845,6 +845,7 @@ class DBEngine extends \Ease\SQL\Engine
     public function prepareToSave($data, $action, $recordId = null)
     {
         $now = new \DateTime();
+        unset($data['csrf_token']);
 
         switch ($action) {
             case 'create':

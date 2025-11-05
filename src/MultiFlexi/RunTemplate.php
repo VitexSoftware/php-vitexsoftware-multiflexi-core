@@ -243,7 +243,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
      */
     public function getAppEnvironment()
     {
-        $appInfo = $this->getAppInfo();
+        $appInfo = $this->getAppInfo() ?: ['company_id' => null, 'app_id' => null];
         $jobber = new Job();
         $jobber->company = new Company((int) $appInfo['company_id']);
         $jobber->application = new Application((int) $appInfo['app_id']);
@@ -466,7 +466,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
         if (\is_array($actions)) {
             foreach ($actions as $class => $status) {
                 if ($status === true) {
-                    $actionClass = '\\MultiFlexi\\Action\\'.$class;
+                    $actionClass = '\\MultiFlexi\\Ui\\Action\\'.$class;
                     $icons->addItem(new \Ease\Html\ImgTag($actionClass::logo(), $actionClass::name(), ['title' => $actionClass::name()."\n".$actionClass::description(), 'style' => 'height: 15px;']));
                 }
             }

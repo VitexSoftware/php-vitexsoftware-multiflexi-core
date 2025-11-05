@@ -40,7 +40,10 @@ class Office365 extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
         $clientIdField = new \MultiFlexi\ConfigField('OFFICE365_CLIENTID', 'string', _('Office 365 Client ID'), _('Client ID for Office 365 API'));
         $clientIdField->setHint('your-client-id')->setValue('');
 
-        $clientSecretField = new \MultiFlexi\ConfigField('OFFICE365_SECRET', 'string', _('Office 365 Secret'), _('Secret for Office 365 API'));
+        $clientSecretIdField = new \MultiFlexi\ConfigField('OFFICE365_SECRET', 'string', _('Office 365 Secret ID'), _('Secret ID for Office 365 API'), _('Azure Portal → App registrations → Your app → Certificates & secrets, and copy the actual secret ID'));
+        $clientSecretIdField->setHint('your-secret')->setValue('');
+
+        $clientSecretField = new \MultiFlexi\ConfigField('OFFICE365_CLSECRET', 'string', _('Office 365 Secret Value'), _('Secret value for Office 365 API'), _('Azure Portal → App registrations → Your app → Certificates & secrets, and copy the actual secret VALUE'));
         $clientSecretField->setHint('your-secret')->setValue('');
 
         $tenantField = new \MultiFlexi\ConfigField('OFFICE365_TENANT', 'string', _('Office 365 Tenant'), _('Tenant ID for Office 365'));
@@ -49,6 +52,7 @@ class Office365 extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
         $this->configFieldsProvided->addField($usernameField);
         $this->configFieldsProvided->addField($passwordField);
         $this->configFieldsProvided->addField($clientIdField);
+        $this->configFieldsProvided->addField($clientSecretIdField);
         $this->configFieldsProvided->addField($clientSecretField);
         $this->configFieldsProvided->addField($tenantField);
     }

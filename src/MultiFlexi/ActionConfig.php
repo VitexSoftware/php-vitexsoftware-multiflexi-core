@@ -79,11 +79,7 @@ class ActionConfig extends Engine
     }
 
     /**
-     * @param string $module
-     * @param string $key
-     * @param string $value
-     * @param string $mode
-     * @param int    $runtempalte
+     * @param int $runtempalte
      *
      * @return int
      */
@@ -92,19 +88,18 @@ class ActionConfig extends Engine
      *
      * @param string $module      the module name
      * @param string $key         the configuration key
-     * @param string $value       the configuration value
      * @param string $mode        The mode (e.g., success, fail).
      * @param int    $runtempalte the runtemplate ID
      *
      * @return mixed the result of the query
      */
-    public function getModuleConfig($module, $key, $value, $mode, $runtempalte)
+    public function getModuleConfig(string $module, string $key, string $mode, RunTemplate $runtempalte)
     {
         return $this->listingQuery()->where([
             'module' => $module,
             'keyname' => $key,
             'mode' => $mode,
-            'runtemplate_id' => $runtempalte,
+            'runtemplate_id' => $runtempalte->getMyKey(),
         ]);
     }
 

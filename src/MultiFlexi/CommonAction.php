@@ -15,11 +15,9 @@ declare(strict_types=1);
 
 namespace MultiFlexi;
 
-use Ease\Embedable;
 use Ease\Logger\Logging;
 use Ease\Logger\Message;
 use Ease\Sand;
-use Ease\TWB4\Badge;
 
 /**
  * Description of Executor.
@@ -76,24 +74,6 @@ abstract class CommonAction extends Sand
         }
 
         return $output;
-    }
-
-    /**
-     * Form Inputs.
-     *
-     * @return Embedable
-     */
-    public static function inputs(string $action)
-    {
-        return new Badge('info', _('No Fields required').' ('.$action.')');
-    }
-
-    /**
-     * @return Embedable
-     */
-    public static function configForm()
-    {
-        return new Badge('info', _('No Configuration required'));
     }
 
     /**

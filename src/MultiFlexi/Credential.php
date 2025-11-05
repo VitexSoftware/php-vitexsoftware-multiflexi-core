@@ -74,7 +74,7 @@ class Credential extends DBEngine
         }
 
         if (\array_key_exists('credential_type_id', $data)) {
-            $this->setCredentialType(new CredentialType($data['credential_type_id']));
+            $this->setCredentialType(new CredentialType((int) $data['credential_type_id']));
         }
 
         return parent::takeData($data);
@@ -121,6 +121,7 @@ class Credential extends DBEngine
             $data = $this->getData();
         }
 
+        unset($data['csrf_token']);
         $originalData = $data;
 
         $fieldData = [];
@@ -155,7 +156,7 @@ class Credential extends DBEngine
                 );
             }
 
-            unset($fieldData[$field]); // Processed field data
+            unset($originalData[$field]); // Processed field data
         }
 
         $this->takeData($originalData);
