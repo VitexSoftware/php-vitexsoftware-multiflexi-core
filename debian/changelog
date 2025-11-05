@@ -1,8 +1,15 @@
-php-vitexsoftware-multiflexi-core (2.2.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.3.0) unstable; urgency=medium
 
   * Action logo and configuration dialogs was moved to multiflexi-web
+  * Add automatic artifact preservation for all job executions
+  * Enhanced Job class with createJobArtifacts() method for
+    comprehensive output preservation
+  * Modified Zabbix action to remove duplicate artifact creation since
+    Job class now handles it automatically
+  * Artifacts now preserve result files, stdout, and stderr for every
+    job execution with proper MIME type detection
 
- -- vitex <info@vitexsoftware.cz>  Tue, 04 Nov 2025 11:57:43 +0100
+ -- vitex <info@vitexsoftware.cz>  Wed, 05 Nov 2025 22:58:27 +0100
 
 php-vitexsoftware-multiflexi-core (2.1.1) unstable; urgency=medium
 

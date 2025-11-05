@@ -294,6 +294,9 @@ class Job extends Engine
             'exitcode' => $statusCode,
         ]);
 
+        // Always create artifacts for result files (independent of Zabbix action)
+        $this->createJobArtifacts($resultfile, $stdout, $stderr);
+
         $this->performActions($statusCode === 0 ? 'success' : 'fail');
 
         // OpenTelemetry metrics export
@@ -920,5 +923,67 @@ EOD;
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
             ->orderBy('scheduled')
             ->fetchAll();
+    }
+
+    /**
+     * Create artifacts for job execution results.
+     * This ensures all job artifacts are preserved regardless of action configuration.
+     *
+     * @param string $resultfile Path to the result file
+     * @param string $stdout Standard output from job execution
+     * @param string $stderr Standard error from job execution
+     */
+    private function createJobArtifacts(string $resultfile, string $stdout, string $stderr): void
+    {
+        $artifactor = new Artifact();
+
+        // Create artifact for result file if it exists
+        if (!empty($resultfile) && file_exists($resultfile)) {
+            try {
+                $resultContent = file_get_contents($resultfile);
+                if ($resultContent !== false) {
+                    $contentType = function_exists('mime_content_type') ? mime_content_type($resultfile) : 'text/plain';
+                    $artifactor->createArtifact(
+                        $this->getMyKey(),
+                        $resultContent,
+                        basename($resultfile),
+                        $contentType,
+                        sprintf(_('Result file from job execution: %s'), basename($resultfile))
+                    );
+                }
+            } catch (\Exception $e) {
+                $this->addStatusMessage(sprintf(_('Failed to create artifact for result file %s: %s'), $resultfile, $e->getMessage()), 'warning');
+            }
+        }
+
+        // Create artifact for stdout if not empty
+        if (!empty(trim($stdout))) {
+            try {
+                $artifactor->createArtifact(
+                    $this->getMyKey(),
+                    $stdout,
+                    'stdout.txt',
+                    'text/plain',
+                    _('Standard output from job execution')
+                );
+            } catch (\Exception $e) {
+                $this->addStatusMessage(sprintf(_('Failed to create stdout artifact: %s'), $e->getMessage()), 'warning');
+            }
+        }
+
+        // Create artifact for stderr if not empty (indicates warnings/errors)
+        if (!empty(trim($stderr))) {
+            try {
+                $artifactor->createArtifact(
+                    $this->getMyKey(),
+                    $stderr,
+                    'stderr.txt',
+                    'text/plain',
+                    _('Standard error from job execution')
+                );
+            } catch (\Exception $e) {
+                $this->addStatusMessage(sprintf(_('Failed to create stderr artifact: %s'), $e->getMessage()), 'warning');
+            }
+        }
     }
 }
