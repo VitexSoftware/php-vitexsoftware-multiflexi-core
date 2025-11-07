@@ -268,6 +268,65 @@ class Application extends DBEngine
     }
 
     /**
+     * Validate JSON file against schema.
+     *
+     * @param string $jsonFile Path to JSON file to validate
+     * @param string $schemaFile Path to JSON schema file
+     *
+     * @return array<string> Array of validation errors (empty if valid)
+     */
+    public static function validateJson(string $jsonFile, string $schemaFile): array
+    {
+        $errors = [];
+
+        if (!file_exists($jsonFile)) {
+            $errors[] = "JSON file not found: {$jsonFile}";
+            return $errors;
+        }
+
+        if (!file_exists($schemaFile)) {
+            $errors[] = "Schema file not found: {$schemaFile}";
+            return $errors;
+        }
+
+        $jsonContent = file_get_contents($jsonFile);
+        if ($jsonContent === false) {
+            $errors[] = "Cannot read JSON file: {$jsonFile}";
+            return $errors;
+        }
+
+        $schemaContent = file_get_contents($schemaFile);
+        if ($schemaContent === false) {
+            $errors[] = "Cannot read schema file: {$schemaFile}";
+            return $errors;
+        }
+
+        $data = json_decode($jsonContent);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errors[] = "Invalid JSON in file {$jsonFile}: " . json_last_error_msg();
+            return $errors;
+        }
+
+        $schema = json_decode($schemaContent);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errors[] = "Invalid JSON in schema file {$schemaFile}: " . json_last_error_msg();
+            return $errors;
+        }
+
+        // Validate using JSON Schema library
+        $validator = new \JsonSchema\Validator();
+        $validator->validate($data, $schema);
+
+        if (!$validator->isValid()) {
+            foreach ($validator->getErrors() as $error) {
+                $errors[] = sprintf("Property '%s': %s", $error['property'], $error['message']);
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * @return array<string> errors
      */
     public function validateAppJson(string $jsonFile): array
