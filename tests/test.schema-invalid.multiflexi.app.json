@@ -1,0 +1,15 @@
+{
+    "$schema": "https://multiflexi.eu/multiflexi.app.schema.json",
+    "name": "Schema Invalid Test App",
+    "description": "Valid JSON but fails schema validation",
+    "version": "1.0.0",
+    "uuid": "test-schema-invalid-uuid-67890",
+    "executable": 123,
+    "environment": {
+        "INVALID_ENV_STRUCTURE": "should be array not object"
+    },
+    "requirements": {
+        "should": "be array or string, not object"
+    },
+    "missing_required_fields": "This JSON is syntactically valid but violates the MultiFlexi app schema"
+}
