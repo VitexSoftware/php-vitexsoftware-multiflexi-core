@@ -930,8 +930,8 @@ EOD;
      * This ensures all job artifacts are preserved regardless of action configuration.
      *
      * @param string $resultfile Path to the result file
-     * @param string $stdout Standard output from job execution
-     * @param string $stderr Standard error from job execution
+     * @param string $stdout     Standard output from job execution
+     * @param string $stderr     Standard error from job execution
      */
     private function createJobArtifacts(string $resultfile, string $stdout, string $stderr): void
     {
@@ -941,14 +941,15 @@ EOD;
         if (!empty($resultfile) && file_exists($resultfile)) {
             try {
                 $resultContent = file_get_contents($resultfile);
+
                 if ($resultContent !== false) {
-                    $contentType = function_exists('mime_content_type') ? mime_content_type($resultfile) : 'text/plain';
+                    $contentType = \function_exists('mime_content_type') ? mime_content_type($resultfile) : 'text/plain';
                     $artifactor->createArtifact(
                         $this->getMyKey(),
                         $resultContent,
                         basename($resultfile),
                         $contentType,
-                        sprintf(_('Result file from job execution: %s'), basename($resultfile))
+                        sprintf(_('Result file from job execution: %s'), basename($resultfile)),
                     );
                 }
             } catch (\Exception $e) {
@@ -964,7 +965,7 @@ EOD;
                     $stdout,
                     'stdout.txt',
                     'text/plain',
-                    _('Standard output from job execution')
+                    _('Standard output from job execution'),
                 );
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('Failed to create stdout artifact: %s'), $e->getMessage()), 'warning');
@@ -979,7 +980,7 @@ EOD;
                     $stderr,
                     'stderr.txt',
                     'text/plain',
-                    _('Standard error from job execution')
+                    _('Standard error from job execution'),
                 );
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('Failed to create stderr artifact: %s'), $e->getMessage()), 'warning');

@@ -43,16 +43,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "6.6.0",
+            "version": "6.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "68ba7677532803cc0c5900dd5a4d730537f2b2f3"
+                "reference": "fd8e5c6b1badb998844ad34ce0abcd71a0aeb396"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/68ba7677532803cc0c5900dd5a4d730537f2b2f3",
-                "reference": "68ba7677532803cc0c5900dd5a4d730537f2b2f3",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/fd8e5c6b1badb998844ad34ce0abcd71a0aeb396",
+                "reference": "fd8e5c6b1badb998844ad34ce0abcd71a0aeb396",
                 "shasum": ""
             },
             "require": {
@@ -112,9 +112,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
-                "source": "https://github.com/jsonrainbow/json-schema/tree/6.6.0"
+                "source": "https://github.com/jsonrainbow/json-schema/tree/6.6.1"
             },
-            "time": "2025-10-10T11:34:09+00:00"
+            "time": "2025-11-07T18:30:29+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -2256,8 +2256,8 @@
             "version": "2.1.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/770b08cdd6e159bfcff28bb81de7b808ff9d06c4",
-                "reference": "770b08cdd6e159bfcff28bb81de7b808ff9d06c4",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/0db5fecc22002a178037e7a43cbb9f5b9f6f9655",
+                "reference": "0db5fecc22002a178037e7a43cbb9f5b9f6f9655",
                 "shasum": ""
             },
             "require": {
@@ -2303,7 +2303,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-05T13:40:36+00:00"
+            "time": "2025-11-07T20:49:48+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2311,12 +2311,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "a4abfc11b1486ad1aff02661c3fd3982e1f904d7"
+                "reference": "8532ceb49e02884cbd8ae7da63d62224c8eb44f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/a4abfc11b1486ad1aff02661c3fd3982e1f904d7",
-                "reference": "a4abfc11b1486ad1aff02661c3fd3982e1f904d7",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/8532ceb49e02884cbd8ae7da63d62224c8eb44f5",
+                "reference": "8532ceb49e02884cbd8ae7da63d62224c8eb44f5",
                 "shasum": ""
             },
             "require": {
@@ -2357,7 +2357,7 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
             },
-            "time": "2025-11-04T16:05:44+00:00"
+            "time": "2025-11-07T12:43:10+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2752,12 +2752,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "3affd938fcb716fcf206aca0e62bcb6d816a4422"
+                "reference": "d45ae7d6d6871c9bb6f2185be01f7a4ad90ba1d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3affd938fcb716fcf206aca0e62bcb6d816a4422",
-                "reference": "3affd938fcb716fcf206aca0e62bcb6d816a4422",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d45ae7d6d6871c9bb6f2185be01f7a4ad90ba1d4",
+                "reference": "d45ae7d6d6871c9bb6f2185be01f7a4ad90ba1d4",
                 "shasum": ""
             },
             "require": {
@@ -2849,7 +2849,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-30T08:42:37+00:00"
+            "time": "2025-11-06T13:14:21+00:00"
         },
         {
             "name": "psr/container",
@@ -3542,12 +3542,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "3b2909c1a857577c8dae38ba3b7e8baeba387184"
+                "reference": "f2cbe08bc533e3f6b4403e3f574e5af0dfaea6fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/3b2909c1a857577c8dae38ba3b7e8baeba387184",
-                "reference": "3b2909c1a857577c8dae38ba3b7e8baeba387184",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/f2cbe08bc533e3f6b4403e3f574e5af0dfaea6fe",
+                "reference": "f2cbe08bc533e3f6b4403e3f574e5af0dfaea6fe",
                 "shasum": ""
             },
             "require": {
@@ -3595,7 +3595,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-05T12:03:25+00:00"
+            "time": "2025-11-07T09:03:25+00:00"
         },
         {
             "name": "sebastian/cli-parser",

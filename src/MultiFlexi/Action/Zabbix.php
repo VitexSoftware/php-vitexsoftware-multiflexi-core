@@ -84,7 +84,7 @@ class Zabbix extends \MultiFlexi\CommonAction
             if ($dataForZabbix) {
                 // Note: Artifacts are now automatically created by Job class
                 // This action only sends data to Zabbix server
-                
+
                 if (\Ease\Shared::cfg('USE_ZABBIX_SENDER', false) && file_exists('/usr/bin/zabbix_sender')) {
                     $cmd = sprintf("zabbix_sender -v -z %s -s %s -k %s -o '%s'", $server, $me, $zabbixKey, addslashes($dataForZabbix));
                     $this->addStatusMessage($cmd, 'debug');

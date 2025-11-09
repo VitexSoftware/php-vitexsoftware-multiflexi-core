@@ -1,42 +1,89 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
-All code comments should be written in English.
+## MultiFlexi Framework Guidelines
 
-All messages, including error messages, should be written in English.
+This is the MultiFlexi Core library - a multi-tenant application management platform with advanced job scheduling, credential management, and extensible action system.
 
-All code should be written in PHP 8.4 or later.
+### Code Standards
+- All code comments should be written in English
+- All messages, including error messages, should be written in English
+- All code should be written in PHP 8.4 or later
+- All code should follow the PSR-12 coding standard
+- Always include comprehensive docblocks for functions and classes, describing their purpose, parameters, and return types
+- Always include type hints for function parameters and return types
+- Use meaningful variable names that describe their purpose
+- Avoid using magic numbers or strings; instead, define constants for them
+- Handle exceptions properly and provide meaningful error messages
+- Ensure code is secure and does not expose any sensitive information
 
-All code should follow the PSR-12 coding standard.
+### MultiFlexi Architecture Patterns
 
-When writing code, always include a docblock for functions and classes, describing their purpose, parameters, and return types.
+#### Core Base Classes
+- **Engine**: Base class for database-backed entities with ORM functionality
+- **DBEngine**: Extended Engine with advanced database operations and DataTables integration
+- **CommonAction**: Base class for all Action classes that perform automated tasks
 
-When writing tests, use PHPUnit and follow the PSR-12 coding standard.
+#### Key Namespaces and Patterns
+- `MultiFlexi\`: Core framework classes (Company, Application, Job, User, etc.)
+- `MultiFlexi\Action\`: Action classes that extend CommonAction (ToDo, WebHook, Github, etc.)
+- `MultiFlexi\CredentialType\`: Credential type implementations
+- `MultiFlexi\Env\`: Environment-specific configurations
+- `MultiFlexi\Executor\`: Job execution engines
+- `MultiFlexi\Zabbix\`: Zabbix monitoring integration
 
-When writing documentation, use MarkDown format.
+#### Action Class Guidelines
+When creating Action classes:
+- Extend `CommonAction` base class
+- Implement `perform()` method for main execution logic
+- Use `$this->runtemplate` to access job context and configuration
+- Use `$this->environment` for environment variables
+- Return appropriate success/failure status codes
+- Support configuration through `loadOptions()` method
+- Handle credential access through the credential system
 
-When writing commit messages, use the imperative mood and keep them concise.
+#### Database and ORM
+- Extend `Engine` or `DBEngine` for database-backed entities
+- Use `$this->myTable` to specify table name
+- Use `$this->keyword` for primary key field name
+- Use `$this->nameColumn` for display name field
+- Implement proper relationships using the ORM patterns
 
-When writing code comments, use complete sentences and proper grammar.
+#### Configuration and Credentials
+- Use `ConfigField`, `ConfigFields` classes for dynamic configuration
+- Implement credential types by extending appropriate base classes
+- Support credential providers through the `Requirement` system
+- Use secure storage patterns for sensitive data
 
-When writing code, always use meaningful variable names that describe their purpose.
+### Testing Requirements
+- Use PHPUnit for all tests
+- Follow PSR-12 coding standard in tests
+- Create comprehensive test coverage for new classes
+- When creating new class or updating existing class, always create or update its PHPUnit test files
+- Place tests in `tests/src/MultiFlexi/` matching the source structure
+- Use proper mocking for external dependencies
+- Test both success and failure scenarios
 
-When writing code, avoid using magic numbers or strings; instead, define constants for them.
+### Internationalization
+- Use the i18n library for internationalization
+- Always use the `_()` functions for strings that need to be translated
+- Ensure all user-facing messages are translatable
+- Keep translation keys descriptive and organized
 
-When writing code, always handle exceptions properly and provide meaningful error messages.
+### Documentation
+- Use Markdown format for documentation
+- Maintain comprehensive README.md with class overviews
+- Document configuration options and usage examples
+- Keep commit messages in imperative mood and concise
 
-When writing code, always include type hints for function parameters and return types.
+### Dependencies and Compatibility
+- Ensure compatibility with latest PHP version and all dependencies
+- Key dependencies: ease-fluentpdo, ease-html, json-schema, bitwarden-php
+- Consider performance implications in all code
+- Maintain backward compatibility when possible
 
-We are using the i18n library for internationalization, so always use the _() functions for strings that need to be translated.
-
-When writing code, always ensure that it is secure and does not expose any sensitive information.
-
-When writing code, always consider performance and optimize where necessary.
-
-When writing code, always ensure that it is compatible with the latest version of PHP and the libraries we are using.
-
-When writing code, always ensure that it is well-tested and includes unit tests where applicable.
-
-When writing code, always ensure that it is maintainable and follows best practices.
-
-When create new class or update existing class, always create or update its phpunit test files.
+### Security Considerations
+- Never expose sensitive information in logs or error messages
+- Use proper credential management through the framework
+- Validate all inputs and sanitize outputs
+- Follow secure coding practices for database operations
 

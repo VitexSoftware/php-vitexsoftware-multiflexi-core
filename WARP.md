@@ -22,6 +22,9 @@ High-level architecture
   - Credential*, Credata model credential types, fields, and storage.
   - Config* classes define dynamic config fields and helpers for forms.
   - Environmentor manages environment variables for execution contexts.
+- **Action System**: CommonAction is the base class for all automated integration actions (ToDo, WebHook, Github, Zabbix, RedmineIssue, TriggerJenkins, LaunchJob, CustomCommand, Sleep, Stop, Reschedule). Actions extend CommonAction and implement perform() method.
+- **Execution Environments**: Multiple execution backends supported (Native, Docker, Podman, Kubernetes, Azure) through Executor namespace.
+- **Credential Types**: Built-in credential types for various services (AbraFlexi, Office365, VaultWarden, SQLServer, FioBank, RaiffeisenBank, Csas, EnvFile).
 - Execution & scheduling: Job, Runner, RunTemplate, RunTplCreds, ScheduleLister, Scheduler orchestrate templates, credentials, and job execution.
 - Logging & integration: Logger with LogToSQL and LogToZabbix; Zabbix integration lives under MultiFlexi\Zabbix\.
 - Security/auth: Token for authentication; User for accounts/permissions.
