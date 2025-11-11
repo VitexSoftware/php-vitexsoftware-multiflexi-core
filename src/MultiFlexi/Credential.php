@@ -24,6 +24,7 @@ class Credential extends DBEngine
     private Credata $credator;
     private CredentialConfigFields $vault;
     private ?CredentialType $credentialType = null;
+    private ConfigFields $fields;
 
     public function __construct($identifier = null, $options = [])
     {
@@ -31,6 +32,7 @@ class Credential extends DBEngine
         $this->keyColumn = 'id';
         $this->credator = new Credata();
         $this->vault = new CredentialConfigFields($this);
+        $this->fields = new ConfigFields(\Ease\Functions::baseClassName($this));
         parent::__construct($identifier, $options);
     }
 
@@ -172,13 +174,23 @@ class Credential extends DBEngine
 
         $dataCount = parent::loadFromSQL($itemID);
 
-        foreach ($this->credator->listingQuery()->where('credential_id', $this->getMyKey()) as $credential) {
-            $this->setDataValue($credential['name'], $credential['value']);
-            ++$dataCount;
+        if ($this->getRecordName()) {
+            $this->fields->setName($this->getRecordName());
         }
 
-        if (null === $this->credentialType && $this->getDataValue('credential_type_id')) { // Override by credential type
-            $this->setCredentialType(new CredentialType($this->getDataValue('credential_type_id')));
+        if ($this->credentialType && $this->credentialType->getHelper()) {
+            $this->fields->addFields($this->credentialType->getHelper()->fieldsProvided());
+        }
+
+        foreach ($this->credator->listingQuery()->where('credential_id', $this->getMyKey()) as $credential) {
+            if ($this->fields->getFieldByCode($credential['name'])) {
+                $this->fields->getFieldByCode($credential['name'])->setValue($credential['value']);
+            } else {
+                $this->fields->addField(new ConfigField($credential['name'], $credential['value'], $credential['type']));
+            }
+
+            $this->setDataValue($credential['name'], $credential['value']);
+            ++$dataCount;
         }
 
         return $dataCount;
@@ -232,5 +244,10 @@ class Credential extends DBEngine
         $this->vault->addFields($credentialEnv);
 
         return $credentialEnv;
+    }
+
+    public function getFields(): ConfigFields
+    {
+        return $this->fields;
     }
 }

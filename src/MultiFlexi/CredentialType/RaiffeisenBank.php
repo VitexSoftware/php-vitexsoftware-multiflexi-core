@@ -24,6 +24,10 @@ namespace MultiFlexi\CredentialType;
  */
 class RaiffeisenBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\credentialTypeInterface
 {
+    /**
+     * Widgets for displaying certificate metadata in the config form.
+     */
+    public array $certificateWidgets = [];
     public static string $logo = 'RaiffeisenBank.svg';
 
     public function __construct()

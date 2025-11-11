@@ -88,7 +88,7 @@ Actions extend `CommonAction` and provide automated integrations and workflows:
 - **Logger**: Centralized logging with multiple backends
 - **LogToSQL**: Database logging backend
 - **LogToZabbix**: Zabbix monitoring integration
-- **Zabbix\**: Complete Zabbix monitoring namespace with metrics and alerting
+- **Zabbix**: Complete Zabbix monitoring namespace with metrics and alerting
 
 ### Utility Classes
 
