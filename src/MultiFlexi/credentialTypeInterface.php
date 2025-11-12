@@ -26,7 +26,7 @@ interface credentialTypeInterface
 
     public static function logo(): string;
 
-    public function prepareConfigForm();
+    public function prepareConfigForm(): void;
 
     public function fieldsProvided(): ConfigFields;
 

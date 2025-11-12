@@ -36,6 +36,8 @@ class CrTypeOption extends Engine
 
     /**
      * Define the structure of the table.
+     *
+     * @return array<string, array<string, mixed>>
      */
     public function getColumns(): array
     {

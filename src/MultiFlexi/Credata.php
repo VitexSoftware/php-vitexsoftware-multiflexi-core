@@ -22,7 +22,13 @@ namespace MultiFlexi;
  */
 class Credata extends Engine
 {
-    public function __construct($identifier = null, $options = [])
+    /**
+     * Credata constructor.
+     *
+     * @param mixed $identifier
+     * @param array $options<string, mixed>
+     */
+    public function __construct($identifier = null, array $options = [])
     {
         $this->myTable = 'credata';
         parent::__construct($identifier, $options);
