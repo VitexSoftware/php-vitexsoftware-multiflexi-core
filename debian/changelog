@@ -1,8 +1,14 @@
-php-vitexsoftware-multiflexi-core (2.4.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.4.1) UNRELEASED; urgency=medium
+
+  * RunTemplate config saver update
+
+ -- vitex <info@vitexsoftware.cz>  Wed, 12 Nov 2025 13:16:13 +0100
+
+php-vitexsoftware-multiflexi-core (2.4.0) unstable; urgency=medium
 
   * json2credential-type support added
 
- -- vitex <info@vitexsoftware.cz>  Sun, 09 Nov 2025 23:25:37 +0100
+ -- vitex <info@vitexsoftware.cz>  Wed, 12 Nov 2025 13:15:56 +0100
 
 php-vitexsoftware-multiflexi-core (2.3.0) unstable; urgency=medium
 

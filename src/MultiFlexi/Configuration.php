@@ -60,9 +60,9 @@ class Configuration extends \Ease\SQL\Engine
             $condition['runtemplate_id'] = $this->getDataValue('runtemplate_id');
         }
 
-        $this->deleteFromSQL($condition);
-
         foreach ($data as $column => $value) {
+            $condition['name'] = $column;
+            $this->deleteFromSQL($condition);
             $result += $this->insertToSQL(['app_id' => $this->getDataValue('app_id'), 'company_id' => $this->getDataValue('company_id'), 'runtemplate_id' => $this->getDataValue('runtemplate_id'), 'name' => $column, 'value' => $value]);
         }
 

@@ -433,14 +433,32 @@ class RunTemplate extends \MultiFlexi\DBEngine
         return $runtemplateEnv;
     }
 
+    public function setRuntemplateEnvironment(ConfigFields $env): bool
+    {
+        $companies = new Company((int) $this->getDataValue('company_id'));
+        $app = new Application((int) $this->getDataValue('app_id'));
+
+        $configurator = new \MultiFlexi\Configuration([
+            'runtemplate_id' => $this->getMyKey(),
+            'app_id' => $app->getMyKey(),
+            'company_id' => $companies->getMyKey(),
+        ], ['autoload' => false]);
+
+        if ($configurator->takeData($env->getEnvArray()) && null !== $configurator->saveToSQL()) {
+            $configurator->addStatusMessage(_('Config fields Saved').' '.implode(',', array_keys($env->getEnvArray())), 'success');
+            $result = true;
+        } else {
+            $configurator->addStatusMessage(_('Error saving Config fields'), 'error');
+            $result = false;
+        }
+
+        return $result;
+    }
+
     public function setEnvironment(array $properties): bool
     {
-        $companies = new Company($this->getDataValue('company_id'));
-        $app = new Application($this->getDataValue('app_id'));
-
-        $app->setDataValue('company_id', $companies->getMyKey());
-        $app->setDataValue('app_id', $app->getMyKey());
-        $app->setDataValue('app_name', $app->getRecordName());
+        $companies = new Company((int) $this->getDataValue('company_id'));
+        $app = new Application((int) $this->getDataValue('app_id'));
 
         $configurator = new \MultiFlexi\Configuration([
             'runtemplate_id' => $this->getMyKey(),
