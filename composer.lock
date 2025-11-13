@@ -2255,8 +2255,8 @@
             "version": "2.1.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d07c200a88c8133007dd6e7cb6fd710ee09039bc",
-                "reference": "d07c200a88c8133007dd6e7cb6fd710ee09039bc",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/7e742a0fb109cb4766f90ba2aa711b0f17946822",
+                "reference": "7e742a0fb109cb4766f90ba2aa711b0f17946822",
                 "shasum": ""
             },
             "require": {
@@ -2302,7 +2302,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-13T06:24:48+00:00"
+            "time": "2025-11-13T14:40:24+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2751,12 +2751,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "48e4bfd6c671ec0410cf92447e73bde6598539ba"
+                "reference": "09c965b9f33ac78344af335446bf72831586475e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/48e4bfd6c671ec0410cf92447e73bde6598539ba",
-                "reference": "48e4bfd6c671ec0410cf92447e73bde6598539ba",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/09c965b9f33ac78344af335446bf72831586475e",
+                "reference": "09c965b9f33ac78344af335446bf72831586475e",
                 "shasum": ""
             },
             "require": {
@@ -2848,7 +2848,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-13T07:21:09+00:00"
+            "time": "2025-11-13T11:27:41+00:00"
         },
         {
             "name": "psr/container",
@@ -3541,12 +3541,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "303aa811649ccd1d32e51e62d5c85949d01b5f1b"
+                "reference": "b9384e6f1504ee1aedcf2552309cbc0321d1bfbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/303aa811649ccd1d32e51e62d5c85949d01b5f1b",
-                "reference": "303aa811649ccd1d32e51e62d5c85949d01b5f1b",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/b9384e6f1504ee1aedcf2552309cbc0321d1bfbc",
+                "reference": "b9384e6f1504ee1aedcf2552309cbc0321d1bfbc",
                 "shasum": ""
             },
             "require": {
@@ -3586,7 +3586,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.2.8"
+                "source": "https://github.com/rectorphp/rector/tree/main"
             },
             "funding": [
                 {
@@ -3594,7 +3594,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-12T18:38:00+00:00"
+            "time": "2025-11-13T17:12:37+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -5917,35 +5917,34 @@
         },
         {
             "name": "symfony/string",
-            "version": "7.4.x-dev",
+            "version": "8.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "bc7852160e1f18ce249c3daaba3b26cf5425a34d"
+                "reference": "f929eccf09531078c243df72398560e32fa4cf4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/bc7852160e1f18ce249c3daaba3b26cf5425a34d",
-                "reference": "bc7852160e1f18ce249c3daaba3b26cf5425a34d",
+                "url": "https://api.github.com/repos/symfony/string/zipball/f929eccf09531078c243df72398560e32fa4cf4f",
+                "reference": "f929eccf09531078c243df72398560e32fa4cf4f",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.2",
-                "symfony/deprecation-contracts": "^2.5|^3.0",
-                "symfony/polyfill-ctype": "~1.8",
-                "symfony/polyfill-intl-grapheme": "~1.33",
-                "symfony/polyfill-intl-normalizer": "~1.0",
-                "symfony/polyfill-mbstring": "~1.0"
+                "php": ">=8.4",
+                "symfony/polyfill-ctype": "^1.8",
+                "symfony/polyfill-intl-grapheme": "^1.33",
+                "symfony/polyfill-intl-normalizer": "^1.0",
+                "symfony/polyfill-mbstring": "^1.0"
             },
             "conflict": {
                 "symfony/translation-contracts": "<2.5"
             },
             "require-dev": {
-                "symfony/emoji": "^7.1|^8.0",
-                "symfony/http-client": "^6.4|^7.0|^8.0",
-                "symfony/intl": "^6.4|^7.0|^8.0",
+                "symfony/emoji": "^7.4|^8.0",
+                "symfony/http-client": "^7.4|^8.0",
+                "symfony/intl": "^7.4|^8.0",
                 "symfony/translation-contracts": "^2.5|^3.0",
-                "symfony/var-exporter": "^6.4|^7.0|^8.0"
+                "symfony/var-exporter": "^7.4|^8.0"
             },
             "type": "library",
             "autoload": {
@@ -5984,7 +5983,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/7.4"
+                "source": "https://github.com/symfony/string/tree/8.0"
             },
             "funding": [
                 {
@@ -6004,7 +6003,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-09-11T14:37:11+00:00"
+            "time": "2025-09-11T14:37:55+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6061,14 +6060,14 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "justinrainbow/json-schema": 20,
-        "vitexsoftware/ease-fluentpdo": 20,
-        "phpunit/phpunit": 20,
         "phpstan/phpstan-phpunit": 20,
-        "rector/rector": 20
+        "phpunit/phpunit": 20,
+        "rector/rector": 20,
+        "vitexsoftware/ease-fluentpdo": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

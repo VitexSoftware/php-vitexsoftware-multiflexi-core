@@ -323,7 +323,10 @@ class Job extends Engine
             }
         }
 
-        $rtUpdate = ['next_schedule' => null, 'last_schedule' => $this->runTemplate->getDataValue('next_schedule')];
+        $rtUpdate = [
+            'next_schedule' => null,
+            'last_schedule' => $this->runTemplate->getDataValue('next_schedule'),
+        ];
 
         if ($statusCode) {
             $rtUpdate = ['failed_jobs_count' => $this->runTemplate->getDataValue('failed_jobs_count') + 1];
@@ -331,7 +334,7 @@ class Job extends Engine
             $rtUpdate = ['successfull_jobs_count' => $this->runTemplate->getDataValue('successfull_jobs_count') + 1];
         }
 
-        $this->runTemplate->updateToSQL($rtUpdate);
+        $this->runTemplate->updateToSQL($rtUpdate, ['id' => $this->runTemplate->getMyKey()]);
 
         // TODO
         //        if (file_exists($resultfile)) {
