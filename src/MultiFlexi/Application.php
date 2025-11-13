@@ -562,6 +562,12 @@ class Application extends DBEngine
             $environmentConfigs = $appSpec['environment'];
         }
 
+        // Handle environment artifacts
+        if (isset($appSpec['artifacts']) && \is_array($appSpec['artifacts'])) {
+            // We'll handle environment import after saving the app
+            $artifacts = $appSpec['artifacts'];
+        }
+
         // Check if app already exists by UUID first, then by name as fallback
         $existingApp = null;
 
@@ -622,6 +628,10 @@ class Application extends DBEngine
         // Import environment configurations if present
         if (isset($environmentConfigs)) {
             $this->importEnvironmentConfigs($appId, $environmentConfigs);
+        }
+
+        if (isset($artifacts)) {
+            $this->importDefinedArtifacts($appId, $artifacts);
         }
 
         return $fields;
@@ -697,6 +707,29 @@ class Application extends DBEngine
         }
 
         return $result;
+    }
+
+    /**
+     * Import artifact definitions from app JSON.
+     */
+    protected function importDefinedArtifacts(int $appId, array $artifactDefs): void
+    {
+        $defaultLang = 'en';
+
+        foreach ($artifactDefs as $artifactDef) {
+            // Handle localized description field
+            if (isset($artifactDef['description'])) {
+                if (\is_string($artifactDef['description'])) {
+                    // Legacy string format
+                    $configData['description'] = $artifactDef['description'];
+                } elseif (\is_array($artifactDef['description'])) {
+                    // Localized object format - use default language for main table
+                    $artifactDef['description'] = $artifactDef['description'][$defaultLang] ?? reset($artifactDef['description']);
+                }
+            } else {
+                $artifactDef['description'] = '';
+            }
+        }
     }
 
     /**
