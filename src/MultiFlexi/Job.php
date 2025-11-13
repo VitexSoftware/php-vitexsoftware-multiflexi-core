@@ -323,6 +323,16 @@ class Job extends Engine
             }
         }
 
+        $rtUpdate = ['next_schedule' => null, 'last_schedule' => $this->runTemplate->getDataValue('next_schedule')];
+
+        if ($statusCode) {
+            $rtUpdate = ['failed_jobs_count' => $this->runTemplate->getDataValue('failed_jobs_count') + 1];
+        } else {
+            $rtUpdate = ['successfull_jobs_count' => $this->runTemplate->getDataValue('successfull_jobs_count') + 1];
+        }
+
+        $this->runTemplate->updateToSQL($rtUpdate);
+
         // TODO
         //        if (file_exists($resultfile)) {
         //            unlink($resultfile);

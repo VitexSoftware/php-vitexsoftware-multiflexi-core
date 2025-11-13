@@ -947,12 +947,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "b52829022cb18210bb84e44e457bd4e890f8d2a7"
+                "reference": "c9b06fa2f64d9aaf2785cd325742a41f27e290aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/b52829022cb18210bb84e44e457bd4e890f8d2a7",
-                "reference": "b52829022cb18210bb84e44e457bd4e890f8d2a7",
+                "url": "https://api.github.com/repos/composer/semver/zipball/c9b06fa2f64d9aaf2785cd325742a41f27e290aa",
+                "reference": "c9b06fa2f64d9aaf2785cd325742a41f27e290aa",
                 "shasum": ""
             },
             "require": {
@@ -995,7 +995,7 @@
                     "homepage": "http://robbast.nl"
                 }
             ],
-            "description": "Semver library that offers utilities, version constraint parsing and validation.",
+            "description": "Version comparison library that offers utilities, version constraint parsing and validation.",
             "keywords": [
                 "semantic",
                 "semver",
@@ -1017,7 +1017,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-03T06:59:12+00:00"
+            "time": "2025-11-12T10:20:59+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -2255,8 +2255,8 @@
             "version": "2.1.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e126cad1e30a99b137b8ed75a85a676450ebb227",
-                "reference": "e126cad1e30a99b137b8ed75a85a676450ebb227",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d07c200a88c8133007dd6e7cb6fd710ee09039bc",
+                "reference": "d07c200a88c8133007dd6e7cb6fd710ee09039bc",
                 "shasum": ""
             },
             "require": {
@@ -2302,7 +2302,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-11T15:18:17+00:00"
+            "time": "2025-11-13T06:24:48+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2751,12 +2751,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "bc1f003e9e52f5026fb63d57bc9fedee1a419d72"
+                "reference": "48e4bfd6c671ec0410cf92447e73bde6598539ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/bc1f003e9e52f5026fb63d57bc9fedee1a419d72",
-                "reference": "bc1f003e9e52f5026fb63d57bc9fedee1a419d72",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/48e4bfd6c671ec0410cf92447e73bde6598539ba",
+                "reference": "48e4bfd6c671ec0410cf92447e73bde6598539ba",
                 "shasum": ""
             },
             "require": {
@@ -2848,7 +2848,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-11T15:58:44+00:00"
+            "time": "2025-11-13T07:21:09+00:00"
         },
         {
             "name": "psr/container",
@@ -3541,17 +3541,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "2c3da2b63daa748ae4b4df1df9f5fb5b9cf0a232"
+                "reference": "303aa811649ccd1d32e51e62d5c85949d01b5f1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/2c3da2b63daa748ae4b4df1df9f5fb5b9cf0a232",
-                "reference": "2c3da2b63daa748ae4b4df1df9f5fb5b9cf0a232",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/303aa811649ccd1d32e51e62d5c85949d01b5f1b",
+                "reference": "303aa811649ccd1d32e51e62d5c85949d01b5f1b",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4|^8.0",
-                "phpstan/phpstan": "^2.1.31"
+                "phpstan/phpstan": "^2.1.32"
             },
             "conflict": {
                 "rector/rector-doctrine": "*",
@@ -3586,7 +3586,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/main"
+                "source": "https://github.com/rectorphp/rector/tree/2.2.8"
             },
             "funding": [
                 {
@@ -3594,7 +3594,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-11T11:26:23+00:00"
+            "time": "2025-11-12T18:38:00+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -4636,12 +4636,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "96f1107efb9f0f5ab24def8b66bbdf6588bbe0e2"
+                "reference": "a2b78aee774e76d4a7ec82624ad9c269305010fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/96f1107efb9f0f5ab24def8b66bbdf6588bbe0e2",
-                "reference": "96f1107efb9f0f5ab24def8b66bbdf6588bbe0e2",
+                "url": "https://api.github.com/repos/symfony/console/zipball/a2b78aee774e76d4a7ec82624ad9c269305010fa",
+                "reference": "a2b78aee774e76d4a7ec82624ad9c269305010fa",
                 "shasum": ""
             },
             "require": {
@@ -4726,7 +4726,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-05T14:29:59+00:00"
+            "time": "2025-11-13T08:53:59+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -5110,12 +5110,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
-                "reference": "3324bca1ff334c8807a3968882edb76ea708b955"
+                "reference": "b38026df55197f9e39a44f3215788edf83187b80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/3324bca1ff334c8807a3968882edb76ea708b955",
-                "reference": "3324bca1ff334c8807a3968882edb76ea708b955",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/b38026df55197f9e39a44f3215788edf83187b80",
+                "reference": "b38026df55197f9e39a44f3215788edf83187b80",
                 "shasum": ""
             },
             "require": {
@@ -5173,7 +5173,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-13T16:46:49+00:00"
+            "time": "2025-11-12T15:39:26+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -5917,34 +5917,35 @@
         },
         {
             "name": "symfony/string",
-            "version": "8.0.x-dev",
+            "version": "7.4.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "f929eccf09531078c243df72398560e32fa4cf4f"
+                "reference": "bc7852160e1f18ce249c3daaba3b26cf5425a34d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/f929eccf09531078c243df72398560e32fa4cf4f",
-                "reference": "f929eccf09531078c243df72398560e32fa4cf4f",
+                "url": "https://api.github.com/repos/symfony/string/zipball/bc7852160e1f18ce249c3daaba3b26cf5425a34d",
+                "reference": "bc7852160e1f18ce249c3daaba3b26cf5425a34d",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.4",
-                "symfony/polyfill-ctype": "^1.8",
-                "symfony/polyfill-intl-grapheme": "^1.33",
-                "symfony/polyfill-intl-normalizer": "^1.0",
-                "symfony/polyfill-mbstring": "^1.0"
+                "php": ">=8.2",
+                "symfony/deprecation-contracts": "^2.5|^3.0",
+                "symfony/polyfill-ctype": "~1.8",
+                "symfony/polyfill-intl-grapheme": "~1.33",
+                "symfony/polyfill-intl-normalizer": "~1.0",
+                "symfony/polyfill-mbstring": "~1.0"
             },
             "conflict": {
                 "symfony/translation-contracts": "<2.5"
             },
             "require-dev": {
-                "symfony/emoji": "^7.4|^8.0",
-                "symfony/http-client": "^7.4|^8.0",
-                "symfony/intl": "^7.4|^8.0",
+                "symfony/emoji": "^7.1|^8.0",
+                "symfony/http-client": "^6.4|^7.0|^8.0",
+                "symfony/intl": "^6.4|^7.0|^8.0",
                 "symfony/translation-contracts": "^2.5|^3.0",
-                "symfony/var-exporter": "^7.4|^8.0"
+                "symfony/var-exporter": "^6.4|^7.0|^8.0"
             },
             "type": "library",
             "autoload": {
@@ -5983,7 +5984,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/8.0"
+                "source": "https://github.com/symfony/string/tree/7.4"
             },
             "funding": [
                 {
@@ -6003,7 +6004,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-09-11T14:37:55+00:00"
+            "time": "2025-09-11T14:37:11+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6060,14 +6061,14 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "justinrainbow/json-schema": 20,
-        "phpstan/phpstan-phpunit": 20,
+        "vitexsoftware/ease-fluentpdo": 20,
         "phpunit/phpunit": 20,
-        "rector/rector": 20,
-        "vitexsoftware/ease-fluentpdo": 20
+        "phpstan/phpstan-phpunit": 20,
+        "rector/rector": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
+    "platform": [],
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

@@ -64,6 +64,8 @@ class RunTemplate extends \MultiFlexi\DBEngine
     {
         $this->nameColumn = 'name';
         $this->myTable = 'runtemplate';
+        $this->lastModifiedColumn = 'DatSave';
+        $this->createColumn = 'DatCreate';
         parent::__construct($identifier, $options);
     }
 
