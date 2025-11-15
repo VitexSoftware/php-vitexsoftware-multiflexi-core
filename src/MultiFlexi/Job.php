@@ -330,9 +330,9 @@ class Job extends Engine
         ];
 
         if ($statusCode) {
-            $rtUpdate = ['failed_jobs_count' => $this->runTemplate->getDataValue('failed_jobs_count') + 1];
+            $rtUpdate['failed_jobs_count'] = $this->runTemplate->getDataValue('failed_jobs_count') + 1;
         } else {
-            $rtUpdate = ['successfull_jobs_count' => $this->runTemplate->getDataValue('successfull_jobs_count') + 1];
+            $rtUpdate['successfull_jobs_count'] = $this->runTemplate->getDataValue('successfull_jobs_count') + 1;
         }
 
         $this->runTemplate->updateToSQL($rtUpdate, ['id' => $this->runTemplate->getMyKey()]);
