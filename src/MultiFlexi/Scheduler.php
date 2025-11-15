@@ -22,11 +22,15 @@ namespace MultiFlexi;
  */
 class Scheduler extends Engine
 {
-    // Convert 'inter' values to cron expressions
-    public static $intervCron = [
+    /**
+     * Convert 'inter' values to cron expressions.
+     *
+     * @var array<string, string>
+     */
+    public static array $intervCron = [
         'y' => '0 0 1 1 *',    // yearly
         'm' => '0 0 1 * *',    // monthly
-        'w' => '0 0 * * 0',    // weekly (Sunday)
+        'w' => '0 0 * * MON',  // weekly (Monday)
         'd' => '0 0 * * *',    // daily
         'h' => '0 * * * *',    // hourly
         'i' => '* * * * *',    // minutely
@@ -45,7 +49,7 @@ class Scheduler extends Engine
      */
     public function addJob(Job $job, \DateTime $when)
     {
-        $job->getRuntemplate()->updateToSQL(['last_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
+        $job->getRuntemplate()->updateToSQL(['next_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
 
         return $this->insertToSQL([
             'after' => $when->format('Y-m-d H:i:s'),

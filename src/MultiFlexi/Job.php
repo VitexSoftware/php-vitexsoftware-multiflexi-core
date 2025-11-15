@@ -34,6 +34,7 @@ class Job extends Engine
         'h' => 'hourly',
         'i' => 'minutly',
         'n' => 'disabled',
+        'c' => 'custom',
     ];
     public static array $intervalSecond = [
         'n' => '0',

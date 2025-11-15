@@ -74,7 +74,7 @@ class Application extends DBEngine
             }
         }
 
-        //        if ((\array_key_exists('uuid', $data) === false) || empty($data['uuid'])) {
+        //        if ((array_key_exists('uuid', $data) === false) || empty($data['uuid'])) {
         //            $data['uuid'] = \Ease\Functions::guidv4();
         //        }
 
