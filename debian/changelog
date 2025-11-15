@@ -1,8 +1,15 @@
-php-vitexsoftware-multiflexi-core (2.4.3) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.4.4) UNRELEASED; urgency=medium
 
+  * credential-type.schema packed now
+
+ -- Vítězslav Vitex Dvořák <info@vitexsoftware.cz>  Sat, 15 Nov 2025 23:36:31 +0100
+
+php-vitexsoftware-multiflexi-core (2.4.3) noble; urgency=medium
+
+  [ vitex ]
   * Update RunTemplate after job run fix
 
- -- vitex <info@vitexsoftware.cz>  Fri, 14 Nov 2025 00:26:12 +0100
+ -- Vítězslav Vitex Dvořák <info@vitexsoftware.cz>  Sat, 15 Nov 2025 23:36:11 +0100
 
 php-vitexsoftware-multiflexi-core (2.4.2) noble; urgency=medium
 

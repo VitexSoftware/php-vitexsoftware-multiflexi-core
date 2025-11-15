@@ -6,17 +6,18 @@ src/MultiFlexi/CredentialType/*.php       usr/share/php/MultiFlexi/CredentialTyp
 src/MultiFlexi/Zabbix/Request/*.php       usr/share/php/MultiFlexi/Zabbix/Request/
 src/MultiFlexi/Zabbix/Exception/*.php     usr/share/php/MultiFlexi/Zabbix/Exception/
 src/MultiFlexi/Action/CustomCommand.php   usr/share/php/MultiFlexi/Action
-#src/MultiFlexi/Action/Github.php          usr/share/php/MultiFlexi/Action
+#src/MultiFlexi/Action/Github.php         usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Sleep.php           usr/share/php/MultiFlexi/Action
-src/MultiFlexi/Action/WebHook.php          usr/share/php/MultiFlexi/Action
+src/MultiFlexi/Action/WebHook.php         usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/LaunchJob.php       usr/share/php/MultiFlexi/Action
-#src/MultiFlexi/Action/RedmineIssue.php    usr/share/php/MultiFlexi/Action
+#src/MultiFlexi/Action/RedmineIssue.php   usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Reschedule.php      usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Stop.php            usr/share/php/MultiFlexi/Action
-#src/MultiFlexi/Action/TriggerJenkins.php  usr/share/php/MultiFlexi/Action
+#src/MultiFlexi/Action/TriggerJenkins.php usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Zabbix.php  	  usr/share/php/MultiFlexi/Action
 
 multiflexi.app.schema.json		  usr/lib/multiflexi
+multiflexi.credential-type.schema.json	  usr/lib/multiflexi
 
 
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/
