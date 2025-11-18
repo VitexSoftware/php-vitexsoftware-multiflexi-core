@@ -30,7 +30,7 @@ class Scheduler extends Engine
     public static array $intervCron = [
         'y' => '0 0 1 1 *',    // yearly
         'm' => '0 0 1 * *',    // monthly
-        'w' => '0 0 * * 1',  // weekly (Monday)
+        'w' => '0 0 * * 1',    // weekly (Monday)
         'd' => '0 0 * * *',    // daily
         'h' => '0 * * * *',    // hourly
         'i' => '* * * * *',    // minutely
