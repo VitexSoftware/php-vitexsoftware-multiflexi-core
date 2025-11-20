@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
+  "name": "Example App with Exit Codes",
+  "description": {
+    "en": "Example application demonstrating exit code definitions",
+    "cs": "Příklad aplikace demonstrující definice návratových kódů"
+  },
+  "version": "1.0.0",
+  "executable": "/usr/bin/example-app",
+  "environment": {
+    "EXAMPLE_OPTION": {
+      "type": "string",
+      "description": {
+        "en": "Example configuration option",
+        "cs": "Příklad konfigurační volby"
+      },
+      "required": true
+    }
+  },
+  "exitCodes": {
+    "0": {
+      "description": {
+        "en": "Success - operation completed without errors",
+        "cs": "Úspěch - operace byla dokončena bez chyb"
+      },
+      "severity": "success",
+      "retry": false
+    },
+    "1": {
+      "description": {
+        "en": "General error - unspecified failure",
+        "cs": "Obecná chyba - nespecifikované selhání"
+      },
+      "severity": "error",
+      "retry": false
+    },
+    "2": {
+      "description": {
+        "en": "Configuration error - invalid or missing configuration",
+        "cs": "Chyba konfigurace - neplatná nebo chybějící konfigurace"
+      },
+      "severity": "error",
+      "retry": false
+    },
+    "3": {
+      "description": {
+        "en": "Connection error - failed to connect to service",
+        "cs": "Chyba připojení - nepodařilo se připojit ke službě"
+      },
+      "severity": "warning",
+      "retry": true
+    },
+    "4": {
+      "description": {
+        "en": "Data validation error - input data is invalid",
+        "cs": "Chyba validace dat - vstupní data jsou neplatná"
+      },
+      "severity": "error",
+      "retry": false
+    },
+    "5": {
+      "description": {
+        "en": "Temporary failure - service temporarily unavailable",
+        "cs": "Dočasné selhání - služba je dočasně nedostupná"
+      },
+      "severity": "warning",
+      "retry": true
+    },
+    "126": {
+      "description": {
+        "en": "Command cannot execute - permission denied or not executable",
+        "cs": "Příkaz nelze spustit - nedostatečná oprávnění nebo není spustitelný"
+      },
+      "severity": "critical",
+      "retry": false
+    },
+    "127": {
+      "description": {
+        "en": "Command not found - executable does not exist",
+        "cs": "Příkaz nenalezen - spustitelný soubor neexistuje"
+      },
+      "severity": "critical",
+      "retry": false
+    }
+  }
+}

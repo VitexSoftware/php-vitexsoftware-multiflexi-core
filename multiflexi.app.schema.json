@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "$id": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
-  "schemaVersion": "3.0.1",
+  "schemaVersion": "3.1.0",
   "title": "MultiFlexi App Definition",
   "type": "object",
   "$defs": {
@@ -325,6 +325,43 @@
           ]
         }
       }
+    },
+    "exitCodes": {
+      "type": "object",
+      "description": "Possible exit codes returned by the application with their meanings.",
+      "patternProperties": {
+        "^[0-9]+$": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "$ref": "#/$defs/localizedString",
+              "description": "Localized description of what this exit code means."
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "success",
+                "info",
+                "warning",
+                "error",
+                "critical"
+              ],
+              "description": "Severity level of this exit code.",
+              "default": "error"
+            },
+            "retry": {
+              "type": "boolean",
+              "description": "Whether the job should be retried when this exit code is returned.",
+              "default": false
+            }
+          },
+          "required": [
+            "description"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [

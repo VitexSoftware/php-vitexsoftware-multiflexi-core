@@ -634,6 +634,11 @@ class Application extends DBEngine
             $this->importDefinedArtifacts($appId, $artifacts);
         }
 
+        // Import exit codes if present
+        if (isset($appSpec['exitCodes']) && \is_array($appSpec['exitCodes'])) {
+            $this->importExitCodes($appId, $appSpec['exitCodes']);
+        }
+
         return $fields;
     }
 
@@ -775,6 +780,57 @@ class Application extends DBEngine
 
             // TODO: Save localized descriptions when conffield_translations table is created
             // For now, we're using the default language description in the main table
+        }
+    }
+
+    /**
+     * Import exit codes from app JSON.
+     *
+     * @param int   $appId     Application ID
+     * @param array $exitCodes Exit codes definitions from JSON
+     */
+    protected function importExitCodes(int $appId, array $exitCodes): void
+    {
+        // First, delete existing exit codes for this app to ensure clean import
+        $this->getFluentPDO()
+            ->deleteFrom('app_exit_codes')
+            ->where('app_id', $appId)
+            ->execute();
+
+        foreach ($exitCodes as $exitCode => $codeData) {
+            // Cast exit code to integer
+            $exitCodeInt = (int) $exitCode;
+
+            // Extract severity and retry settings (not localized)
+            $severity = $codeData['severity'] ?? 'error';
+            $retry = isset($codeData['retry']) ? (bool) $codeData['retry'] : false;
+
+            // Handle localized description field
+            $descriptions = [];
+
+            if (isset($codeData['description'])) {
+                if (\is_string($codeData['description'])) {
+                    // Legacy string format - assume English
+                    $descriptions['en'] = $codeData['description'];
+                } elseif (\is_array($codeData['description'])) {
+                    // Localized object format
+                    $descriptions = $codeData['description'];
+                }
+            }
+
+            // Insert exit code records for each language
+            foreach ($descriptions as $lang => $description) {
+                $this->getFluentPDO()
+                    ->insertInto('app_exit_codes', [
+                        'app_id' => $appId,
+                        'exit_code' => $exitCodeInt,
+                        'lang' => $lang,
+                        'description' => $description,
+                        'severity' => $severity,
+                        'retry' => $retry ? 1 : 0,
+                    ])
+                    ->execute();
+            }
         }
     }
 
