@@ -330,18 +330,27 @@ class Job extends Engine
             }
         }
 
-        $rtUpdate = [
-            'next_schedule' => null,
-            'last_schedule' => $this->runTemplate->getDataValue('next_schedule'),
-        ];
+        // Prepare runtemplate updates
+        $rtUpdate = [];
 
+        // Only update scheduling timestamps for non-adhoc jobs
+        // Ad-hoc jobs (manually triggered from web/CLI/API) should not affect automatic scheduling
+        $scheduleType = $this->getDataValue('schedule_type');
+        if ($scheduleType !== 'adhoc') {
+            $rtUpdate['next_schedule'] = null;
+            $rtUpdate['last_schedule'] = $this->runTemplate->getDataValue('next_schedule');
+        }
+
+        // Always update job counters (for all job types)
         if ($statusCode) {
             $rtUpdate['failed_jobs_count'] = $this->runTemplate->getDataValue('failed_jobs_count') + 1;
         } else {
             $rtUpdate['successfull_jobs_count'] = $this->runTemplate->getDataValue('successfull_jobs_count') + 1;
         }
 
-        $this->runTemplate->updateToSQL($rtUpdate, ['id' => $this->runTemplate->getMyKey()]);
+        if (!empty($rtUpdate)) {
+            $this->runTemplate->updateToSQL($rtUpdate, ['id' => $this->runTemplate->getMyKey()]);
+        }
 
         // TODO
         //        if (file_exists($resultfile)) {
