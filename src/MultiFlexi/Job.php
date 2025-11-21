@@ -434,6 +434,9 @@ EOD;
             $this->reportToZabbix($this->zabbixMessageData);
         }
 
+        // Automatically schedule the job for execution
+        $this->scheduleJobRun($scheduled);
+
         return $outline;
     }
 
