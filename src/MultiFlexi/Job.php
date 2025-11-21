@@ -944,7 +944,7 @@ EOD;
             ->where('job', $this->getMyKey())
             ->leftJoin('job ON job.id = schedule.job')->select(['job.schedule_type'])
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
-            ->orderBy('scheduled')
+            ->orderBy('schedule.after')
             ->fetchAll();
     }
 
