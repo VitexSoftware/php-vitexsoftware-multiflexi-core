@@ -960,9 +960,11 @@ EOD;
      * Orphaned jobs: Jobs without begin time and no schedule entry
      * Non-orphaned jobs: Jobs that were executed (have begin time)
      * 
+     * @param array|int|null $data Optional data for deletion (inherited from parent)
+     * 
      * @return bool Success status
      */
-    public function deleteFromSQL(): bool
+    public function deleteFromSQL($data = null): bool
     {
         $jobId = $this->getMyKey();
         
@@ -1044,7 +1046,7 @@ EOD;
         }
         
         // Finally, delete the job itself using parent method
-        return parent::deleteFromSQL();
+        return parent::deleteFromSQL($data);
     }
 
     /**
