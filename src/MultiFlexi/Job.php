@@ -1046,7 +1046,9 @@ EOD;
         }
         
         // Finally, delete the job itself using parent method
-        return parent::deleteFromSQL($data);
+        // Parent method returns int (number of deleted rows) or bool, convert to bool
+        $result = parent::deleteFromSQL($data);
+        return (bool)$result;
     }
 
     /**
