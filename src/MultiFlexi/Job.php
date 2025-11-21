@@ -949,6 +949,105 @@ EOD;
     }
 
     /**
+     * Delete job from database with proper runtemplate counter updates.
+     * 
+     * This method:
+     * 1. Determines if the job is orphaned (not started, not scheduled)
+     * 2. For non-orphaned completed jobs, decrements appropriate runtemplate counters
+     * 3. Deletes related schedule entries
+     * 4. Deletes the job record
+     * 
+     * Orphaned jobs: Jobs without begin time and no schedule entry
+     * Non-orphaned jobs: Jobs that were executed (have begin time)
+     * 
+     * @return bool Success status
+     */
+    public function deleteFromSQL(): bool
+    {
+        $jobId = $this->getMyKey();
+        
+        if (!$jobId) {
+            $this->addStatusMessage(_('Cannot delete job without ID'), 'error');
+            return false;
+        }
+        
+        // Load current job data
+        $this->loadFromSQL($jobId);
+        
+        $runtemplateId = $this->getDataValue('runtemplate_id');
+        $exitcode = $this->getDataValue('exitcode');
+        $begin = $this->getDataValue('begin');
+        
+        // Determine if job contributed to runtemplate statistics
+        // Only jobs that were started (have begin time) AND completed (have exitcode) count
+        $shouldUpdateCounters = ($begin !== null && $exitcode !== null);
+        
+        if ($shouldUpdateCounters && $runtemplateId) {
+            try {
+                // Load runtemplate to update counters
+                $runTemplate = new RunTemplate($runtemplateId);
+                
+                if ($runTemplate->getMyKey()) {
+                    $updates = [];
+                    
+                    // Decrement appropriate counter based on exit code
+                    if ((int)$exitcode === 0) {
+                        $currentCount = (int)$runTemplate->getDataValue('successfull_jobs_count');
+                        if ($currentCount > 0) {
+                            $updates['successfull_jobs_count'] = $currentCount - 1;
+                        }
+                    } else {
+                        $currentCount = (int)$runTemplate->getDataValue('failed_jobs_count');
+                        if ($currentCount > 0) {
+                            $updates['failed_jobs_count'] = $currentCount - 1;
+                        }
+                    }
+                    
+                    if (!empty($updates)) {
+                        $runTemplate->updateToSQL($updates, ['id' => $runtemplateId]);
+                        $this->addStatusMessage(
+                            sprintf(_('Updated runtemplate counters after job deletion')),
+                            'debug'
+                        );
+                    }
+                }
+            } catch (\Exception $e) {
+                $this->addStatusMessage(
+                    sprintf(_('Failed to update runtemplate counters: %s'), $e->getMessage()),
+                    'warning'
+                );
+                // Continue with deletion even if counter update fails
+            }
+        }
+        
+        // Delete related schedule entries
+        try {
+            $scheduler = new Scheduler();
+            $scheduleEntries = $scheduler->listingQuery()->where('job', $jobId)->fetchAll();
+            
+            foreach ($scheduleEntries as $entry) {
+                $scheduler->deleteFromSQL((int)$entry['id']);
+            }
+            
+            if (!empty($scheduleEntries)) {
+                $this->addStatusMessage(
+                    sprintf(_('Deleted %d schedule entries'), count($scheduleEntries)),
+                    'debug'
+                );
+            }
+        } catch (\Exception $e) {
+            $this->addStatusMessage(
+                sprintf(_('Failed to delete schedule entries: %s'), $e->getMessage()),
+                'warning'
+            );
+            // Continue with job deletion even if schedule cleanup fails
+        }
+        
+        // Finally, delete the job itself using parent method
+        return parent::deleteFromSQL();
+    }
+
+    /**
      * Create artifacts for job execution results.
      * This ensures all job artifacts are preserved regardless of action configuration.
      *
