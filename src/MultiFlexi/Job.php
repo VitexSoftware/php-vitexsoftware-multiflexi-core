@@ -129,6 +129,12 @@ class Job extends Engine
         $this->application = $this->runTemplate->getApplication();
         $this->company = $this->runTemplate->getCompany();
 
+        // Ensure we always have a valid user ID
+        $launchedByUserId = \Ease\Shared::user()->getMyKey();
+        if (!$launchedByUserId) {
+            throw new \Ease\Exception(_('Cannot create job without authenticated user. User ID is required.'));
+        }
+
         $this->setData([
             'runtemplate_id' => $runtemplateId,
             'company_id' => $this->runTemplate->getDataValue('company_id'),
@@ -140,7 +146,7 @@ class Job extends Engine
             'schedule' => $scheduled->format('Y-m-d H:i:s'),
             'schedule_type' => $scheduleType,
             'executor' => $executor,
-            'launched_by' => \Ease\Shared::user()->getMyKey(),
+            'launched_by' => $launchedByUserId,
         ], true);
 
         $jobId = $this->insertToSQL();
