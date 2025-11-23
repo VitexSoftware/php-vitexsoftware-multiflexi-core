@@ -39,7 +39,6 @@ class MultiFlexi extends \MultiFlexi\Environmentor implements injector
      */
     public function getEnvironment(): \MultiFlexi\ConfigFields
     {
-        new \MultiFlexi\Defaults();
         $envApplication = new \MultiFlexi\ConfigFields(self::name());
         $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_JOB_ID', 'integer'))->setValue((string) $this->engine->getMyKey()));
         $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_EXECUTOR', 'string'))->setValue($this->engine->getDataValue('executor')));

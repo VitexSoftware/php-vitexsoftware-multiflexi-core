@@ -50,6 +50,10 @@ class RaiffeisenBank extends \MultiFlexi\CredentialProtoType implements \MultiFl
         $clientIdField = new \MultiFlexi\ConfigField('XIBMCLIENTID', 'string', _('Client ID'), _('X-IBM-Client-Id for API access'));
         $clientIdField->setHint('your-client-id')->setValue('');
 
+        $rateFile = new \MultiFlexi\ConfigField('RBAPI_RATE_LIMIT_JSON_FILE', 'string', 'RBAPI_RATE_LIMIT_JSON_FILE', '', '/tmp/rbczpremiumapi_rates.json', \MultiFlexi\Defaults::$MULTIFLEXI_TMP.'/rbczpremiumapi_rates.json');
+        $rateFile->setManual(false);
+        $this->configFieldsProvided->addField($rateFile);
+
         $this->configFieldsInternal->addField($accountNumberField);
         $this->configFieldsInternal->addField($currencyField);
         $this->configFieldsInternal->addField($certFileField);
