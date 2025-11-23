@@ -53,6 +53,11 @@ class RunTemplate extends \MultiFlexi\DBEngine
     public Application $application;
 
     /**
+     * Default limit for listing queries.
+     */
+    public ?int $limit = null;
+
+    /**
      * @var array the environment for the run template
      */
     private array $environment;

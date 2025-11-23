@@ -80,11 +80,13 @@ class Fake extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
 
     public function launch($command)
     {
-        $this->addStatusMessage(sprintf(_('Not launching: %s'),$command), 'debug');
-        sleep (\Ease\Functions::randomNumber(0, 20));
+        $this->addStatusMessage(sprintf(_('Not launching: %s'), $command), 'debug');
+        sleep(\Ease\Functions::randomNumber(0, 20));
+
         foreach ($this->jobFiles as $file) {
             unlink($file['value']);
         }
+
         return \Ease\Functions::randomNumber(0, 255);
     }
 

@@ -1,8 +1,15 @@
-php-vitexsoftware-multiflexi-core (2.4.4) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.5.0) UNRELEASED; urgency=medium
 
+  * New class Defaults introduced
+
+ -- vitex <info@vitexsoftware.cz>  Sun, 23 Nov 2025 14:18:32 +0100
+
+php-vitexsoftware-multiflexi-core (2.4.4) noble; urgency=medium
+
+  [ Vítězslav Vitex Dvořák ]
   * credential-type.schema packed now
 
- -- Vítězslav Vitex Dvořák <info@vitexsoftware.cz>  Sat, 15 Nov 2025 23:36:31 +0100
+ -- vitex <info@vitexsoftware.cz>  Sun, 23 Nov 2025 14:18:05 +0100
 
 php-vitexsoftware-multiflexi-core (2.4.3) noble; urgency=medium
 
