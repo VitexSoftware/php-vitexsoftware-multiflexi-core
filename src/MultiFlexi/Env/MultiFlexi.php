@@ -31,7 +31,7 @@ class MultiFlexi extends \MultiFlexi\Environmentor implements injector
      */
     public static function allKeysHandled()
     {
-        return ['MULTIFLEXI_VERSION', 'MULTIFLEXI_JOB_ID', 'MULTIFLEXI_EXECUTOR'];
+        return ['MULTIFLEXI_VERSION', 'MULTIFLEXI_JOB_ID', 'MULTIFLEXI_EXECUTOR', 'MULTIFLEXI_TMP'];
     }
 
     /**
@@ -39,10 +39,12 @@ class MultiFlexi extends \MultiFlexi\Environmentor implements injector
      */
     public function getEnvironment(): \MultiFlexi\ConfigFields
     {
+        new \MultiFlexi\Defaults();
         $envApplication = new \MultiFlexi\ConfigFields(self::name());
         $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_JOB_ID', 'integer'))->setValue((string) $this->engine->getMyKey()));
         $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_EXECUTOR', 'string'))->setValue($this->engine->getDataValue('executor')));
         $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_VERSION', 'string'))->setValue(\Ease\Shared::appVersion()));
+        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_TMP', 'string'))->setValue(\MultiFlexi\Defaults::$MULTIFLEXI_TMP));
 
         return $envApplication;
     }
