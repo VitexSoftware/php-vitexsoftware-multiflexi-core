@@ -453,8 +453,16 @@ class Application extends DBEngine
     public function importAppJson($jsonFile): array
     {
         $fields = [];
-        if (empty($this->validateAppJson($jsonFile))) {
+        $validationProblems = $this->validateAppJson($jsonFile);
 
+        if ($validationProblems) {
+            $this->addStatusMessage($validationProblems[0], 'debug');
+            unset($validationProblems[0]);
+
+            foreach ($validationProblems as $validationProblem) {
+                $this->addStatusMessage($validationProblem, 'error');
+            }
+        } else {
             // Validate JSON against schema before import
             $schemaFile = self::$appSchema;
 
