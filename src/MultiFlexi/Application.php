@@ -328,6 +328,9 @@ class Application extends DBEngine
         $validator->validate($data, $schema);
 
         if (!$validator->isValid()) {
+            $schemaVersion = $schema->{'schemaVersion'} ?? 'unknown';
+            $errors[] = sprintf(_('JSON does not comply with. %s version %s'), $schemaFile, $schemaVersion);
+
             foreach ($validator->getErrors() as $error) {
                 $errors[] = sprintf("Property '%s': %s", $error['property'], $error['message']);
             }
@@ -449,194 +452,196 @@ class Application extends DBEngine
      */
     public function importAppJson($jsonFile): array
     {
-        $fields = [];
+        if (empty($this->validateAppJson($jsonFile))) {
+            $fields = [];
 
-        // Validate JSON against schema before import
-        $schemaFile = self::$appSchema;
+            // Validate JSON against schema before import
+            $schemaFile = self::$appSchema;
 
-        if (!file_exists($schemaFile)) {
-            throw new \RuntimeException(_('Schema file not found: ').$schemaFile);
-        }
-
-        $appSpecRaw = file_get_contents($jsonFile);
-
-        if (empty($appSpecRaw)) {
-            throw new \RuntimeException(_('App definition file is empty: ').$jsonFile);
-        }
-
-        $appSpec = json_decode($appSpecRaw, true);
-
-        // Remove all keys starting with '$' to prevent SQL errors
-        foreach (array_keys($appSpec) as $key) {
-            if (str_starts_with($key, '$')) {
-                unset($appSpec[$key]);
+            if (!file_exists($schemaFile)) {
+                throw new \RuntimeException(_('Schema file not found: ').$schemaFile);
             }
-        }
 
-        // Also remove any other known non-database keys
-        unset($appSpec['produces']);
+            $appSpecRaw = file_get_contents($jsonFile);
 
-        if (json_last_error() !== \JSON_ERROR_NONE) {
-            throw new \RuntimeException(_('Invalid JSON: ').json_last_error_msg());
-        }
+            if (empty($appSpecRaw)) {
+                throw new \RuntimeException(_('App definition file is empty: ').$jsonFile);
+            }
 
-        // Extract localized fields
-        $localizedFields = ['name', 'title', 'description'];
-        $defaultLang = 'en'; // Default language
-        $translations = [];
+            $appSpec = json_decode($appSpecRaw, true);
 
-        foreach ($localizedFields as $field) {
-            if (isset($appSpec[$field])) {
-                if (\is_string($appSpec[$field])) {
-                    // Legacy string format
+            // Remove all keys starting with '$' to prevent SQL errors
+            foreach (array_keys($appSpec) as $key) {
+                if (str_starts_with($key, '$')) {
+                    unset($appSpec[$key]);
+                }
+            }
+
+            // Also remove any other known non-database keys
+            unset($appSpec['produces']);
+
+            if (json_last_error() !== \JSON_ERROR_NONE) {
+                throw new \RuntimeException(_('Invalid JSON: ').json_last_error_msg());
+            }
+
+            // Extract localized fields
+            $localizedFields = ['name', 'title', 'description'];
+            $defaultLang = 'en'; // Default language
+            $translations = [];
+
+            foreach ($localizedFields as $field) {
+                if (isset($appSpec[$field])) {
+                    if (\is_string($appSpec[$field])) {
+                        // Legacy string format
+                        $fields[$field] = $appSpec[$field];
+                    } elseif (\is_array($appSpec[$field])) {
+                        // Localized object format
+                        $fields[$field] = $appSpec[$field][$defaultLang] ?? reset($appSpec[$field]);
+
+                        foreach ($appSpec[$field] as $lang => $value) {
+                            $translations[$lang][$field] = $value;
+                        }
+                    }
+                }
+            }
+
+            // Extract non-localized fields
+            $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements',
+                'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
+
+            foreach ($nonLocalizedFields as $field) {
+                if (isset($appSpec[$field])) {
                     $fields[$field] = $appSpec[$field];
-                } elseif (\is_array($appSpec[$field])) {
-                    // Localized object format
-                    $fields[$field] = $appSpec[$field][$defaultLang] ?? reset($appSpec[$field]);
-
-                    foreach ($appSpec[$field] as $lang => $value) {
-                        $translations[$lang][$field] = $value;
-                    }
                 }
             }
-        }
 
-        // Extract non-localized fields
-        $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements',
-            'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
-
-        foreach ($nonLocalizedFields as $field) {
-            if (isset($appSpec[$field])) {
-                $fields[$field] = $appSpec[$field];
+            // Set defaults for required fields if not present
+            if (!isset($fields['deploy'])) {
+                $fields['deploy'] = ''; // Empty string as default
             }
-        }
 
-        // Set defaults for required fields if not present
-        if (!isset($fields['deploy'])) {
-            $fields['deploy'] = ''; // Empty string as default
-        }
-
-        if (!isset($fields['homepage'])) {
-            $fields['homepage'] = ''; // Empty string as default
-        }
-
-        // Handle requirements field (convert array to comma-separated string if needed)
-        if (isset($fields['requirements'])) {
-            if (\is_array($fields['requirements'])) {
-                $fields['requirements'] = implode(',', array_filter($fields['requirements']));
+            if (!isset($fields['homepage'])) {
+                $fields['homepage'] = ''; // Empty string as default
             }
-        } else {
-            $fields['requirements'] = ''; // Empty string as default
-        }
 
-        // Handle topics field (convert array to comma-separated string if needed)
-        if (isset($fields['topics'])) {
-            if (\is_array($fields['topics'])) {
-                $fields['topics'] = implode(',', array_filter($fields['topics']));
-            }
-        } else {
-            $fields['topics'] = ''; // Empty string as default
-        }
-
-        // Handle artifacts field (convert array to string if needed)
-        if (isset($appSpec['artifacts'])) {
-            if (\is_array($appSpec['artifacts'])) {
-                // Convert artifacts array to a pattern string
-                $patterns = [];
-
-                foreach ($appSpec['artifacts'] as $artifact) {
-                    if (isset($artifact['path'])) {
-                        $patterns[] = $artifact['path'];
-                    }
+            // Handle requirements field (convert array to comma-separated string if needed)
+            if (isset($fields['requirements'])) {
+                if (\is_array($fields['requirements'])) {
+                    $fields['requirements'] = implode(',', array_filter($fields['requirements']));
                 }
-
-                $fields['artifacts'] = implode(',', $patterns);
             } else {
-                $fields['artifacts'] = $appSpec['artifacts'];
+                $fields['requirements'] = ''; // Empty string as default
             }
-        }
 
-        // Handle environment configurations
-        if (isset($appSpec['environment']) && \is_array($appSpec['environment'])) {
-            // We'll handle environment import after saving the app
-            $environmentConfigs = $appSpec['environment'];
-        }
+            // Handle topics field (convert array to comma-separated string if needed)
+            if (isset($fields['topics'])) {
+                if (\is_array($fields['topics'])) {
+                    $fields['topics'] = implode(',', array_filter($fields['topics']));
+                }
+            } else {
+                $fields['topics'] = ''; // Empty string as default
+            }
 
-        // Handle environment artifacts
-        if (isset($appSpec['artifacts']) && \is_array($appSpec['artifacts'])) {
-            // We'll handle environment import after saving the app
-            $artifacts = $appSpec['artifacts'];
-        }
+            // Handle artifacts field (convert array to string if needed)
+            if (isset($appSpec['artifacts'])) {
+                if (\is_array($appSpec['artifacts'])) {
+                    // Convert artifacts array to a pattern string
+                    $patterns = [];
 
-        // Check if app already exists by UUID first, then by name as fallback
-        $existingApp = null;
+                    foreach ($appSpec['artifacts'] as $artifact) {
+                        if (isset($artifact['path'])) {
+                            $patterns[] = $artifact['path'];
+                        }
+                    }
 
-        if (isset($fields['uuid'])) {
-            $existingApp = $this->getFluentPDO()
-                ->from('apps')
-                ->where('uuid', $fields['uuid'])
-                ->fetch();
-        }
+                    $fields['artifacts'] = implode(',', $patterns);
+                } else {
+                    $fields['artifacts'] = $appSpec['artifacts'];
+                }
+            }
 
-        if (!$existingApp && isset($fields['name'])) {
-            $existingApp = $this->getFluentPDO()
-                ->from('apps')
-                ->where('name', $fields['name'])
-                ->fetch();
-        }
+            // Handle environment configurations
+            if (isset($appSpec['environment']) && \is_array($appSpec['environment'])) {
+                // We'll handle environment import after saving the app
+                $environmentConfigs = $appSpec['environment'];
+            }
 
-        if ($existingApp) {
-            // Update existing app
-            $appId = $existingApp['id'];
-            $this->setMyKey($appId);
-            $this->takeData($fields);
-            $this->saveToSQL();
-        } else {
-            // Create new app
-            $this->takeData($fields);
-            $appId = $this->saveToSQL();
-        }
+            // Handle environment artifacts
+            if (isset($appSpec['artifacts']) && \is_array($appSpec['artifacts'])) {
+                // We'll handle environment import after saving the app
+                $artifacts = $appSpec['artifacts'];
+            }
 
-        // Save translations to app_translations table
-        foreach ($translations as $lang => $data) {
-            // Check if translation already exists
-            $existingTranslation = $this->getFluentPDO()
-                ->from('app_translations')
-                ->where('app_id', $appId)
-                ->where('lang', $lang)
-                ->fetch();
+            // Check if app already exists by UUID first, then by name as fallback
+            $existingApp = null;
 
-            if ($existingTranslation) {
-                // Update existing translation
-                $this->getFluentPDO()
-                    ->update('app_translations')
-                    ->set($data)
+            if (isset($fields['uuid'])) {
+                $existingApp = $this->getFluentPDO()
+                    ->from('apps')
+                    ->where('uuid', $fields['uuid'])
+                    ->fetch();
+            }
+
+            if (!$existingApp && isset($fields['name'])) {
+                $existingApp = $this->getFluentPDO()
+                    ->from('apps')
+                    ->where('name', $fields['name'])
+                    ->fetch();
+            }
+
+            if ($existingApp) {
+                // Update existing app
+                $appId = $existingApp['id'];
+                $this->setMyKey($appId);
+                $this->takeData($fields);
+                $this->saveToSQL();
+            } else {
+                // Create new app
+                $this->takeData($fields);
+                $appId = $this->saveToSQL();
+            }
+
+            // Save translations to app_translations table
+            foreach ($translations as $lang => $data) {
+                // Check if translation already exists
+                $existingTranslation = $this->getFluentPDO()
+                    ->from('app_translations')
                     ->where('app_id', $appId)
                     ->where('lang', $lang)
-                    ->execute();
-            } else {
-                // Insert new translation
-                $this->getFluentPDO()
-                    ->insertInto('app_translations', array_merge($data, [
-                        'app_id' => $appId,
-                        'lang' => $lang,
-                    ]))
-                    ->execute();
+                    ->fetch();
+
+                if ($existingTranslation) {
+                    // Update existing translation
+                    $this->getFluentPDO()
+                        ->update('app_translations')
+                        ->set($data)
+                        ->where('app_id', $appId)
+                        ->where('lang', $lang)
+                        ->execute();
+                } else {
+                    // Insert new translation
+                    $this->getFluentPDO()
+                        ->insertInto('app_translations', array_merge($data, [
+                            'app_id' => $appId,
+                            'lang' => $lang,
+                        ]))
+                        ->execute();
+                }
             }
-        }
 
-        // Import environment configurations if present
-        if (isset($environmentConfigs)) {
-            $this->importEnvironmentConfigs($appId, $environmentConfigs);
-        }
+            // Import environment configurations if present
+            if (isset($environmentConfigs)) {
+                $this->importEnvironmentConfigs($appId, $environmentConfigs);
+            }
 
-        if (isset($artifacts)) {
-            $this->importDefinedArtifacts($appId, $artifacts);
-        }
+            if (isset($artifacts)) {
+                $this->importDefinedArtifacts($appId, $artifacts);
+            }
 
-        // Import exit codes if present
-        if (isset($appSpec['exitCodes']) && \is_array($appSpec['exitCodes'])) {
-            $this->importExitCodes($appId, $appSpec['exitCodes']);
+            // Import exit codes if present
+            if (isset($appSpec['exitCodes']) && \is_array($appSpec['exitCodes'])) {
+                $this->importExitCodes($appId, $appSpec['exitCodes']);
+            }
         }
 
         return $fields;
