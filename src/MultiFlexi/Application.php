@@ -542,14 +542,15 @@ class Application extends DBEngine
             }
 
             // Handle topics field (convert array to comma-separated string if needed)
-            if (isset($fields['topics'])) {
+            if (isset($fields['tags'])) {
                 if (\is_array($fields['topics'])) {
                     $fields['topics'] = implode(',', array_filter($fields['topics']));
                 }
             } else {
                 $fields['topics'] = ''; // Empty string as default
             }
-
+            unset($fields['tags']);
+            
             // Handle artifacts field (convert array to string if needed)
             if (isset($appSpec['artifacts'])) {
                 if (\is_array($appSpec['artifacts'])) {
