@@ -240,6 +240,10 @@ class CredentialType extends DBEngine
             $insertData['class'] = $data['class'];
         }
 
+        if (isset($data['version'])) {
+            $insertData['version'] = $data['version'];
+        }
+
         if (isset($data['logo'])) {
             $insertData['logo'] = $data['logo'];
         }

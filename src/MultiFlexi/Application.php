@@ -549,8 +549,9 @@ class Application extends DBEngine
             } else {
                 $fields['topics'] = ''; // Empty string as default
             }
+
             unset($fields['tags']);
-            
+
             // Handle artifacts field (convert array to string if needed)
             if (isset($appSpec['artifacts'])) {
                 if (\is_array($appSpec['artifacts'])) {
