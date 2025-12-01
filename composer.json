@@ -2,7 +2,7 @@
     "name": "vitexsoftware/multiflexi-core",
     "type": "library",
     "require": {
-        "justinrainbow/json-schema": "^6.0@dev",
+        "justinrainbow/json-schema": "^6.6@dev",
         "vitexsoftware/ease-fluentpdo": "dev-main",
         "jalismrs/bitwarden-php": "^1.1",
         "vitexsoftware/ease-html": "^1.40"
