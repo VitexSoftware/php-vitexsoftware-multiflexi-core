@@ -95,6 +95,12 @@ class Csas extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\creden
         return _('ČS a.s. / Erste');
     }
 
+    #[\Override]
+    public static function uuid(): string
+    {
+        return '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+    }
+
     public function prepareConfigForm(): void
     {
         if ($this->tokenHelper === false) {

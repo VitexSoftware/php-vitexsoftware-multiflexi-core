@@ -37,6 +37,12 @@ class Common extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cred
     }
 
     #[\Override]
+    public static function uuid(): string
+    {
+        return '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+    }
+
+    #[\Override]
     public static function logo(): string
     {
         return 'CommonCredentialType.svg';

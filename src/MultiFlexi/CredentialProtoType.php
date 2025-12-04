@@ -20,17 +20,23 @@ namespace MultiFlexi;
  *
  * @author Vitex <info@vitexsoftware.cz>
  */
-abstract class CredentialProtoType extends \Ease\Sand
+class CredentialProtoType extends \MultiFlexi\DBEngine
 {
     use \Ease\recordkey;
     protected \MultiFlexi\ConfigFields $configFieldsProvided;
     protected \MultiFlexi\ConfigFields $configFieldsInternal;
 
-    public function __construct()
+    /**
+     * Database table name
+     * @var string
+     */
+    public string $myTable = 'credential_prototype';
+
+    public function __construct($init = null)
     {
         $this->configFieldsProvided = new \MultiFlexi\ConfigFields();
         $this->configFieldsInternal = new \MultiFlexi\ConfigFields();
-        $this->setObjectName();
+        parent::__construct($init);
     }
 
     public function load(int $credTypeId)
@@ -134,5 +140,130 @@ abstract class CredentialProtoType extends \Ease\Sand
     public function query(): ConfigFields
     {
         return $this->fieldsProvided();
+    }
+
+    /**
+     * Import JSON credential prototype definition
+     * 
+     * @param array $jsonData
+     * @return bool
+     */
+    public function importJson(array $jsonData): bool
+    {
+        // Set basic prototype data
+        $this->setData([
+            'uuid' => $jsonData['uuid'] ?? '',
+            'code' => $jsonData['code'] ?? '',
+            'name' => $jsonData['name'] ?? '',
+            'description' => $jsonData['description'] ?? '',
+            'version' => $jsonData['version'] ?? '1.0',
+            'logo' => $jsonData['logo'] ?? '',
+            'url' => $jsonData['url'] ?? ''
+        ]);
+
+        $saved = $this->saveToSQL();
+        
+        if ($saved && isset($jsonData['fields']) && is_array($jsonData['fields'])) {
+            $fielder = new \MultiFlexi\CredentialProtoTypeField();
+            
+            // Clear existing fields for this prototype
+            $fielder->deleteFromSQL(['credential_prototype_id' => $this->getMyKey()]);
+            
+            // Import fields
+            foreach ($jsonData['fields'] as $fieldData) {
+                $fielder->dataReset();
+                $fielder->setData([
+                    'credential_prototype_id' => $this->getMyKey(),
+                    'keyword' => $fieldData['keyword'] ?? '',
+                    'type' => $fieldData['type'] ?? 'string',
+                    'name' => $fieldData['name'] ?? $fieldData['keyword'],
+                    'description' => $fieldData['description'] ?? '',
+                    'hint' => $fieldData['hint'] ?? '',
+                    'default_value' => $fieldData['default_value'] ?? '',
+                    'required' => $fieldData['required'] ?? false,
+                    'options' => isset($fieldData['options']) ? json_encode($fieldData['options']) : null
+                ]);
+                $fielder->saveToSQL();
+            }
+        }
+
+        return $saved !== false;
+    }
+
+    /**
+     * Export credential prototype to JSON format
+     * 
+     * @return array
+     */
+    public function exportJson(): array
+    {
+        $data = [
+            'uuid' => $this->getDataValue('uuid'),
+            'code' => $this->getDataValue('code'),
+            'name' => $this->getDataValue('name'),
+            'description' => $this->getDataValue('description'),
+            'version' => $this->getDataValue('version'),
+            'logo' => $this->getDataValue('logo'),
+            'url' => $this->getDataValue('url'),
+            'fields' => []
+        ];
+
+        // Export fields
+        if ($this->getMyKey()) {
+            $fielder = new \MultiFlexi\CredentialProtoTypeField();
+            $fields = $fielder->listingQuery()
+                ->where('credential_prototype_id', $this->getMyKey())
+                ->fetchAll();
+
+            foreach ($fields as $field) {
+                $fieldData = [
+                    'keyword' => $field['keyword'],
+                    'type' => $field['type'],
+                    'name' => $field['name'],
+                    'description' => $field['description'],
+                    'required' => (bool) $field['required']
+                ];
+
+                if (!empty($field['hint'])) {
+                    $fieldData['hint'] = $field['hint'];
+                }
+                if (!empty($field['default_value'])) {
+                    $fieldData['default_value'] = $field['default_value'];
+                }
+                if (!empty($field['options'])) {
+                    $fieldData['options'] = json_decode($field['options'], true);
+                }
+
+                $data['fields'][] = $fieldData;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Schema path for credential prototype JSON validation
+     * @var string
+     */
+    public static string $credTypeSchema = __DIR__ . '/../../schemas/credential-prototype.schema.json';
+
+    /**
+     * Validate code format
+     * @param string $code
+     * @return bool
+     */
+    public function validateCodeFormat(string $code): bool
+    {
+        return preg_match('/^[a-zA-Z0-9_-]{2,64}$/', $code) === 1;
+    }
+
+    /**
+     * Validate UUID format
+     * @param string $uuid
+     * @return bool
+     */
+    public function validateUuidFormat(string $uuid): bool
+    {
+        return preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $uuid) === 1;
     }
 }

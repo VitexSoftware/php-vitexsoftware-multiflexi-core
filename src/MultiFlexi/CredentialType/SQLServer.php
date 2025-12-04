@@ -77,6 +77,11 @@ class SQLServer extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
         return _('Credential type for connecting to Microsoft SQL Server');
     }
 
+    public static function uuid(): string
+    {
+        return '6ba7b817-9dad-11d1-80b4-00c04fd430c8';
+    }
+
     #[\Override]
     public static function logo(): string
     {

@@ -74,6 +74,12 @@ class Office365 extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
     }
 
     #[\Override]
+    public static function uuid(): string
+    {
+        return '6ba7b813-9dad-11d1-80b4-00c04fd430c8';
+    }
+
+    #[\Override]
     public static function logo(): string
     {
         return self::$logo;

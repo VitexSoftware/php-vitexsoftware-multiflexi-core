@@ -20,6 +20,8 @@ namespace MultiFlexi;
  */
 interface credentialTypeInterface
 {
+    public static function uuid(): string;
+
     public static function name(): string;
 
     public static function description(): string;

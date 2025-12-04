@@ -48,6 +48,11 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
         return _('Use VaultWarden secrets');
     }
 
+    public static function uuid(): string
+    {
+        return '6ba7b818-9dad-11d1-80b4-00c04fd430c8';
+    }
+
     #[\Override]
     public function prepareConfigForm(): void
     {

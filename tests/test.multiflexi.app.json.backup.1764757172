@@ -1,0 +1,107 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
+  "image": "",
+  "name": {
+    "en": "MultiFlexi Probe",
+    "cs": "MultiFlexi Sonda"
+  },
+  "description": {
+    "en": "Task launcher testing tool",
+    "cs": "Nástroj pro testování spouštěče úloh"
+  },
+  "executable": "multiflexi-probe",
+  "setup": "ls -la {FILE_UPLOAD}",
+  "requirements": [
+    "mServer",
+    "SQLServer",
+    "RaiffeisenBank",
+    "Office365",
+    "FioBank",
+    "AbraFlexi",
+    "EnvFile",
+    "VaultWarden",
+    "Csas"
+  ],
+  "cmdparams": "{FILE_UPLOAD}",
+  "deploy": "sudo apt install multiflexi",
+  "homepage": "https://github.com/VitexSoftware/MultiFlexi",
+  "ociimage": "docker.io/vitexsoftware/multiflexi-probe",
+  "uuid": "775ed801-2489-4981-bc14-d8a01cba1938",
+  "topics": [
+    "MultiFlexi",
+    "probe",
+    "task launcher",
+    "testing",
+    "tool"
+  ],
+  "version": "2.0.0",
+  "environment": {
+    "FILE_UPLOAD": {
+      "type": "file-path",
+      "description": {
+        "en": "Testing file upload field",
+        "cs": "Testovací pole pro nahrávání souborů"
+      },
+      "defval": "/etc/fstab",
+      "required": true
+    },
+    "PASSWORD": {
+      "type": "password",
+      "description": {
+        "en": "An example of secret",
+        "cs": "Příklad tajemství"
+      },
+      "defval": "donotcare",
+      "required": false
+    },
+    "APP_DEBUG": {
+      "type": "bool",
+      "description": {
+        "en": "Show debug messages",
+        "cs": "Zobrazit ladicí zprávy"
+      },
+      "defval": "False",
+      "required": true
+    },
+    "RESULT_FILE": {
+      "type": "string",
+      "description": {
+        "en": "write output json data to",
+        "cs": "zapsat výstupní json data do"
+      },
+      "defval": "env_report.json",
+      "required": false
+    },
+    "FORCE_EXITCODE": {
+      "type": "integer",
+      "description": {
+        "en": "Force exit code",
+        "cs": "Vynutit výstupní kód"
+      },
+      "defval": "0",
+      "required": false
+    },
+    "ZABBIX_KEY": {
+      "type": "string",
+      "description": {
+        "en": "Default name for Zabbix Item key name",
+        "cs": "Výchozí název pro název klíče položky Zabbix"
+      },
+      "defval": "multiflexi-probe-{PASSWORD}",
+      "required": false
+    }
+  },
+  "multiflexi": "2.0.0",
+  "artifacts": [
+    {
+      "name": "SharePoint Upload Log",
+      "type": "file",
+      "path": ".*\\.json$",
+      "description": {
+        "en": "Json report",
+        "cs": "Jsonová zpráva"
+      }
+    }
+  ],
+  "schemaVersion": "3.2.1"
+}

@@ -66,6 +66,12 @@ class AbraFlexi extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
     }
 
     #[\Override]
+    public static function uuid(): string
+    {
+        return '3f2504e0-4f89-11d3-9a0c-0305e82c3301';
+    }
+
+    #[\Override]
     public static function logo(): string
     {
         return self::$logo;
