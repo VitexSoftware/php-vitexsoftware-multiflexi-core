@@ -23,14 +23,18 @@ namespace MultiFlexi;
 class CredentialProtoType extends \MultiFlexi\DBEngine
 {
     use \Ease\recordkey;
-    protected \MultiFlexi\ConfigFields $configFieldsProvided;
-    protected \MultiFlexi\ConfigFields $configFieldsInternal;
 
     /**
-     * Database table name
-     * @var string
+     * Database table name.
      */
     public string $myTable = 'credential_prototype';
+
+    /**
+     * Schema path for credential prototype JSON validation.
+     */
+    public static string $credTypeSchema = __DIR__.'/../../schemas/credential-prototype.schema.json';
+    protected \MultiFlexi\ConfigFields $configFieldsProvided;
+    protected \MultiFlexi\ConfigFields $configFieldsInternal;
 
     public function __construct($init = null)
     {
@@ -143,10 +147,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
     }
 
     /**
-     * Import JSON credential prototype definition
-     * 
-     * @param array $jsonData
-     * @return bool
+     * Import JSON credential prototype definition.
      */
     public function importJson(array $jsonData): bool
     {
@@ -158,17 +159,17 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
             'description' => $jsonData['description'] ?? '',
             'version' => $jsonData['version'] ?? '1.0',
             'logo' => $jsonData['logo'] ?? '',
-            'url' => $jsonData['url'] ?? ''
+            'url' => $jsonData['url'] ?? '',
         ]);
 
         $saved = $this->saveToSQL();
-        
-        if ($saved && isset($jsonData['fields']) && is_array($jsonData['fields'])) {
+
+        if ($saved && isset($jsonData['fields']) && \is_array($jsonData['fields'])) {
             $fielder = new \MultiFlexi\CredentialProtoTypeField();
-            
+
             // Clear existing fields for this prototype
             $fielder->deleteFromSQL(['credential_prototype_id' => $this->getMyKey()]);
-            
+
             // Import fields
             foreach ($jsonData['fields'] as $fieldData) {
                 $fielder->dataReset();
@@ -181,7 +182,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
                     'hint' => $fieldData['hint'] ?? '',
                     'default_value' => $fieldData['default_value'] ?? '',
                     'required' => $fieldData['required'] ?? false,
-                    'options' => isset($fieldData['options']) ? json_encode($fieldData['options']) : null
+                    'options' => isset($fieldData['options']) ? json_encode($fieldData['options']) : null,
                 ]);
                 $fielder->saveToSQL();
             }
@@ -191,9 +192,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
     }
 
     /**
-     * Export credential prototype to JSON format
-     * 
-     * @return array
+     * Export credential prototype to JSON format.
      */
     public function exportJson(): array
     {
@@ -205,7 +204,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
             'version' => $this->getDataValue('version'),
             'logo' => $this->getDataValue('logo'),
             'url' => $this->getDataValue('url'),
-            'fields' => []
+            'fields' => [],
         ];
 
         // Export fields
@@ -221,15 +220,17 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
                     'type' => $field['type'],
                     'name' => $field['name'],
                     'description' => $field['description'],
-                    'required' => (bool) $field['required']
+                    'required' => (bool) $field['required'],
                 ];
 
                 if (!empty($field['hint'])) {
                     $fieldData['hint'] = $field['hint'];
                 }
+
                 if (!empty($field['default_value'])) {
                     $fieldData['default_value'] = $field['default_value'];
                 }
+
                 if (!empty($field['options'])) {
                     $fieldData['options'] = json_decode($field['options'], true);
                 }
@@ -242,15 +243,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
     }
 
     /**
-     * Schema path for credential prototype JSON validation
-     * @var string
-     */
-    public static string $credTypeSchema = __DIR__ . '/../../schemas/credential-prototype.schema.json';
-
-    /**
-     * Validate code format
-     * @param string $code
-     * @return bool
+     * Validate code format.
      */
     public function validateCodeFormat(string $code): bool
     {
@@ -258,9 +251,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
     }
 
     /**
-     * Validate UUID format
-     * @param string $uuid
-     * @return bool
+     * Validate UUID format.
      */
     public function validateUuidFormat(string $uuid): bool
     {

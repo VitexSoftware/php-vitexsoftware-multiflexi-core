@@ -16,7 +16,7 @@ declare(strict_types=1);
 namespace MultiFlexi;
 
 /**
- * Description of CredentialProtoTypeField
+ * Description of CredentialProtoTypeField.
  *
  * @author vitex
  */
@@ -25,14 +25,12 @@ class CredentialProtoTypeField extends \MultiFlexi\DBEngine
     use \Ease\recordkey;
 
     /**
-     * Database table name
-     * @var string
+     * Database table name.
      */
     public string $myTable = 'credential_prototype_field';
-    
+
     /**
-     * Name column for display purposes
-     * @var string  
+     * Name column for display purposes.
      */
     public string $nameColumn = 'name';
 
@@ -42,10 +40,7 @@ class CredentialProtoTypeField extends \MultiFlexi\DBEngine
     }
 
     /**
-     * Get fields for a specific credential prototype
-     *
-     * @param CredentialProtoType $prototype
-     * @return ConfigFields
+     * Get fields for a specific credential prototype.
      */
     public function getProtoTypeFields(CredentialProtoType $prototype): ConfigFields
     {
@@ -61,10 +56,7 @@ class CredentialProtoTypeField extends \MultiFlexi\DBEngine
     }
 
     /**
-     * List all fields for a credential prototype
-     *
-     * @param int $prototypeId
-     * @return array
+     * List all fields for a credential prototype.
      */
     public function listFields(int $prototypeId): array
     {
