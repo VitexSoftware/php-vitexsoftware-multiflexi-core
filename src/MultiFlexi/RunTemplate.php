@@ -535,6 +535,8 @@ class RunTemplate extends \MultiFlexi\DBEngine
     {
         $runTemplateFields = new ConfigFields(sprintf(_('RunTemplate #%s Environment'), $this->getMyKey()));
 
+        $runTemplateFields->addFields($this->getApplication()->getEnvironment());
+
         $runTemplateFields->addFields($this->getRuntemplateEnvironment());
 
         $runTemplateFields->addFields($this->legacyCredentialsEnvironment());

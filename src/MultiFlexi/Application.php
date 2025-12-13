@@ -730,6 +730,16 @@ class Application extends DBEngine
     }
 
     /**
+     * Get application configuration fields.
+     */
+    public function getEnvironment(): ConfigFields
+    {
+        $confField = new Conffield();
+
+        return $confField->getAppConfigs($this);
+    }
+
+    /**
      * Import artifact definitions from app JSON.
      */
     protected function importDefinedArtifacts(int $appId, array $artifactDefs): void
