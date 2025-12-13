@@ -80,9 +80,9 @@ class FileStore extends Engine
     /**
      * Store a file related to a job.
      */
-    public function storeFileForJob(string $field, string $filePath, string $fileName, int $jobId): bool
+    public function storeFileForJob(string $field, string $filePath, string $fileName, Job $job): bool
     {
-        return $this->loadAndStoreFile($field, $filePath, $fileName, null, $jobId);
+        return $this->loadAndStoreFile($field, $filePath, $fileName, $job->getRunTemplate()->getMyKey(), $job->getMyKey());
     }
 
     /**
