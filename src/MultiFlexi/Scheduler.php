@@ -50,20 +50,21 @@ class Scheduler extends Engine
     public function addJob(Job $job, \DateTime $when)
     {
         $jobId = $job->getMyKey();
-        
+
         // Check if this job is already scheduled to prevent duplicates
         $existingSchedule = $this->listingQuery()
             ->where('job', $jobId)
             ->fetch();
-        
+
         if ($existingSchedule) {
             $this->addStatusMessage(
                 sprintf(_('Job #%d is already scheduled, skipping duplicate'), $jobId),
-                'debug'
+                'debug',
             );
+
             return (int) $existingSchedule['id'];
         }
-        
+
         // Update next_schedule first to prevent race condition
         $job->getRuntemplate()->updateToSQL(['next_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
 
@@ -77,14 +78,15 @@ class Scheduler extends Engine
             if (str_contains($e->getMessage(), 'Duplicate entry') || $e->getCode() === '23000') {
                 $this->addStatusMessage(
                     sprintf(_('Job #%d already scheduled (caught duplicate key error)'), $jobId),
-                    'debug'
+                    'debug',
                 );
-                
+
                 // Return existing schedule ID
                 $existing = $this->listingQuery()->where('job', $jobId)->fetch();
+
                 return $existing ? (int) $existing['id'] : 0;
             }
-            
+
             // Re-throw if it's a different error
             throw $e;
         }

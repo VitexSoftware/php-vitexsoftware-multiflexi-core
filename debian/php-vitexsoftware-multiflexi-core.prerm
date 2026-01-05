@@ -2,16 +2,24 @@
 set -e
 
 case "$1" in
-    remove|upgrade|deconfigure)
-    ;;
+    remove)
+        # Ensure package-owned directory does not trigger dpkg warning.
+        # Remove any leftover files and the directory proactively.
+        if [ -d "/usr/lib/multiflexi" ]; then
+            rm -rf "/usr/lib/multiflexi" || true
+        fi
+        ;;
+
+    upgrade|deconfigure)
+        ;;
 
     failed-upgrade)
-    ;;
+        ;;
 
     *)
         echo "prerm called with unknown argument \`$1'" >&2
         exit 1
-    ;;
+        ;;
 esac
 
 
