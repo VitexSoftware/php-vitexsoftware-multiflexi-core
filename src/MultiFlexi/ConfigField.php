@@ -112,7 +112,7 @@ class ConfigField
 
     public function getValue(): ?string
     {
-        return $this->value;
+        return null === $this->value && null !== $this->getDefaultValue() ? $this->getDefaultValue() : $this->value;
     }
 
     public function setCode(string $code): self
