@@ -85,7 +85,7 @@ class Office365 extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
      * Check if required Office365 credential fields are provided.
      *
      * Returns true if either OFFICE365_USERNAME and OFFICE365_PASSWORD and OFFICE365_TENANT
-     * or OFFICE365_CLIENTID and OFFICE365_SECRET and OFFICE365_TENANT are set and non-empty.
+     * or OFFICE365_CLIENTID and OFFICE365_CLSECRET and OFFICE365_TENANT are set and non-empty.
      *
      * @return bool true if required fields are set, false otherwise
      */
@@ -94,7 +94,7 @@ class Office365 extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
         $username = $this->configFieldsProvided->getFieldByCode('OFFICE365_USERNAME')->getValue();
         $password = $this->configFieldsProvided->getFieldByCode('OFFICE365_PASSWORD')->getValue();
         $clientId = $this->configFieldsProvided->getFieldByCode('OFFICE365_CLIENTID')->getValue();
-        $clientSecret = $this->configFieldsProvided->getFieldByCode('OFFICE365_SECRET')->getValue();
+        $clientSecret = $this->configFieldsProvided->getFieldByCode('OFFICE365_CLSECRET')->getValue();
         $tenant = $this->configFieldsProvided->getFieldByCode('OFFICE365_TENANT')->getValue();
 
         if ((!empty($username) && !empty($password) && !empty($tenant))

@@ -186,7 +186,8 @@ class Credential extends DBEngine
             if ($this->fields->getFieldByCode($credential['name'])) {
                 $this->fields->getFieldByCode($credential['name'])->setValue($credential['value']);
             } else {
-                $this->fields->addField(new ConfigField($credential['name'], $credential['value'], $credential['type']));
+                $this->fields->addField(new ConfigField($credential['name'], $credential['type'], $credential['name'], _('undescribed custom field'), '', $credential['value'], $credential['type']));
+                $this->addStatusMessage(sprintf(_('Config field %s inconsistency'), $credential['name']), 'warning');
             }
 
             $this->setDataValue($credential['name'], $credential['value']);
