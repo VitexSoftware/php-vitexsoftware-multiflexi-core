@@ -101,6 +101,7 @@ class Job extends Engine
             $this->setZabbixValue('company_code', null);
             $this->setZabbixValue('runtemplate_id', null);
             $this->setZabbixValue('exitcode', null);
+            $this->setZabbixValue('exitcode_description', _('n/a'));
             $this->setZabbixValue('stdout', null);
             $this->setZabbixValue('stderr', null);
             $this->setZabbixValue('executor', null);
@@ -260,13 +261,12 @@ class Job extends Engine
     /**
      * Action at Job run finish.
      *
-     * @param int    $statusCode
-     * @param string $stdout     Job Output
-     * @param string $stderr     Job error output
+     * @param string $stdout Job Output
+     * @param string $stderr Job error output
      *
      * @return int
      */
-    public function runEnd($statusCode, $stdout, $stderr)
+    public function runEnd(int $statusCode, string $stdout, string $stderr)
     {
         $sqlLogger = LogToSQL::singleton();
         $sqlLogger->setCompany(0);
@@ -287,6 +287,7 @@ class Job extends Engine
             $this->setZabbixValue('stderr', $stderr);
             $this->setZabbixValue('version', $this->application->getDataValue('version'));
             $this->setZabbixValue('exitcode', $statusCode);
+            $this->setZabbixValue('exitcode_description', $this->application->exitCodeDescription($statusCode));
             $this->setZabbixValue('scheduled', $this->getDataValue('schedule'));
             $this->setZabbixValue('end', (new \DateTime())->format('Y-m-d H:i:s'));
             $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());

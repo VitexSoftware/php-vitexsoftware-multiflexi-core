@@ -739,6 +739,13 @@ class Application extends DBEngine
         return $confField->getAppConfigs($this);
     }
 
+    public function exitCodeDescription(int $exitCode, string $lang = 'en'): string
+    {
+        $exitCodeDescriptionRaw = $this->getFluentPDO()->from('app_exit_codes')->select(['description'])->where(['lang' => $lang, 'app_id' => $this->getMyKey(), 'exit_code' => $exitCode]);
+
+        return $exitCodeDescriptionRaw->count() ? $exitCodeDescriptionRaw->fetch() : _('Undocumented');
+    }
+
     /**
      * Import artifact definitions from app JSON.
      */
