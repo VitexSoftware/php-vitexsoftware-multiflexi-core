@@ -43,6 +43,8 @@ class CredentialType extends DBEngine
     #[\Override]
     public function takeData(array $data): int
     {
+        unset($data['csrf_token']);
+
         if (\array_key_exists('id', $data) && is_numeric($data['id'])) {
             unset($data['uuid']);
         } else {
