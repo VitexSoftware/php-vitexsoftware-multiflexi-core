@@ -16,8 +16,9 @@ src/MultiFlexi/Action/Stop.php            usr/share/php/MultiFlexi/Action
 #src/MultiFlexi/Action/TriggerJenkins.php usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Zabbix.php  	  usr/share/php/MultiFlexi/Action
 
-multiflexi.app.schema.json		  usr/lib/multiflexi
-multiflexi.credential-type.schema.json	  usr/lib/multiflexi
-multiflexi.report.schema.json		  usr/lib/multiflexi
+schema/application.json			  usr/lib/multiflexi
+schema/credential-prototype.json	  usr/lib/multiflexi
+schema/credential-type.json		  usr/lib/multiflexi
+schema/report.json			  usr/lib/multiflexi
 
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/
