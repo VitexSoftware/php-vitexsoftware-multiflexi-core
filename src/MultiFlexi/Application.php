@@ -236,10 +236,6 @@ class Application extends DBEngine
             $appData['environment'] = [];
         }
 
-        foreach ($appData['environment'] as $fieldName => $filedProperties) {
-            unset($appData['environment'][$fieldName]['id'], $appData['environment'][$fieldName]['keyname'], $appData['environment'][$fieldName]['app_id']);
-        }
-
         unset($appData['id'], $appData['DatCreate'], $appData['DatUpdate'], $appData['enabled']);
 
         $appData['multiflexi'] = \Ease\Shared::appVersion();
