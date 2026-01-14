@@ -56,7 +56,7 @@ class Application extends DBEngine
     #[\Override]
     public function takeData(array $data): int
     {
-        unset($data['$schema'], $data['produces']);
+        unset($data['$schema'], $data['produces'], $data['csrf_token']);
         // TODO: Process somehow in future
         $data['enabled'] = \array_key_exists('enabled', $data) ? (($data['enabled'] === 'on') || ($data['enabled'] === 1)) : 0;
 
