@@ -18,26 +18,26 @@ namespace Tests\MultiFlexi;
 use MultiFlexi\Company;
 use MultiFlexi\ConfigField;
 use MultiFlexi\ConfigFields;
-use MultiFlexi\CredentialType;
+use MultiFlexi\CredentialProtoType;
 use MultiFlexi\credentialTypeInterface;
 use MultiFlexi\CrTypeField;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for CredentialType class.
+ * Tests for CredentialProtoType class.
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.com>
  */
-class CredentialTypeTest extends TestCase
+class CredentialProtoTypeTest extends TestCase
 {
-    protected CredentialType $object;
+    protected CredentialProtoType $object;
 
     /**
      * Sets up the fixture.
      */
     protected function setUp(): void
     {
-        $this->object = $this->getMockBuilder(CredentialType::class)
+        $this->object = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['dblink', 'loadFromSQL', 'listingQuery', 'addStatusMessage'])
             ->getMock();
 
@@ -56,7 +56,7 @@ class CredentialTypeTest extends TestCase
      */
     public function testInitialization(): void
     {
-        $credentialType = new CredentialType();
+        $credentialType = new CredentialProtoType();
         $this->assertEquals('credential_type', $credentialType->getMyTable());
         $this->assertNotEmpty($credentialType->getDataValue('uuid'));
     }
@@ -86,8 +86,8 @@ class CredentialTypeTest extends TestCase
         $companyMock = $this->createMock(Company::class);
         $companyMock->method('getRecordName')->willReturn('Test Company');
 
-        // Create a partial mock for CredentialType
-        $credType = $this->getMockBuilder(CredentialType::class)
+        // Create a partial mock for CredentialProtoType
+        $credType = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['getHelper'])
             ->getMock();
 
@@ -153,8 +153,8 @@ EOD);
      */
     public function testGetHelper(): void
     {
-        // Create a partial mock for CredentialType
-        $credType = $this->getMockBuilder(CredentialType::class)
+        // Create a partial mock for CredentialProtoType
+        $credType = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['getDataValue', 'getMyKey'])
             ->getMock();
 
@@ -200,8 +200,8 @@ EOD);
      */
     public function testCompleteDataRow(): void
     {
-        // Create a partial mock for the CredentialType
-        $credType = $this->getMockBuilder(CredentialType::class)
+        // Create a partial mock for the CredentialProtoType
+        $credType = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['getHelper', 'getMyKey'])
             ->getMock();
 
@@ -273,8 +273,8 @@ EOD);
         $fieldMock->method('listingQuery')->willReturnSelf();
         $fieldMock->method('where')->willReturn($queryResult);
 
-        // Create a partial mock for CredentialType
-        $credType = $this->getMockBuilder(CredentialType::class)
+        // Create a partial mock for CredentialProtoType
+        $credType = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['getMyKey', 'getHelper'])
             ->getMock();
 
@@ -359,8 +359,8 @@ EOD);
      */
     public function testQuery(): void
     {
-        // Create a partial mock for CredentialType
-        $credType = $this->getMockBuilder(CredentialType::class)
+        // Create a partial mock for CredentialProtoType
+        $credType = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['getFields', 'getHelper', 'getDataValue'])
             ->getMock();
 
@@ -425,8 +425,8 @@ EOD);
      */
     public function testLoadFromSQL(): void
     {
-        // Create a partial mock for CredentialType
-        $credType = $this->getMockBuilder(CredentialType::class)
+        // Create a partial mock for CredentialProtoType
+        $credType = $this->getMockBuilder(CredentialProtoType::class)
             ->setMethods(['getHelper', 'getDataValue', 'setDataValue'])
             ->getMock();
 
@@ -450,7 +450,7 @@ EOD);
             );
 
         // Use reflection to call protected parent::loadFromSQL
-        $reflection = new \ReflectionClass(CredentialType::class);
+        $reflection = new \ReflectionClass(CredentialProtoType::class);
         $method = $reflection->getMethod('loadFromSQL');
         $method->setAccessible(true);
         $method->invoke($credType);
@@ -484,7 +484,7 @@ EOD);
         $tempFile = tempnam(sys_get_temp_dir(), 'credential_type_test_');
         file_put_contents($tempFile, json_encode($testData));
 
-        $credentialType = new CredentialType();
+        $credentialType = new CredentialProtoType();
         $result = $credentialType->importCredTypeJson($tempFile);
 
         $this->assertTrue($result, 'Import should return true on success');
@@ -501,7 +501,7 @@ EOD);
         $tempFile = tempnam(sys_get_temp_dir(), 'credential_type_test_');
         file_put_contents($tempFile, 'invalid json content');
 
-        $credentialType = new CredentialType();
+        $credentialType = new CredentialProtoType();
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Invalid JSON data:');
@@ -522,7 +522,7 @@ EOD);
         $tempFile = tempnam(sys_get_temp_dir(), 'credential_type_test_');
         file_put_contents($tempFile, json_encode($testData));
 
-        $credentialType = new CredentialType();
+        $credentialType = new CredentialProtoType();
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Missing required field:');
@@ -534,7 +534,7 @@ EOD);
 
     public function testImportCredTypeJsonWithNonExistentFile(): void
     {
-        $credentialType = new CredentialType();
+        $credentialType = new CredentialProtoType();
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('File not found:');

@@ -15,11 +15,11 @@ declare(strict_types=1);
 
 namespace Test\MultiFlexi;
 
-use MultiFlexi\CredentialType\Common as CredentialCommon;
-use MultiFlexi\CredentialType\EnvFile;
+use MultiFlexi\CredentialProtoType\Common as CredentialCommon;
+use MultiFlexi\CredentialProtoType\EnvFile;
 use PHPUnit\Framework\TestCase;
 
-final class CredentialTypeEnvFileTest extends TestCase
+final class CredentialProtoTypeEnvFileTest extends TestCase
 {
     public function testExtendsCredentialCommon(): void
     {

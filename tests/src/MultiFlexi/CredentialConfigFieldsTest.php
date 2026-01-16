@@ -19,7 +19,7 @@ use MultiFlexi\ConfigField;
 use MultiFlexi\ConfigFields;
 use MultiFlexi\Credential;
 use MultiFlexi\CredentialConfigFields;
-use MultiFlexi\CredentialType;
+use MultiFlexi\CredentialProtoType;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,18 +28,18 @@ use PHPUnit\Framework\TestCase;
 class CredentialConfigFieldsTest extends TestCase
 {
     private Credential|\PHPUnit\Framework\MockObject\MockObject $credentialMock;
-    private CredentialType|\PHPUnit\Framework\MockObject\MockObject $credentialTypeMock;
+    private CredentialProtoType|\PHPUnit\Framework\MockObject\MockObject $credentialTypeMock;
 
     protected function setUp(): void
     {
         // Create mock for Credential
         $this->credentialMock = $this->createMock(Credential::class);
 
-        // Create mock for CredentialType
-        $this->credentialTypeMock = $this->createMock(CredentialType::class);
+        // Create mock for CredentialProtoType
+        $this->credentialTypeMock = $this->createMock(CredentialProtoType::class);
 
         // Setup credential mock to return credential type mock
-        $this->credentialMock->method('getCredentialType')
+        $this->credentialMock->method('getCredentialProtoType')
             ->willReturn($this->credentialTypeMock);
 
         // Setup credential mock to return an ID

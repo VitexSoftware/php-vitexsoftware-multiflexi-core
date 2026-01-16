@@ -22,7 +22,7 @@
             "MultiFlexi\\Action\\": "src/MultiFlexi/Action",
             "MultiFlexi\\Zabbix\\": "src/MultiFlexi/Zabbix",
             "MultiFlexi\\Executor\\": "src/MultiFlexi/Executor",
-            "MultiFlexi\\CredentialType\\": "src/MultiFlexi/CredentialType"
+            "MultiFlexi\\CredentialProtoType\\": "src/MultiFlexi/CredentialProtoType"
         }
     },
     "autoload-dev": {

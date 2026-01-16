@@ -17,7 +17,7 @@ use MultiFlexi\Company;
 use MultiFlexi\Credata;
 use MultiFlexi\Credential;
 use MultiFlexi\CredentialConfigFields;
-use MultiFlexi\CredentialType;
+use MultiFlexi\CredentialProtoType;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -60,16 +60,16 @@ class CredentialTest extends TestCase
     /**
      * Test setting and getting credential type.
      */
-    public function testCredentialTypeAccessors(): void
+    public function testCredentialProtoTypeAccessors(): void
     {
-        $credentialType = new CredentialType();
+        $credentialType = new CredentialProtoType();
 
-        $this->credential->setCredentialType($credentialType);
-        $this->assertSame($credentialType, $this->credential->getCredentialType());
+        $this->credential->setCredentialProtoType($credentialType);
+        $this->assertSame($credentialType, $this->credential->getCredentialProtoType());
 
         // Test with null
-        $this->credential->setCredentialType(null);
-        $this->assertNull($this->credential->getCredentialType());
+        $this->credential->setCredentialProtoType(null);
+        $this->assertNull($this->credential->getCredentialProtoType());
     }
 
     /**
@@ -82,7 +82,7 @@ class CredentialTest extends TestCase
         $this->credential->takeData($data);
 
         $this->assertEquals('Test Credential', $this->credential->getDataValue('name'));
-        $this->assertInstanceOf(CredentialType::class, $this->credential->getCredentialType());
+        $this->assertInstanceOf(CredentialProtoType::class, $this->credential->getCredentialProtoType());
 
         // Test with empty ID being handled
         $data = ['id' => '', 'name' => 'Test Credential'];
@@ -117,8 +117,8 @@ class CredentialTest extends TestCase
         // Hack to make the test work - replace the actual method with our test version
         $this->injectParentInsertMethod($credentialMock);
 
-        // Create mock CredentialType and its fields
-        $credType = $this->createMock(CredentialType::class);
+        // Create mock CredentialProtoType and its fields
+        $credType = $this->createMock(CredentialProtoType::class);
         $fields = $this->createMock(\MultiFlexi\CredentialConfigFields::class);
         $field = $this->createMock(\MultiFlexi\ConfigField::class);
 
@@ -131,7 +131,7 @@ class CredentialTest extends TestCase
         $credType->method('getFields')->willReturn($fields);
 
         // Inject mock credential type factory
-        $this->injectCredentialTypeMock($credType);
+        $this->injectCredentialProtoTypeMock($credType);
 
         // Set up data with both regular fields and credential-specific fields
         $data = [
@@ -185,9 +185,9 @@ class CredentialTest extends TestCase
         // Replace the parent method with our test version
         $this->injectParentLoadMethod($credentialMock);
 
-        // Set up mock CredentialType
-        $credType = $this->createMock(CredentialType::class);
-        $this->injectCredentialTypeMock($credType);
+        // Set up mock CredentialProtoType
+        $credType = $this->createMock(CredentialProtoType::class);
+        $this->injectCredentialProtoTypeMock($credType);
 
         // Set up mock Credata
         $query = $this->createMock(\Ease\SQL\Orm::class);
@@ -234,8 +234,8 @@ class CredentialTest extends TestCase
         // Replace the parent method with our test version
         $this->injectParentUpdateMethod($credentialMock);
 
-        // Create mock CredentialType and its fields
-        $credType = $this->createMock(CredentialType::class);
+        // Create mock CredentialProtoType and its fields
+        $credType = $this->createMock(CredentialProtoType::class);
         $fields = $this->createMock(\MultiFlexi\CredentialConfigFields::class);
         $field = $this->createMock(\MultiFlexi\ConfigField::class);
 
@@ -248,7 +248,7 @@ class CredentialTest extends TestCase
         $credType->method('getFields')->willReturn($fields);
 
         // Inject mock credential type factory
-        $this->injectCredentialTypeMock($credType);
+        $this->injectCredentialProtoTypeMock($credType);
 
         // Set up Credata mock for listing and update
         $query = $this->createMock(\Ease\SQL\Orm::class);
@@ -329,19 +329,19 @@ class CredentialTest extends TestCase
     {
         // Create a credential mock
         $credentialMock = $this->getMockBuilder(Credential::class)
-            ->onlyMethods(['getMyKey', 'getCredentialType'])
+            ->onlyMethods(['getMyKey', 'getCredentialProtoType'])
             ->getMock();
 
         $credentialMock->method('getMyKey')
             ->willReturn(42);
 
-        // Set up mock CredentialType
+        // Set up mock CredentialProtoType
         $credTypeFields = $this->createMock(\MultiFlexi\CredentialConfigFields::class);
-        $credType = $this->createMock(CredentialType::class);
+        $credType = $this->createMock(CredentialProtoType::class);
         $credType->method('query')
             ->willReturn($credTypeFields);
 
-        $credentialMock->method('getCredentialType')
+        $credentialMock->method('getCredentialProtoType')
             ->willReturn($credType);
 
         // Set up Credata mock for querying credentials
@@ -421,7 +421,7 @@ class CredentialTest extends TestCase
                 }
 
                 if (\array_key_exists('credential_type_id', $data)) {
-                    $this->setCredentialType(new CredentialType($data['credential_type_id']));
+                    $this->setCredentialProtoType(new CredentialProtoType($data['credential_type_id']));
                 }
 
                 return parent::takeData($data);
@@ -430,23 +430,23 @@ class CredentialTest extends TestCase
     }
 
     /**
-     * Helper method to inject a CredentialType mock.
+     * Helper method to inject a CredentialProtoType mock.
      *
      * @param mixed $credTypeMock
      */
-    private function injectCredentialTypeMock($credTypeMock): void
+    private function injectCredentialProtoTypeMock($credTypeMock): void
     {
         // This is a hack for testing and would need to be adapted to your actual code
         runkit_method_redefine(
             Credential::class,
-            'createCredentialType',
+            'createCredentialProtoType',
             static function ($id) use ($credTypeMock) {
                 return $credTypeMock;
             },
         );
 
         runkit_method_redefine(
-            \MultiFlexi\CredentialType::class,
+            \MultiFlexi\CredentialProtoType::class,
             '__construct',
             static function ($id = null) use ($credTypeMock) {
                 return $credTypeMock;
@@ -494,7 +494,7 @@ class CredentialTest extends TestCase
 
                 $fieldData = [];
 
-                $credType = $this->createCredentialType((int) $data['credential_type_id']);
+                $credType = $this->createCredentialProtoType((int) $data['credential_type_id']);
                 $fields = $credType->getFields();
 
                 foreach ($data as $columName => $value) {
@@ -549,7 +549,7 @@ class CredentialTest extends TestCase
                 }
 
                 if ($this->getDataValue('credential_type_id')) {
-                    $this->setCredentialType($this->createCredentialType($this->getDataValue('credential_type_id')));
+                    $this->setCredentialProtoType($this->createCredentialProtoType($this->getDataValue('credential_type_id')));
                 }
 
                 return $dataCount;
@@ -579,7 +579,7 @@ class CredentialTest extends TestCase
 
                 $fieldData = [];
 
-                $credType = $this->createCredentialType((int) $data['credential_type_id']);
+                $credType = $this->createCredentialProtoType((int) $data['credential_type_id']);
                 $fields = $credType->getFields();
 
                 foreach ($data as $columName => $value) {

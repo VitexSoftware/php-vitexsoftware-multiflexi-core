@@ -27,7 +27,7 @@
       "MultiFlexi\\Action\\": "./Action/",
       "MultiFlexi\\Zabbix\\": "./Zabbix/",
       "MultiFlexi\\Executor\\": "./Executor/",
-      "MultiFlexi\\CredentialType\\": "./CredentialType/",
+      "MultiFlexi\\CredentialProtoType\\": "./CredentialProtoType/",
       "MultiFlexi\\Zabbix\\Request\\": "./Zabbix/Request/",
       "MultiFlexi\\Zabbix\\Exception\\": "./Zabbix/Exception/"
     }

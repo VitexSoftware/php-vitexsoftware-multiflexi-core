@@ -19,7 +19,7 @@ namespace MultiFlexi;
  * MultiFlexi - Customer Management Class.
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
- * @copyright  2018-2024 VitexSoftware
+ * @copyright  2018-2026 VitexSoftware
  */
 class Customer extends DBEngine
 {

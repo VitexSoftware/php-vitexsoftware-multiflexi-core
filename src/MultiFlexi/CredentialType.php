@@ -61,7 +61,7 @@ class CredentialType extends DBEngine
             $nameparts = [];
 
             if (\array_key_exists('class', $data) && $data['class']) {
-                $credTypeClass = '\\MultiFlexi\\CredentialType\\'.$data['class'];
+                $credTypeClass = '\\MultiFlexi\\CredentialProtoType\\'.$data['class'];
                 $nameparts['class'] = $credTypeClass::name();
                 $this->getHelper();
             }
@@ -97,7 +97,7 @@ class CredentialType extends DBEngine
         $class = $this->getDataValue('class');
 
         if ($class) {
-            $credTypeClass = '\\MultiFlexi\\CredentialType\\'.$class;
+            $credTypeClass = '\\MultiFlexi\\CredentialProtoType\\'.$class;
 
             if ((\is_object($this->helper) === false) || (\Ease\Functions::baseClassName($this->helper) !== $class)) {
                 $this->helper = new $credTypeClass();

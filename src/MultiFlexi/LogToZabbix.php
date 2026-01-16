@@ -4,7 +4,7 @@
  * MultiFlexi - Send Log message to Zabbix.
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
- * @copyright  2023-2024 Vitex Software
+ * @copyright  2023-2026 Vitex Software
  */
 
 declare(strict_types=1);

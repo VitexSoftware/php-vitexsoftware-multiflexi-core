@@ -15,14 +15,14 @@ declare(strict_types=1);
 
 namespace Test\MultiFlexi;
 
-use MultiFlexi\CredentialType\Common as CredentialCommon;
-use MultiFlexi\CredentialType\Office365;
+use MultiFlexi\CredentialProtoType\Common as CredentialCommon;
+use MultiFlexi\CredentialProtoType\SQLServer;
 use PHPUnit\Framework\TestCase;
 
-final class CredentialTypeOffice365Test extends TestCase
+final class CredentialProtoTypeSQLServerTest extends TestCase
 {
     public function testExtendsCredentialCommon(): void
     {
-        $this->assertTrue(is_a(Office365::class, CredentialCommon::class, true));
+        $this->assertTrue(is_a(SQLServer::class, CredentialCommon::class, true));
     }
 }

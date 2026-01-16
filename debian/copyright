@@ -784,7 +784,7 @@ License:   BSD-3-Clause
 #         tests/src/MultiFlexi/RunnerTest.php
 #         tests/src/MultiFlexi/ConfigFieldWithHelperTest.php
 #         tests/src/MultiFlexi/platformServerTest.php
-#         tests/src/MultiFlexi/CredentialTypeTest.php
+#         tests/src/MultiFlexi/CredentialProtoTypeTest.php
 #         tests/src/MultiFlexi/ArtifactTest.php
 #         tests/src/MultiFlexi/CommonActionTest.php
 #         tests/src/MultiFlexi/ConffieldTest.php
@@ -6993,7 +6993,7 @@ License:   BSD-3-Clause
 #         src/MultiFlexi/platformCompany.php
 #         src/MultiFlexi/RunTplCreds.php
 #         src/MultiFlexi/DatabaseEngine.php
-#         src/MultiFlexi/CredentialType.php
+#         src/MultiFlexi/CredentialProtoType.php
 #         src/MultiFlexi/Servers.php
 #         src/MultiFlexi/Customer.php
 #         src/MultiFlexi/TopicManger.php

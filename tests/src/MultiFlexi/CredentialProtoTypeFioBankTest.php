@@ -15,14 +15,14 @@ declare(strict_types=1);
 
 namespace Test\MultiFlexi;
 
-use MultiFlexi\CredentialType\Common as CredentialCommon;
-use MultiFlexi\CredentialType\RaiffeisenBank;
+use MultiFlexi\CredentialProtoType\Common as CredentialCommon;
+use MultiFlexi\CredentialProtoType\FioBank;
 use PHPUnit\Framework\TestCase;
 
-final class CredentialTypeRaiffeisenBankTest extends TestCase
+final class CredentialProtoTypeFioBankTest extends TestCase
 {
     public function testExtendsCredentialCommon(): void
     {
-        $this->assertTrue(is_a(RaiffeisenBank::class, CredentialCommon::class, true));
+        $this->assertTrue(is_a(FioBank::class, CredentialCommon::class, true));
     }
 }

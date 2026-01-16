@@ -15,13 +15,14 @@ declare(strict_types=1);
 
 namespace Test\MultiFlexi;
 
-use MultiFlexi\CredentialProtoType;
+use MultiFlexi\CredentialProtoType\Common as CredentialCommon;
+use MultiFlexi\CredentialProtoType\mServer;
 use PHPUnit\Framework\TestCase;
 
-final class CredentialProtoTypeTest extends TestCase
+final class CredentialProtoTypemServerTest extends TestCase
 {
-    public function testClassExists(): void
+    public function testExtendsCredentialCommon(): void
     {
-        $this->assertTrue(class_exists(CredentialProtoType::class));
+        $this->assertTrue(is_a(mServer::class, CredentialCommon::class, true));
     }
 }
