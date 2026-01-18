@@ -28,6 +28,11 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
      * Database table name.
      */
     public string $myTable = 'credential_prototype';
+    
+    /**
+     * Name Column
+     */
+    public string $nameColumn = 'name';
 
     /**
      * Schema path for credential prototype JSON validation.
