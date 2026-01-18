@@ -32,7 +32,7 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
     /**
      * Schema path for credential prototype JSON validation.
      */
-    public static string $credTypeSchema = __DIR__.'/../../schema/credential-prototype.json';
+    public static string $credProtoTypeSchema = __DIR__.'/../../schema/credential-prototype.json';
     protected \MultiFlexi\ConfigFields $configFieldsProvided;
     protected \MultiFlexi\ConfigFields $configFieldsInternal;
 
