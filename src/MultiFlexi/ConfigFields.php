@@ -20,7 +20,7 @@ namespace MultiFlexi;
  *
  * @author Vitex <info@vitexsoftware.cz>
  */
-class ConfigFields implements \Iterator
+class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
 {
     /**
      * @var array<string, ConfigField>
@@ -162,5 +162,13 @@ class ConfigFields implements \Iterator
         }
 
         return $this;
+    }
+
+    /**
+     * Gives you number of ConfigFields.
+     */
+    public function count(): int
+    {
+        return \count($this->fields);
     }
 }

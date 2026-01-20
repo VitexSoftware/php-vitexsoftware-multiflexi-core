@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.com>
  */
-class CredentialProtoTypeTest extends TestCase
+class CredentialTypeTest extends TestCase
 {
     protected CredentialProtoType $object;
 

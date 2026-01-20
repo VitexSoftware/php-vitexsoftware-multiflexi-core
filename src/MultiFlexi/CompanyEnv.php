@@ -20,19 +20,15 @@ namespace MultiFlexi;
  *
  * @author vitex
  */
-class CompanyEnv extends \Ease\SQL\Engine
+class CompanyEnv extends ConfigFields
 {
-    private ?int $companyID;
-
-    /**
-     * @param int   $companyID
-     * @param array $options
-     */
-    public function __construct($companyID = null, $options = [])
+    use \Ease\SQL\Orm;
+    public string $myTable = 'companyenv';
+    private Company $company;
+    public function __construct(Company $company, array $options = [])
     {
-        $this->myTable = 'companyenv';
-        parent::__construct(null, $options);
-        $this->companyID = $companyID;
+        parent::__construct($company->getRecordName(), $options);
+        $this->company = $company;
         $this->loadEnv();
     }
 
@@ -53,23 +49,10 @@ class CompanyEnv extends \Ease\SQL\Engine
         }
     }
 
-    public function updateEnv(): void
-    {
-    }
-
-    public function removeEnv(): void
-    {
-    }
-
     public function loadEnv(): void
     {
-        foreach ($this->listingQuery()->where('company_id', $this->companyID)->fetchAll() as $companyEnvRow) {
-            $this->setDataValue($companyEnvRow['keyword'], $companyEnvRow['value']);
+        foreach ($this->listingQuery()->where('company_id', $this->company->getMyKey())->fetchAll() as $companyEnvRow) {
+            $this->addField(new ConfigField($companyEnvRow['keyword'], 'string', $companyEnvRow['keyword'], _('Company custom environment'), '', $companyEnvRow['value']));
         }
-    }
-
-    public function getEnvFields()
-    {
-        return $this->listingQuery()->where('company_id', $this->companyID)->fetchAll();
     }
 }
