@@ -29,71 +29,8 @@ class Requirement
      */
     public static function getCredentialProviders(): array
     {
-        $forms = [];
-        $namespace = 'MultiFlexi\CredentialType';
-
-        // Get current loaded classes in namespace
-        $alreadyLoaded = [];
-
-        foreach (get_declared_classes() as $class) {
-            if (str_starts_with($class, $namespace.'\\')) {
-                $parts = explode('\\', $class);
-                $className = end($parts);
-                $forms[$className] = $class;
-                $alreadyLoaded[strtolower($className)] = true;
-            }
-        }
-
-        // Find PSR-4 autoload directories for the namespace
-        $dirs = self::getPsr4DirsForNamespace($namespace);
-        $processedFiles = [];
-
-        // Process each directory
-        foreach ($dirs as $dir) {
-            if (!is_dir($dir) || !is_readable($dir)) {
-                continue;
-            }
-
-            // Process PHP files in the directory
-            foreach (new \DirectoryIterator($dir) as $file) {
-                if ($file->isFile() && $file->getExtension() === 'php') {
-                    $basename = $file->getBasename('.php');
-                    $filePath = $file->getRealPath();
-
-                    // Skip already processed files by basename (case insensitive)
-                    $fileKey = strtolower($basename);
-
-                    if (isset($processedFiles[$fileKey]) || isset($alreadyLoaded[$fileKey])) {
-                        continue;
-                    }
-
-                    $processedFiles[$fileKey] = true;
-
-                    // Try PSR-4 autoloading first
-                    $className = $namespace.'\\'.$basename;
-
-                    if (!class_exists($className, false)) {
-                        // Attempt to autoload the class
-                        $wasLoaded = @class_exists($className, true);
-
-                        if ($wasLoaded) {
-                            $parts = explode('\\', $className);
-                            $shortName = end($parts);
-                            $forms[$shortName] = $className;
-                        }
-                    }
-                }
-            }
-        }
-
-        // If no classes were found, fallback to the original method
-        if (empty($forms)) {
-            foreach (\Ease\Functions::classesInNamespace($namespace) as $form) {
-                $forms[$form] = '\\'.$namespace.'\\'.$form;
-            }
-        }
-
-        return $forms;
+        $credprototyper = new CredentialProtoType();
+        return $credprototyper->getColumnsFromSQL(['name','code'], [], 'name', 'code');
     }
 
     /**
