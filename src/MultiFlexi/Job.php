@@ -196,8 +196,8 @@ class Job extends Engine
         if ($this->runTemplate->getMyKey() === 0) {
             throw new \Ease\Exception(_('No RunTemplate prepared'));
         }
-        
-        if(empty($this->environment)){
+
+        if (empty($this->environment)) {
             $this->environment = $this->getJobEnvironment();
         }
 
@@ -664,15 +664,15 @@ EOD;
             }
         }
 
-        $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE 
+        $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE
 
         if ($resultFileField) {
             $resultFile = $resultFileField->getValue();
 
-            if($resultFile[0] != DIRECTORY_SEPARATOR ) {
-                $resultFile = Defaults::$MULTIFLEXI_TMP . DIRECTORY_SEPARATOR . $resultFile;
+            if ($resultFile[0] !== \DIRECTORY_SEPARATOR) {
+                $resultFile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$resultFile;
             }
-            
+
             if ($resultFile === sys_get_temp_dir()) {
                 $resultFileField->setValue($resultFile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString());
             } else {

@@ -24,7 +24,7 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
 class RunTemplate extends \MultiFlexi\DBEngine
 {
     /**
-     * @deprecated since version
+     * @deprecated since version 2.0
      */
     public static array $intervalCode = [
         'c' => 'custom',
@@ -38,7 +38,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
     ];
 
     /**
-     * @deprecated since version number
+     * @deprecated since version number 2.0
      */
     public static array $intervalSecond = [
         'c' => '',
@@ -76,12 +76,14 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
     /**
      * Get Job Interval by Code.
+     * 
+     * @deprecated since version 2.0
      *
      * @param string $code
      *
      * @return string
      */
-    public static function codeToInterval($code)
+    public static function codeToInterval(string $code): string
     {
         return \array_key_exists($code, self::$intervalCode) ? self::$intervalCode[$code] : 'n/a';
     }
@@ -93,7 +95,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
      *
      * @return int Interval length in seconds
      */
-    public static function codeToSeconds($code)
+    public static function codeToSeconds(string $code): int
     {
         return \array_key_exists($code, self::$intervalSecond) ? (int) (self::$intervalSecond[$code]) : 0;
     }
@@ -111,11 +113,11 @@ class RunTemplate extends \MultiFlexi\DBEngine
      *
      * SELECT runtemplate.id, runtemplate.interv, runtemplate.prepared, apps.name AS app, company.name AS company   FROM runtemplate LEFT JOIN apps ON runtemplate.app_id=apps.id LEFT JOIN company ON runtemplate.company_id=company.id;
      *
-     * @deprecated since version 1.0
+     * @deprecated since version 2.0
      *
      * @return int
      */
-    public function runTemplateID(int $appId, int $companyId)
+    public function runTemplateID(int $appId, int $companyId): int
     {
         $runTemplateId = (int) $this->listingQuery()->where('company_id='.$companyId.' AND app_id='.$appId)->select('id', true)->fetchColumn();
 
