@@ -197,9 +197,9 @@ class Job extends Engine
             throw new \Ease\Exception(_('No RunTemplate prepared'));
         }
         
-        if(empty($this->environment)){
-            $this->environment = $this->getJobEnvironment();
-        }
+        
+        // TODO: WTF ?
+        $this->environment = $this->getJobEnvironment();
 
         if (isset($this->executor) === false) {
             $executorClass = '\\MultiFlexi\\Executor\\'.$this->getDataValue('executor');
