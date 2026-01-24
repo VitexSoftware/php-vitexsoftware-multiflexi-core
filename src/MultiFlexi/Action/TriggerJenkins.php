@@ -15,6 +15,8 @@ declare(strict_types=1);
 
 namespace MultiFlexi\Action;
 
+use MultiFlexi\Application;
+
 /**
  * Description of TriggerJenkins.
  *
@@ -51,11 +53,82 @@ class TriggerJenkins extends \MultiFlexi\CommonAction
 
     /**
      * Is this Action Suitable for Application.
-     *
-     * @param Application $app
      */
-    public static function usableForApp($app): bool
+    #[\Override]
+    public static function usableForApp(Application $app): bool
     {
         return \is_object($app);
+    }
+
+    /**
+     * Perform Action - trigger Jenkins job.
+     */
+    #[\Override]
+    public function perform(\MultiFlexi\Job $job): void
+    {
+        $jenkinsUrl = rtrim($this->getDataValue('url'), '/');
+        $jobName = $this->getDataValue('job_name');
+        $token = $this->getDataValue('token');
+        $user = $this->getDataValue('user');
+
+        if (empty($jenkinsUrl) || empty($jobName)) {
+            $this->addStatusMessage(_('Jenkins URL and job name are required'), 'error');
+
+            return;
+        }
+
+        // Build Jenkins job URL
+        $url = $jenkinsUrl.'/job/'.$jobName.'/build';
+
+        // Add token parameter if provided
+        if (!empty($token)) {
+            $url .= '?token='.$token;
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, \CURLOPT_URL, $url);
+        curl_setopt($ch, \CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, \CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, \CURLOPT_USERAGENT, \Ease\Shared::appName().' '.\Ease\Shared::appVersion());
+        curl_setopt($ch, \CURLOPT_VERBOSE, (bool) \Ease\Shared::cfg('API_DEBUG', false));
+
+        // Add authentication if user is provided
+        if (!empty($user)) {
+            $apiToken = $this->getDataValue('api_token');
+
+            if (!empty($apiToken)) {
+                curl_setopt($ch, \CURLOPT_HTTPAUTH, \CURLAUTH_BASIC);
+                curl_setopt($ch, \CURLOPT_USERPWD, $user.':'.$apiToken);
+            }
+        }
+
+        $response = curl_exec($ch);
+        $curlInfo = curl_getinfo($ch);
+        $curlInfo['when'] = microtime();
+
+        // Jenkins returns 201 Created when job is successfully queued
+        $success = ($curlInfo['http_code'] === 201);
+        $message = $success ? sprintf(_('Jenkins job %s triggered successfully'), $jobName) : $response;
+        $this->addStatusMessage($message, $success ? 'success' : 'error');
+        curl_close($ch);
+    }
+
+    /**
+     * Initial data for action configuration.
+     *
+     * @param string $mode Mode
+     *
+     * @return array Default configuration
+     */
+    #[\Override]
+    public function initialData(string $mode): array
+    {
+        return [
+            'url' => '',
+            'job_name' => '',
+            'user' => '',
+            'api_token' => '',
+            'token' => '',
+        ];
     }
 }

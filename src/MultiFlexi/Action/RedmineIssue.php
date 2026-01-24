@@ -15,6 +15,8 @@ declare(strict_types=1);
 
 namespace MultiFlexi\Action;
 
+use MultiFlexi\Application;
+
 /**
  * Description of RedmineIssue.
  *
@@ -41,15 +43,14 @@ class RedmineIssue extends \MultiFlexi\CommonAction
      */
     public static function description()
     {
-        return _('Make Redine issue using Job output');
+        return _('Make Redmine issue using Job output');
     }
 
     /**
      * Is this Action Situable for Application.
-     *
-     * @param Application $app
      */
-    public static function usableForApp($app): bool
+    #[\Override]
+    public static function usableForApp(Application $app): bool
     {
         return \is_object($app);
     }
@@ -57,6 +58,7 @@ class RedmineIssue extends \MultiFlexi\CommonAction
     /**
      * Perform Action - create Redmine issue using Job output.
      */
+    #[\Override]
     public function perform(\MultiFlexi\Job $job): void
     {
         $token = $this->getDataValue('token');
@@ -99,5 +101,22 @@ class RedmineIssue extends \MultiFlexi\CommonAction
         $success = ($curlInfo['http_code'] >= 200 && $curlInfo['http_code'] < 300);
         $this->addStatusMessage($response, $success ? 'success' : 'error');
         curl_close($ch);
+    }
+
+    /**
+     * Initial data for action configuration.
+     *
+     * @param string $mode Mode
+     *
+     * @return array Default configuration
+     */
+    #[\Override]
+    public function initialData(string $mode): array
+    {
+        return [
+            'token' => '',
+            'url' => '',
+            'project_id' => '',
+        ];
     }
 }

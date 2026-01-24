@@ -23,33 +23,6 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
  */
 class RunTemplate extends \MultiFlexi\DBEngine
 {
-    /**
-     * @deprecated since version 2.0
-     */
-    public static array $intervalCode = [
-        'c' => 'custom',
-        'y' => 'yearly',
-        'm' => 'monthly',
-        'w' => 'weekly',
-        'd' => 'daily',
-        'h' => 'hourly',
-        'i' => 'minutly',
-        'n' => 'disabled',
-    ];
-
-    /**
-     * @deprecated since version number 2.0
-     */
-    public static array $intervalSecond = [
-        'c' => '',
-        'n' => '0',
-        'i' => '60',
-        'h' => '3600',
-        'd' => '86400',
-        'w' => '604800',
-        'm' => '2629743',
-        'y' => '31556926',
-    ];
     public Application $application;
 
     /**
@@ -75,47 +48,11 @@ class RunTemplate extends \MultiFlexi\DBEngine
     }
 
     /**
-     * Get Job Interval by Code.
-     * 
-     * @deprecated since version 2.0
-     *
-     * @param string $code
-     *
-     * @return string
-     */
-    public static function codeToInterval(string $code): string
-    {
-        return \array_key_exists($code, self::$intervalCode) ? self::$intervalCode[$code] : 'n/a';
-    }
-
-    /**
-     * Get Job Interval by Code.
-     *
-     * @param string $code
-     *
-     * @return int Interval length in seconds
-     */
-    public static function codeToSeconds(string $code): int
-    {
-        return \array_key_exists($code, self::$intervalSecond) ? (int) (self::$intervalSecond[$code]) : 0;
-    }
-
-    /**
-     * Get Interval code by Name.
-     */
-    public static function intervalToCode(string $interval): string
-    {
-        return \array_key_exists($interval, array_flip(self::$intervalCode)) ? array_flip(self::$intervalCode)[$interval] : 'n/a';
-    }
-
-    /**
      * Get id by App & Company.
      *
      * SELECT runtemplate.id, runtemplate.interv, runtemplate.prepared, apps.name AS app, company.name AS company   FROM runtemplate LEFT JOIN apps ON runtemplate.app_id=apps.id LEFT JOIN company ON runtemplate.company_id=company.id;
      *
      * @deprecated since version 2.0
-     *
-     * @return int
      */
     public function runTemplateID(int $appId, int $companyId): int
     {

@@ -18,7 +18,7 @@ namespace MultiFlexi\Action;
 use MultiFlexi\Application;
 
 /**
- * Description of RedmineIssue.
+ * Create GitHub issue.
  *
  * @author vitex
  *
@@ -99,7 +99,23 @@ class Github extends \MultiFlexi\CommonAction
         $curlInfo = curl_getinfo($ch);
         $curlInfo['when'] = microtime();
 
-        $this->addStatusMessage($response, $curlInfo['http_code'] === 200 ? 'success' : 'error');
+        // GitHub returns 201 Created for successful issue creation
+        $this->addStatusMessage($response, $curlInfo['http_code'] === 201 ? 'success' : 'error');
         curl_close($ch);
+    }
+
+    /**
+     * Initial data for action configuration.
+     *
+     * @param string $mode Mode
+     *
+     * @return array Default configuration
+     */
+    #[\Override]
+    public function initialData(string $mode): array
+    {
+        return [
+            'token' => '',
+        ];
     }
 }

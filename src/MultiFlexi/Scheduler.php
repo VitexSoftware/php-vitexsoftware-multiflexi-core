@@ -22,6 +22,27 @@ namespace MultiFlexi;
  */
 class Scheduler extends Engine
 {
+    public static array $intervalCode = [
+        'c' => 'custom',
+        'y' => 'yearly',
+        'm' => 'monthly',
+        'w' => 'weekly',
+        'd' => 'daily',
+        'h' => 'hourly',
+        'i' => 'minutly',
+        'n' => 'disabled',
+    ];
+    public static array $intervalSecond = [
+        'c' => '',
+        'n' => '0',
+        'i' => '60',
+        'h' => '3600',
+        'd' => '86400',
+        'w' => '604800',
+        'm' => '2629743',
+        'y' => '31556926',
+    ];
+
     /**
      * Convert 'inter' values to cron expressions.
      *
@@ -122,5 +143,31 @@ class Scheduler extends Engine
         }
 
         return $this->listingQuery()->orderBy('after')->where($condition);
+    }
+
+    /**
+     * Get Job Interval by Code.
+     */
+    public static function codeToInterval(string $code): string
+    {
+        return \array_key_exists($code, self::$intervalCode) ? self::$intervalCode[$code] : 'n/a';
+    }
+
+    /**
+     * Get Job Interval by Code.
+     *
+     * @return int Interval length in seconds
+     */
+    public static function codeToSeconds(string $code): int
+    {
+        return \array_key_exists($code, self::$intervalSecond) ? (int) (self::$intervalSecond[$code]) : 0;
+    }
+
+    /**
+     * Get Interval code by Name.
+     */
+    public static function intervalToCode(string $interval): string
+    {
+        return \array_key_exists($interval, array_flip(self::$intervalCode)) ? array_flip(self::$intervalCode)[$interval] : 'n/a';
     }
 }

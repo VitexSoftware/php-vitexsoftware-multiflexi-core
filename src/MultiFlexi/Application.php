@@ -27,7 +27,7 @@ class Application extends DBEngine
     public static string $appSchema = __DIR__.'/../../schema/application.json';
 
     /**
-     * @param mixed $identifier
+     * @param mixed                $identifier
      * @param array<string, mixed> $options
      */
     public function __construct($identifier = null, array $options = [])

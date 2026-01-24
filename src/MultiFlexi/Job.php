@@ -196,8 +196,7 @@ class Job extends Engine
         if ($this->runTemplate->getMyKey() === 0) {
             throw new \Ease\Exception(_('No RunTemplate prepared'));
         }
-        
-        
+
         // TODO: WTF ?
         $this->environment = $this->getJobEnvironment();
 
@@ -215,7 +214,7 @@ class Job extends Engine
             $this->setZabbixValue('executor', $this->getDataValue('executor'));
             $this->setZabbixValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
             $this->setZabbixValue('interval', $this->runTemplate->getDataValue('interv'));
-            $this->setZabbixValue('interval_seconds', RunTemplate::codeToSeconds($this->runTemplate->getDataValue('interv')));
+            $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($this->runTemplate->getDataValue('interv')));
             $this->setZabbixValue('app_name', $this->runTemplate->getApplication()->getRecordName());
             $this->setZabbixValue('app_id', $this->runTemplate->getDataValue('app_id'));
             $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());
@@ -596,34 +595,6 @@ EOD;
     }
 
     /**
-     * Get Job Interval by Code.
-     *
-     * @deprecated since version 1.15.0 Use the RunTemplate::codeToInterval instead
-     *
-     * @param string $code
-     *
-     * @return string
-     */
-    public static function codeToInterval($code)
-    {
-        return \array_key_exists($code, self::$intervalCode) ? self::$intervalCode[$code] : 'n/a';
-    }
-
-    /**
-     * Get Job Interval by Code.
-     *
-     * @deprecated since version 1.15.0 Use the RunTemplate::codeToSeconds instead
-     *
-     * @param string $code
-     *
-     * @return int Interval length in seconds
-     */
-    public static function codeToSeconds($code)
-    {
-        return \array_key_exists($code, self::$intervalSecond) ? (int) (self::$intervalSecond[$code]) : 0;
-    }
-
-    /**
      * Current Job Environment.
      *
      * @return array<string, string>
@@ -664,15 +635,15 @@ EOD;
             }
         }
 
-        $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE 
+        $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE
 
         if ($resultFileField) {
             $resultFile = $resultFileField->getValue();
 
-            if($resultFile[0] != DIRECTORY_SEPARATOR ) {
-                $resultFile = Defaults::$MULTIFLEXI_TMP . DIRECTORY_SEPARATOR . $resultFile;
+            if ($resultFile[0] !== \DIRECTORY_SEPARATOR) {
+                $resultFile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$resultFile;
             }
-            
+
             if ($resultFile === sys_get_temp_dir()) {
                 $resultFileField->setValue($resultFile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString());
             } else {
