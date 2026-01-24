@@ -28,9 +28,9 @@ class Application extends DBEngine
 
     /**
      * @param mixed $identifier
-     * @param array $options
+     * @param array<string, mixed> $options
      */
-    public function __construct($identifier = null, $options = [])
+    public function __construct($identifier = null, array $options = [])
     {
         $this->keyword = 'app';
         $this->myTable = 'apps';
@@ -739,7 +739,7 @@ class Application extends DBEngine
     {
         $exitCodeDescriptionRaw = $this->getFluentPDO()->from('app_exit_codes')->select(['description'])->where(['lang' => $lang, 'app_id' => $this->getMyKey(), 'exit_code' => $exitCode]);
 
-        return $exitCodeDescriptionRaw->count() ? $exitCodeDescriptionRaw->fetch() : _('Undocumented');
+        return $exitCodeDescriptionRaw->count() ? (string) $exitCodeDescriptionRaw->fetch('description') : _('Undocumented');
     }
 
     /**

@@ -30,7 +30,8 @@ class Requirement
     public static function getCredentialProviders(): array
     {
         $credprototyper = new CredentialProtoType();
-        return $credprototyper->getColumnsFromSQL(['name','code'], [], 'name', 'code');
+
+        return $credprototyper->getColumnsFromSQL(['name', 'code'], [], 'name', 'code');
     }
 
     /**
