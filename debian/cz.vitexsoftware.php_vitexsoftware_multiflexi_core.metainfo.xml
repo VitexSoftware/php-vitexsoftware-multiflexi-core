@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>cz.vitexsoftware.php_vitexsoftware_multiflexi_core</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>php-vitexsoftware-multiflexi-core</name>
+  <summary>VitexSoftware Multiflexi Core Library</summary>
+  <description>
+    <p>
+      This package contains the core library for the VitexSoftware Multiflexi This package contains the development files for the VitexSoftware Multiflexi Core Library.
+    </p>
+  </description>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <url type="homepage">https://github.com/VitexSoftware/php-vitexsoftware-multiflexi-core</url>
+  <url type="bugtracker">https://github.com/VitexSoftware/php-vitexsoftware-multiflexi-core/issues</url>
+  <developer id="cz.vitexsoftware">
+    <name>VitexSoftware</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+</component>
