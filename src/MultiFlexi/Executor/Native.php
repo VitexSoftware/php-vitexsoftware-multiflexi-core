@@ -94,7 +94,6 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
 
                 $logger = new \Ease\Sand();
                 $logger->setObjectName(\Ease\Logger\Message::getCallerName($this));
-                $logger->addStatusMessage('JOB: '.$this->job->getMyKey().' PID: '.$this->pid, $type, 'debug');
 
                 $liveOutputSocket = \Ease\Shared::cfg('LIVE_OUTPUT_SOCKET');
 
