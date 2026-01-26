@@ -116,7 +116,7 @@ class Job extends Engine
     /**
      * Create New Job Record in database.
      *
-     * @param int          $runtemplateId Job is performed in terms of given RunTemplate
+     * @param RunTemplate  $runtemplateI  Job is performed in terms of given RunTemplate
      * @param ConfigFields $environment   Environment prepared for Job execution
      * @param \DateTime    $scheduled     Schedule Timestamp
      * @param string       $executor      Chosen Executor class name
@@ -124,9 +124,9 @@ class Job extends Engine
      *
      * @return int new job ID
      */
-    public function newJob(int $runtemplateId, ConfigFields $environment, \DateTime $scheduled, $executor = 'Native', $scheduleType = 'adhoc')
+    public function newJob(RunTemplate $runtemplate, ConfigFields $environment, \DateTime $scheduled, $executor = 'Native', $scheduleType = 'adhoc')
     {
-        $this->runTemplate->loadFromSQL($runtemplateId);
+        $this->runTemplate = $runtemplate;
         $this->application = $this->runTemplate->getApplication();
         $this->company = $this->runTemplate->getCompany();
 
@@ -138,7 +138,7 @@ class Job extends Engine
         }
 
         $this->setData([
-            'runtemplate_id' => $runtemplateId,
+            'runtemplate_id' => $runtemplate->getMyKey(),
             'company_id' => $this->runTemplate->getDataValue('company_id'),
             'app_id' => $this->runTemplate->getDataValue('app_id'),
             'env' => \serialize($environment),
@@ -166,7 +166,7 @@ class Job extends Engine
             $this->setZabbixValue('company_id', $this->runTemplate->getDataValue('company_id'));
             $this->setZabbixValue('company_name', $this->runTemplate->getCompany()->getDataValue('name'));
             $this->setZabbixValue('company_code', $this->runTemplate->getCompany()->getDataValue('code'));
-            $this->setZabbixValue('runtemplate_id', $runtemplateId);
+            $this->setZabbixValue('runtemplate_id', $runtemplate->getMyKey());
             $this->setZabbixValue('executor', $executor);
 
             $this->reportToZabbix($this->zabbixMessageData);
@@ -198,7 +198,7 @@ class Job extends Engine
         }
 
         // TODO: WTF ?
-        $this->environment = $this->getJobEnvironment();
+        $this->environment->addFields($this->getJobEnvironment());
 
         if (isset($this->executor) === false) {
             $executorClass = '\\MultiFlexi\\Executor\\'.$this->getDataValue('executor');
@@ -403,15 +403,15 @@ EOD;
     /**
      * Prepare Job for run.
      *
-     * @param int          $runTemplateId ID of RunTempate to use
+     * @param RunTemplate  $runTemplate   RunTempate to use
      * @param ConfigFields $envOverride   use to change default env [env with info]
      * @param \DateTime    $scheduled     Time to launch
      * @param string       $executor      Executor Class Name
      */
-    public function prepareJob(int $runTemplateId, ConfigFields $envOverride, \DateTime $scheduled, string $executor = 'Native', string $scheduleType = 'adhoc'): string
+    public function prepareJob(RunTemplate $runTemplate, ConfigFields $envOverride, \DateTime $scheduled, string $executor = 'Native', string $scheduleType = 'adhoc'): string
     {
         $outline = '';
-        $this->runTemplate = new RunTemplate($runTemplateId);
+        $this->runTemplate = $runTemplate;
         $appId = $this->runTemplate->getDataValue('app_id');
         $companyId = $this->runTemplate->getDataValue('company_id');
 
@@ -423,7 +423,7 @@ EOD;
         $this->environment->addFields($this->getFullEnvironment());
         $this->environment->addFields($envOverride);
 
-        $this->loadFromSQL($this->newJob($runTemplateId, $this->environment, $scheduled, $executor, $scheduleType));
+        $this->loadFromSQL($this->newJob($runTemplate, $this->environment, $scheduled, $executor, $scheduleType));
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->setZabbixValue('phase', 'prepared');
@@ -533,7 +533,11 @@ EOD;
         $cmdparams = $this->application->getDataValue('cmdparams');
 
         foreach ($this->environment as $envKey => $field) {
-            $cmdparams = str_replace('{'.$envKey.'}', str_replace(' ', '\\ ', (string) $field->getValue()), (string) $cmdparams);
+            $value = $field->getValue();
+            // Only replace if value is not empty and doesn't contain unresolved macros
+            if ($value && !preg_match('/\{[A-Z_]+\}/', (string) $value)) {
+                $cmdparams = str_replace('{'.$envKey.'}', str_replace(' ', '\\ ', (string) $value), (string) $cmdparams);
+            }
         }
 
         return $cmdparams;
