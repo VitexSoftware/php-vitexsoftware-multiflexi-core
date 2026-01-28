@@ -27,7 +27,7 @@ class CompanyEnv extends ConfigFields
     private Company $company;
     public function __construct(Company $company, array $options = [])
     {
-        parent::__construct($company->getRecordName(), $options);
+        parent::__construct($company->getRecordName() ?? '', $options);
         $this->company = $company;
         $this->loadEnv();
     }
