@@ -137,9 +137,15 @@ class Job extends Engine
             throw new \Ease\Exception(_('Cannot create job without authenticated user. User ID is required.'));
         }
 
+        $companyId = $this->runTemplate->getDataValue('company_id');
+
+        if (empty($companyId) && $this->company) {
+            $companyId = $this->company->getMyKey();
+        }
+
         $this->setData([
             'runtemplate_id' => $runtemplate->getMyKey(),
-            'company_id' => $this->runTemplate->getDataValue('company_id'),
+            'company_id' => $companyId,
             'app_id' => $this->runTemplate->getDataValue('app_id'),
             'env' => \serialize($environment),
             'exitcode' => null,
@@ -150,6 +156,10 @@ class Job extends Engine
             'executor' => $executor,
             'launched_by' => $launchedByUserId,
         ], true);
+
+        if (null === $this->getDataValue('company_id')) {
+            $this->addStatusMessage(sprintf(_('Creating Job for Runtemplate #%d with NULL company_id. RT data: %s'), $runtemplate->getMyKey(), json_encode($runtemplate->getData())), 'warning');
+        }
 
         $jobId = $this->insertToSQL();
 
@@ -437,7 +447,7 @@ EOD;
             $this->setZabbixValue('company_id', $companyId);
             $this->setZabbixValue('company_name', $this->company->getDataValue('name'));
             $this->setZabbixValue('company_code', $this->company->getDataValue('code'));
-            $this->setZabbixValue('runtemplate_id', $runTemplateId);
+            $this->setZabbixValue('runtemplate_id', $runTemplate->getMyKey());
             $this->setZabbixValue('exitcode', null);
             $this->setZabbixValue('stdout', null);
             $this->setZabbixValue('stderr', null);
