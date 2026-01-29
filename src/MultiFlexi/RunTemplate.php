@@ -167,23 +167,6 @@ class RunTemplate extends \MultiFlexi\DBEngine
         return $runtemplates;
     }
 
-    public static function getIntervalEmoji(string $interval): string
-    {
-        $emojis = [
-            'c' => '🔵',
-            'n' => '🔴',
-            'i' => '⏳',
-            'h' => '🕰️',
-            'd' => '☀️',
-            'w' => '📅',
-            'm' => '🌛',
-            'y' => '🎆',
-            '' => '',
-        ];
-
-        return \array_key_exists($interval, $emojis) ? $emojis[$interval] : '';
-    }
-
     /**
      * @return array
      */
