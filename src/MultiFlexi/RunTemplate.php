@@ -178,7 +178,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
         $jobber->application = new Application((int) $appInfo['app_id']);
         $jobber->runTemplate = $this;
 
-        return $jobber->getFullEnvironment();
+        return $jobber->getModulesEnvironment();
     }
 
     public function loadEnvironment(): void

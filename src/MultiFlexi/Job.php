@@ -116,11 +116,10 @@ class Job extends Engine
     /**
      * Create New Job Record in database.
      *
-     * @param RunTemplate  $runtemplateI  Job is performed in terms of given RunTemplate
-     * @param ConfigFields $environment   Environment prepared for Job execution
-     * @param \DateTime    $scheduled     Schedule Timestamp
-     * @param string       $executor      Chosen Executor class name
-     * @param string       $scheduleType  Schedule type Info
+     * @param ConfigFields $environment  Environment prepared for Job execution
+     * @param \DateTime    $scheduled    Schedule Timestamp
+     * @param string       $executor     Chosen Executor class name
+     * @param string       $scheduleType Schedule type Info
      *
      * @return int new job ID
      */
@@ -165,7 +164,6 @@ class Job extends Engine
 
         $environment->addField((new ConfigField('MULTIFLEXI_JOB_ID', 'integer', _('Job ID'), _('Number of job'), '', (string) $jobId))->setSource(self::class));
 
-        $this->environment = $environment;
         $this->updateToSQL(['env' => serialize($environment), 'command' => $this->getCmdline()], ['id' => $jobId]);
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
@@ -207,8 +205,8 @@ class Job extends Engine
             throw new \Ease\Exception(_('No RunTemplate prepared'));
         }
 
-        // TODO: WTF ?
-        $this->environment->addFields($this->getJobEnvironment());
+        $this->sanitizeResultFile($this->environment);
+        $this->environment->applyMacros();
 
         if (isset($this->executor) === false) {
             $executorClass = '\\MultiFlexi\\Executor\\'.$this->getDataValue('executor');
@@ -240,6 +238,7 @@ class Job extends Engine
             $this->reportToZabbix($this->zabbixMessageData);
         }
 
+        /* Preserve used Envirnoment */
         $this->updateToSQL([
             'id' => $this->getMyKey(),
             'env' => serialize($this->environment),
@@ -288,7 +287,7 @@ class Job extends Engine
         if ($this->environment->getFieldByCode($resultFileField)) {
             $resultfile = $this->environment->getFieldByCode($resultFileField)->getValue();
         } else {
-            $resultfile = '';
+            $resultfile = $this->environment->getFieldByCode('RESULT_FILE')->getValue();
         }
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
@@ -298,7 +297,7 @@ class Job extends Engine
             $this->setZabbixValue('stderr', $stderr);
             $this->setZabbixValue('version', $this->application->getDataValue('version'));
             $this->setZabbixValue('exitcode', $statusCode);
-            $this->setZabbixValue('exitcode_description', $this->application->exitCodeDescription($statusCode));
+            $this->setZabbixValue('exitcode_description', $this->executor->meaning().' '.$this->application->exitCodeDescription($statusCode));
             $this->setZabbixValue('scheduled', $this->getDataValue('schedule'));
             $this->setZabbixValue('end', (new \DateTime())->format('Y-m-d H:i:s'));
             $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());
@@ -413,10 +412,10 @@ EOD;
     /**
      * Prepare Job for run.
      *
-     * @param RunTemplate  $runTemplate   RunTempate to use
-     * @param ConfigFields $envOverride   use to change default env [env with info]
-     * @param \DateTime    $scheduled     Time to launch
-     * @param string       $executor      Executor Class Name
+     * @param RunTemplate  $runTemplate RunTempate to use
+     * @param ConfigFields $envOverride use to change default env [env with info]
+     * @param \DateTime    $scheduled   Time to launch
+     * @param string       $executor    Executor Class Name
      */
     public function prepareJob(RunTemplate $runTemplate, ConfigFields $envOverride, \DateTime $scheduled, string $executor = 'Native', string $scheduleType = 'adhoc'): string
     {
@@ -430,7 +429,8 @@ EOD;
 
         $this->company = $this->runTemplate->getCompany();
         $this->setDataValue('executor', $executor);
-        $this->environment->addFields($this->getFullEnvironment());
+        $this->environment->addFields($runTemplate->getEnvironment());
+        $this->environment->addFields($this->getModulesEnvironment());
         $this->environment->addFields($envOverride);
 
         $this->loadFromSQL($this->newJob($runTemplate, $this->environment, $scheduled, $executor, $scheduleType));
@@ -544,6 +544,7 @@ EOD;
 
         foreach ($this->environment as $envKey => $field) {
             $value = $field->getValue();
+
             // Only replace if value is not empty and doesn't contain unresolved macros
             if ($value && !preg_match('/\{[A-Z_]+\}/', (string) $value)) {
                 $cmdparams = str_replace('{'.$envKey.'}', str_replace(' ', '\\ ', (string) $value), (string) $cmdparams);
@@ -623,7 +624,7 @@ EOD;
      *
      * @return array Environment with metadata
      */
-    public function getFullEnvironment(): ConfigFields
+    public function getModulesEnvironment(): ConfigFields
     {
         $jobEnvironment = new ConfigFields(sprintf(_('Job #%d'), $this->getMyKey()));
 
@@ -635,20 +636,11 @@ EOD;
             $jobEnvironment->addFields((new $injectorClass($this))->getEnvironment());
         }
 
-        foreach ($jobEnvironment->getFields() as $field) {
-            $fieldValue = $field->getValue();
+        return $jobEnvironment;
+    }
 
-            if (null === $fieldValue) {
-                $fieldValue = $field->getDefaultValue();
-            }
-
-            if ($fieldValue) {
-                if ($fieldValue && preg_match('/({[A-Z_]*})/', $fieldValue)) {
-                    $field->setValue(self::applyMarcros($fieldValue, $jobEnvironment));
-                }
-            }
-        }
-
+    public function sanitizeResultFile(ConfigFields $jobEnvironment)
+    {
         $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE
 
         if ($resultFileField) {
@@ -669,26 +661,11 @@ EOD;
     }
 
     /**
-     * Populate template by values from environment.
-     */
-    public static function applyMarcros(string $template, ConfigFields $fields): string
-    {
-        $hydrated = $template;
-
-        foreach ($fields->getFields() as $envKey => $envField) {
-            $value = method_exists($envField, 'getValue') ? $envField->getValue() : '';
-            $hydrated = str_replace('{'.$envKey.'}', (string) $value, $hydrated);
-        }
-
-        return $hydrated;
-    }
-
-    /**
      * Generate Environment for current Job.
      */
     public function compileEnv(): array
     {
-        return $this->getFullEnvironment()->getEnvArray();
+        return $this->getModulesEnvironment()->applyMacros()->getEnvArray();
     }
 
     /**

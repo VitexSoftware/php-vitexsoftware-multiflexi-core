@@ -43,24 +43,6 @@ class Scheduler extends Engine
         'y' => '31556926',
     ];
 
-    public static function getIntervalEmoji(string $interval): string
-    {
-        $emojis = [
-            'c' => '🔵',
-            'n' => '🔴',
-            'i' => '⏳',
-            'h' => '🕰️',
-            'd' => '☀️',
-            'w' => '📅',
-            'm' => '🌛',
-            'y' => '🎆',
-            '' => '',
-        ];
-
-        return \array_key_exists($interval, $emojis) ? $emojis[$interval] : '';
-    }
-
-
     /**
      * Convert 'inter' values to cron expressions.
      *
@@ -81,6 +63,23 @@ class Scheduler extends Engine
         $this->myTable = 'schedule';
         $this->nameColumn = '';
         parent::__construct($identifier, $options);
+    }
+
+    public static function getIntervalEmoji(string $interval): string
+    {
+        $emojis = [
+            'c' => '🔵',
+            'n' => '🔴',
+            'i' => '⏳',
+            'h' => '🕰️',
+            'd' => '☀️',
+            'w' => '📅',
+            'm' => '🌛',
+            'y' => '🎆',
+            '' => '',
+        ];
+
+        return \array_key_exists($interval, $emojis) ? $emojis[$interval] : '';
     }
 
     /**

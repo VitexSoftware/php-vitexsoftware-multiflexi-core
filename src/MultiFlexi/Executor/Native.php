@@ -138,6 +138,11 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         return $this->process->getExitCode();
     }
 
+    public function meaning(): string
+    {
+        return Process::$exitCodes[$this->process->getExitCode()];
+    }
+
     public function launchJob(): void
     {
         $this->commandline = $this->commandline();

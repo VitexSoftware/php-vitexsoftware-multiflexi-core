@@ -171,4 +171,47 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
     {
         return \count($this->fields);
     }
+
+    public function applyMacros(): self
+    {
+        foreach ($this->getFields() as $field) {
+            $fieldValue = $field->getValue();
+
+            if (null === $fieldValue) {
+                $fieldValue = $field->getDefaultValue();
+            }
+
+            if ($fieldValue) {
+                if ($fieldValue && preg_match('/({[A-Z_]*})/', $fieldValue)) {
+                    $field->setValue(self::applyMarcros($fieldValue, $this));
+
+                    $hydrated = $fieldValue;
+
+                    foreach ($this->getFields() as $envKey => $envField) {
+                        $value = method_exists($envField, 'getValue') ? $envField->getValue() : '';
+                        $hydrated = str_replace('{'.$envKey.'}', (string) $value, $hydrated);
+                    }
+
+                    $field->setValue($hydrated);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Populate template by values from environment.
+     */
+    public static function applyMarcros(string $template, self $fields): string
+    {
+        $hydrated = $template;
+
+        foreach ($fields->getFields() as $envKey => $envField) {
+            $value = method_exists($envField, 'getValue') ? $envField->getValue() : '';
+            $hydrated = str_replace('{'.$envKey.'}', (string) $value, $hydrated);
+        }
+
+        return $hydrated;
+    }
 }
