@@ -656,7 +656,7 @@ EOD;
             $tmpfile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$tmpfile;
         }
 
-        return $tmpfile === sys_get_temp_dir() ? $tmpfile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString() : $resultFileField->setValue(sys_get_temp_dir().\DIRECTORY_SEPARATOR.basename($tmpfile));
+        return $tmpfile === sys_get_temp_dir() ? $tmpfile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString() : sys_get_temp_dir().\DIRECTORY_SEPARATOR.basename($tmpfile);
     }
 
     /**
