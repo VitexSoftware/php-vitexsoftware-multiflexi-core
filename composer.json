@@ -5,7 +5,8 @@
         "justinrainbow/json-schema": "^6.6@dev",
         "vitexsoftware/ease-fluentpdo": "dev-main",
         "jalismrs/bitwarden-php": "^1.1",
-        "vitexsoftware/ease-html": "^1.40"
+        "vitexsoftware/ease-html": "^1.40",
+        "vitexsoftware/ease-core": "^1.50"
     },
     "license": "MIT",
     "authors": [

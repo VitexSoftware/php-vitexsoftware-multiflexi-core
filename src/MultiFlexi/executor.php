@@ -24,22 +24,51 @@ interface executor
 
     public static function description(): string;
 
-    public function launch(string $command);
+    /**
+     * Launch given command.
+     *
+     * @return int exit code
+     */
+    public function launch(string $command): ?int;
 
-    public function launchJob();
+    /**
+     * Launch the job.
+     */
+    public function launchJob(): void;
 
+    /**
+     * Get error output from the last executed command.
+     */
     public function getErrorOutput(): string;
 
+    /**
+     * Get output from the last executed command.
+     */
     public function getOutput(): string;
 
+    /**
+     * Get exit code from the last executed command.
+     */
     public function getExitCode(): int;
 
-    public function storeLogs();
+    /**
+     * Store logs of the execution.
+     */
+    public function storeLogs(): void;
 
+    /**
+     * Get command line used for execution.
+     */
     public function commandline(): string;
 
+    /**
+     * Get PID of the running process.
+     */
     public function getPid(): ?int;
 
+    /**
+     * Get environment configuration fields.
+     */
     public function getEnvironment(): ConfigFields;
 
     /**

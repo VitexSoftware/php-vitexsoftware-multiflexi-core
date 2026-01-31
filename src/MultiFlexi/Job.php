@@ -108,10 +108,9 @@ class Job extends Engine
             $this->setZabbixValue('pid', null);
             $this->setZabbixValue('interval_seconds', null);
         }
-        
+
         parent::__construct($identifier, $options);
         $this->setObjectName();
-
     }
 
     /**
@@ -205,8 +204,10 @@ class Job extends Engine
         if ($this->runTemplate->getMyKey() === 0) {
             throw new \Ease\Exception(_('No RunTemplate prepared'));
         }
-        
-        //TODO: Refresh Expirable Credentials here
+
+        $this->environmentCheck();
+
+        // TODO: Refresh Expirable Credentials here
         $this->sanitizeResultFile($this->environment);
         $this->environment->applyMacros();
 
@@ -431,9 +432,8 @@ EOD;
 
         $this->company = $this->runTemplate->getCompany();
         $this->setDataValue('executor', $executor);
-        $this->environment->addFields($runTemplate->getEnvironment());
-        $this->environment->addFields($this->getModulesEnvironment());
-        $this->environment->addFields($envOverride);
+
+        $this->setupEnvironment($envOverride);
 
         $this->loadFromSQL($this->newJob($runTemplate, $this->environment, $scheduled, $executor, $scheduleType));
 
@@ -680,7 +680,7 @@ EOD;
 
         if ($this->getDataValue('env')) {
             if (\Ease\Functions::isSerialized($this->getDataValue('env'))) {
-                $envUnserialized = unserialize($this->getDataValue('env'));
+                $envUnserialized = unserialize($this->getDataValue('env')) ?: new ConfigFields('');
 
                 if (\is_array($envUnserialized)) { // Old Serialization method fallback
                     foreach ($envUnserialized as $key => $envInfo) {
@@ -689,7 +689,11 @@ EOD;
                         $this->environment->addField($field);
                     }
                 } else {
-                    $this->environment->addFields($envUnserialized);
+                    if (\is_object($envUnserialized)) {
+                        $this->environment->addFields($envUnserialized);
+                    } else {
+                        $this->addStatusMessage(_('Envirnoment unserialization Error'), 'error');
+                    }
                 }
             }
         }
@@ -714,7 +718,7 @@ EOD;
         if ($this->getDataValue('executor')) {
             $executorClass = '\\MultiFlexi\\Executor\\'.$this->getDataValue('executor');
 
-             if (class_exists($executorClass)) {
+            if (class_exists($executorClass)) {
                 $this->executor = new $executorClass($this);
             } else {
                 $this->addStatusMessage(sprintf(_('Requested Executor %s not availble'), $executorClass), 'warning');
@@ -1035,6 +1039,23 @@ EOD;
         $result = parent::deleteFromSQL($data);
 
         return (bool) $result;
+    }
+
+    public function environmentCheck(): void
+    {
+        if ($this->environment->count() === 0) {
+            throw new \RuntimeException(_('Empty Job Environment'));
+        }
+    }
+
+    public function setupEnvironment(?ConfigFields $envOverride = null): void
+    {
+        $this->environment->addFields($this->getRunTemplate()->getEnvironment());
+        $this->environment->addFields($this->getModulesEnvironment());
+
+        if ($envOverride) {
+            $this->environment->addFields($envOverride);
+        }
     }
 
     /**

@@ -80,7 +80,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         return $this->executable().' '.$this->cmdparams();
     }
 
-    public function launch($command)
+    public function launch(string $command): ?int
     {
         $this->process = Process::fromShellCommandline($command, null, $this->environment->getEnvArray(), null, $this->timeout);
 

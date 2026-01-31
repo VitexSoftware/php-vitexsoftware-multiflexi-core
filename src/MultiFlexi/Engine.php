@@ -70,8 +70,14 @@ class Engine extends \Ease\SQL\Engine
     {
         // Remove CSRF token and other security fields that shouldn't be saved
         unset($data['csrf_token'], $data['class']);
+        $prevItemKey = $this->getMyKey();
+        $itemsTaken = parent::takeData($data);
 
-        return parent::takeData($data);
+        if ($prevItemKey !== $this->getMyKey()) {
+            $this->setObjectName();
+        }
+
+        return $itemsTaken;
     }
 
     /**

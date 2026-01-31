@@ -232,10 +232,10 @@ class Credential extends DBEngine
 
             if (\is_object($fieldProvidedByCredType)) {
                 $fieldProvidedByCredType->setValue((string) $credential['value']);
-                $fieldProvidedByCredType->setSource(serialize($this));
+                $fieldProvidedByCredType->setSource(\Ease\Euri::fromObject($this));
             } else {
                 $field = new ConfigField($credential['name'], $credential['type'], $credential['name'], '', '', $credential['value']);
-                $field->setSource(serialize($this));
+                $field->setSource(\Ease\Functions::fromObject($this));
                 $credentialEnv->addField($field);
             }
 

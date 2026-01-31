@@ -78,7 +78,7 @@ class Fake extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         return $this->executable().' '.$this->cmdparams();
     }
 
-    public function launch($command)
+    public function launch($command): ?int
     {
         $this->addStatusMessage(sprintf(_('Not launching: %s'), $command), 'debug');
         sleep(\Ease\Functions::randomNumber(0, 20));
