@@ -742,6 +742,18 @@ class Application extends DBEngine
         return $exitCodeDescriptionRaw->count() ? (string) $exitCodeDescriptionRaw->fetch('description') : _('Undocumented');
     }
 
+    public function getResultFiles()
+    {
+        $resultFiles = [];
+        $cfgField = $this->getEnvironment()->getFieldByCode('RESULT_FILE');
+
+        if ($cfgField) {
+            $resultFiles[] = Job::tmpfilepath($cfgField->getValue());
+        }
+
+        return []; // TODO Return all files defined in app manifest
+    }
+
     /**
      * Import artifact definitions from app JSON.
      */

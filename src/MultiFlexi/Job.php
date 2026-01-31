@@ -208,7 +208,7 @@ class Job extends Engine
         $this->environmentCheck();
 
         // TODO: Refresh Expirable Credentials here
-        $this->sanitizeResultFile($this->environment);
+        self::sanitizeResultFile($this->environment);
         $this->environment->applyMacros();
 
         if (isset($this->executor) === false) {
@@ -285,13 +285,14 @@ class Job extends Engine
         $sqlLogger->setCompany(0);
         $sqlLogger->setApplication(0);
 
-        $resultFileField = $this->application->getDataValue('resultfile');
+        $this->storeJobOutput('stdout.txt', $stdout, _('Standard output from job execution'));
+        $this->storeJobOutput('stderr.txt', $stderr, _('Standard error from job execution'));
 
-        if ($this->environment->getFieldByCode($resultFileField)) {
-            $resultfile = $this->environment->getFieldByCode($resultFileField)->getValue();
-        } else {
-            $resultfile = $this->environment->getFieldByCode('RESULT_FILE')->getValue();
+        foreach ($this->application->getResultFiles() as $resultFile) {
+            $this->stortJobArtifact($resultFile, sprintf(_('Result file from job execution: %s'), basename($resultFile)));
         }
+
+        $resultfile = $this->environment->getFieldByCode('RESULT_FILE') ? $this->environment->getFieldByCode('RESULT_FILE')->getValue() : '';
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->setZabbixValue('phase', 'jobDone');
@@ -315,9 +316,6 @@ class Job extends Engine
             'command' => $this->executor->commandline(),
             'exitcode' => $statusCode,
         ]);
-
-        // Always create artifacts for result files (independent of Zabbix action)
-        $this->createJobArtifacts($resultfile, $stdout, $stderr);
 
         $this->performActions($statusCode === 0 ? 'success' : 'fail');
 
@@ -641,25 +639,24 @@ EOD;
         return $jobEnvironment;
     }
 
-    public function sanitizeResultFile(ConfigFields $jobEnvironment)
+    public static function sanitizeResultFile(ConfigFields $jobEnvironment)
     {
         $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE
 
         if ($resultFileField) {
-            $resultFile = $resultFileField->getValue();
-
-            if ($resultFile[0] !== \DIRECTORY_SEPARATOR) {
-                $resultFile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$resultFile;
-            }
-
-            if ($resultFile === sys_get_temp_dir()) {
-                $resultFileField->setValue($resultFile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString());
-            } else {
-                $resultFileField->setValue(sys_get_temp_dir().\DIRECTORY_SEPARATOR.basename($resultFile));
-            }
+            $resultFileField->setValue(self::tmpfilepath($resultFileField->getValue()));
         }
 
         return $jobEnvironment;
+    }
+
+    public static function tmpfilepath(string $tmpfile): string
+    {
+        if ($tmpfile[0] !== \DIRECTORY_SEPARATOR) {
+            $tmpfile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$tmpfile;
+        }
+
+        return $tmpfile === sys_get_temp_dir() ? $tmpfile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString() : $resultFileField->setValue(sys_get_temp_dir().\DIRECTORY_SEPARATOR.basename($tmpfile));
     }
 
     /**
@@ -1058,15 +1055,7 @@ EOD;
         }
     }
 
-    /**
-     * Create artifacts for job execution results.
-     * This ensures all job artifacts are preserved regardless of action configuration.
-     *
-     * @param string $resultfile Path to the result file
-     * @param string $stdout     Standard output from job execution
-     * @param string $stderr     Standard error from job execution
-     */
-    private function createJobArtifacts(string $resultfile, string $stdout, string $stderr): void
+    private function stortJobArtifact(string $resultfile, string $description): void
     {
         $artifactor = new Artifact();
 
@@ -1082,41 +1071,30 @@ EOD;
                         $resultContent,
                         basename($resultfile),
                         $contentType,
-                        sprintf(_('Result file from job execution: %s'), basename($resultfile)),
+                        $description,
                     );
                 }
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('Failed to create artifact for result file %s: %s'), $resultfile, $e->getMessage()), 'warning');
             }
         }
+    }
 
-        // Create artifact for stdout if not empty
-        if (!empty(trim($stdout))) {
+    private function storeJobOutput(string $name, string $body, $description = ''): void
+    {
+        if (!empty(trim($body))) {
+            $artifactor = new Artifact();
+
             try {
                 $artifactor->createArtifact(
                     $this->getMyKey(),
-                    $stdout,
-                    'stdout.txt',
+                    $body,
+                    $name,
                     'text/plain',
-                    _('Standard output from job execution'),
+                    $description,
                 );
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('Failed to create stdout artifact: %s'), $e->getMessage()), 'warning');
-            }
-        }
-
-        // Create artifact for stderr if not empty (indicates warnings/errors)
-        if (!empty(trim($stderr))) {
-            try {
-                $artifactor->createArtifact(
-                    $this->getMyKey(),
-                    $stderr,
-                    'stderr.txt',
-                    'text/plain',
-                    _('Standard error from job execution'),
-                );
-            } catch (\Exception $e) {
-                $this->addStatusMessage(sprintf(_('Failed to create stderr artifact: %s'), $e->getMessage()), 'warning');
             }
         }
     }
