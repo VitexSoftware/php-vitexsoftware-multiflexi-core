@@ -141,6 +141,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
     public function meaning(): string
     {
         $code = $this->process->getExitCode();
+
         return Process::$exitCodes[$code] ?? _('Unknown');
     }
 
