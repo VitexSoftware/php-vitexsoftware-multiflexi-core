@@ -83,10 +83,111 @@ class Scheduler extends Engine
     }
 
     /**
+     * Validate that runtemplates with next_schedule have corresponding jobs in queue
+     * Reset next_schedule to null if job is missing.
+     */
+    public function initializeScheduling(): void
+    {
+        $jobber = new Job();
+        $runtemplateQuery = new \MultiFlexi\RunTemplate();
+        // Get all active runtemplates that have next_schedule set
+        $runtemplates = $runtemplateQuery->getColumnsFromSQL(['id', 'next_schedule', 'company_id'], ['active' => true, 'interv != ?' => 'n']);
+
+        foreach ($runtemplates as $rtData) {
+            // Check if there's a scheduled job at the expected time
+            $expectedJob = $jobber->listingQuery()->where(['runtemplate_id' => $rtData['id'], 'schedule' => $rtData['next_schedule'], 'exitcode' => null])->fetch();
+
+            if (!$expectedJob) {
+                // No job found for this next_schedule time, reset it to null
+                $runtemplateQuery->updateToSQL(['next_schedule' => null], ['id' => $rtData['id']]);
+                $this->addStatusMessage('Reset next_schedule for runtemplate #'.$rtData['id'].' - missing job in queue', 'debug');
+            }
+        }
+    }
+
+    /**
+     * Clean up orphaned jobs from queue that don't have valid company or runtemplate references.
+     */
+    public function cleanupOrphanedJobs(): void
+    {
+        $jobber = new Job();
+
+        // Remove jobs without company_id or runtemplate_id
+        $orphanedJobs = $jobber->listingQuery()
+            ->where('company_id IS NULL OR runtemplate_id IS NULL OR company_id = 0 OR runtemplate_id = 0')
+            ->fetchAll();
+
+        foreach ($orphanedJobs as $job) {
+            $jobber->deleteFromSQL(['id' => $job['id']]);
+            $this->addStatusMessage('Removed orphaned job #'.$job['id'].' - missing company_id or runtemplate_id', 'info');
+        }
+
+        // Remove jobs with invalid company references
+        $invalidCompanyJobs = $jobber->listingQuery()
+            ->leftJoin('company ON company.id = job.company_id')
+            ->where('job.company_id IS NOT NULL AND company.id IS NULL')
+            ->select(['job.id'])
+            ->fetchAll();
+
+        foreach ($invalidCompanyJobs as $job) {
+            $jobber->deleteFromSQL(['id' => $job['id']]);
+            $this->addStatusMessage('Removed job #'.$job['id'].' - invalid company reference', 'info');
+        }
+
+        // Remove jobs with invalid runtemplate references
+        $invalidRuntemplateJobs = $jobber->listingQuery()
+            ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')
+            ->where('job.runtemplate_id IS NOT NULL AND runtemplate.id IS NULL')
+            ->select(['job.id'])
+            ->fetchAll();
+
+        foreach ($invalidRuntemplateJobs as $job) {
+            $jobber->deleteFromSQL(['id' => $job['id']]);
+            $this->addStatusMessage('Removed job #'.$job['id'].' - invalid runtemplate reference', 'info');
+        }
+    }
+
+    /**
+     * Remove broken records from the queue table before adding new jobs.
+     */
+    public function purgeBrokenQueueRecords(): void
+    {
+        // Purge records where 'job' is NULL, 0, or empty
+        $brokenRecords = $this->listingQuery()
+            ->where('job IS NULL OR job = 0 OR job = ""')
+            ->fetchAll();
+
+        foreach ($brokenRecords as $record) {
+            $this->deleteFromSQL(['id' => $record['id']]);
+            $this->addStatusMessage('Purged broken queue record id='.$record['id'], 'info');
+        }
+
+        // Purge records where referenced job does not exist
+        $allSchedules = $this->listingQuery()->fetchAll();
+        $jobber = new Job();
+
+        foreach ($allSchedules as $schedule) {
+            if (empty($schedule['job'])) {
+                continue; // already handled above
+            }
+
+            $jobExists = $jobber->listingQuery()->where('id', $schedule['job'])->fetch();
+
+            if (!$jobExists) {
+                $this->deleteFromSQL(['id' => $schedule['id']]);
+                $this->addStatusMessage('Purged schedule id='.$schedule['id'].' referencing missing job id='.$schedule['job'], 'info');
+            }
+        }
+    }
+
+    /**
      * Save Job execution time.
      */
     public function addJob(Job $job, \DateTime $when)
     {
+        // Purge broken queue records before adding new jobs
+        $this->purgeBrokenQueueRecords();
+
         $jobId = $job->getMyKey();
 
         // Check if this job is already scheduled to prevent duplicates
