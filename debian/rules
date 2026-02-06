@@ -21,3 +21,4 @@ override_dh_install:
 	sed -i "18i require_once '/usr/share/php/JsonSchema/autoload.php';" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php
 	sed -i "s|__DIR__\.'/../../schema/application.json'|'/usr/lib/multiflexi/application.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php
 	sed -i "s|__DIR__\.'/../../multiflexi.credential-type.schema.json'|'/usr/lib/multiflexi/credential-type.schema.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/CredentialType.php
+	sed -i "s|__DIR__\.'/../../schema/credential-prototype.json'|'/usr/lib/multiflexi/credential-prototype.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/CredentialProtoType.php
