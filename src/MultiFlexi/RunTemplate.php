@@ -276,7 +276,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
         }
 
         $packet = new ZabbixPacket();
-        $packet->addMetric((new ZabbixMetric('job-['.$company->getDataValue('code').'-'.$application->getDataValue('code').'-'.$jobInfo['id'].'-interval_seconds]', (string) Job::codeToSeconds($jobInfo['interv'])))->withHostname($hostname));
+        $packet->addMetric((new ZabbixMetric('job-['.$company->getDataValue('code').'-'.$application->getDataValue('code').'-'.$jobInfo['id'].'-interval_seconds]', (string) Scheduler::codeToSeconds($jobInfo['interv'])))->withHostname($hostname));
 
         try {
             $result = $zabbixSender->send($packet);
@@ -512,7 +512,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
     /**
      * Placeholder for legacy credentials environment.
      *
-     * @return array
+     * @return \MultiFlexi\ConfigFields
      */
     public function legacyCredentialsEnvironment(): \MultiFlexi\ConfigFields
     {

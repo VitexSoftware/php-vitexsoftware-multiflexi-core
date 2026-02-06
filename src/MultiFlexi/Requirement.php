@@ -52,7 +52,7 @@ class Requirement
     /**
      * List of company credentials.
      *
-     * @return type
+     * @return array<string, array<int, array<string, mixed>>>
      */
     public static function getCredentials(Company $company): array
     {

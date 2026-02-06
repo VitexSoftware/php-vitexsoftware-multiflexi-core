@@ -82,4 +82,7 @@ interface executor
      * Logo for Launcher.
      */
     public static function logo(): string;
+
+    public function setJob(Job $job): void;
+
 }

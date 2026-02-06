@@ -81,7 +81,7 @@ class Job extends Engine
         $this->myTable = 'job';
         $this->nameColumn = '';
         $this->runTemplate = new RunTemplate();
-        $this->environment = new ConfigFields(_('Job Env'));
+        $this->environment(new ConfigFields(_('Job Env')));
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->zabbixSender = new ZabbixSender(\Ease\Shared::cfg('ZABBIX_SERVER'));
@@ -1097,5 +1097,21 @@ EOD;
                 $this->addStatusMessage(sprintf(_('Failed to create stdout artifact: %s'), $e->getMessage()), 'warning');
             }
         }
+    }
+
+    /**
+     * Update or obtain Job Environment.
+     *
+     * @param ConfigFields|null $env Environment to add
+     *
+     * @return ConfigFields Current Job Environment
+     */
+    public function environment(?ConfigFields $env = null): ConfigFields
+    {
+        if ($env) {    
+            $this->environment->addFields($env) ;
+        }
+
+        return $this->environment;
     }
 }
