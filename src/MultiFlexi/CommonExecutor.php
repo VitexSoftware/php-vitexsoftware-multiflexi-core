@@ -39,7 +39,7 @@ abstract class CommonExecutor extends \Ease\Sand
         $this->setJob($job);
     }
 
-    public function setJob(Job &$job): void
+    public function setJob(Job $job): void
     {
         /**
          * Ensure environment is initialized before use.
