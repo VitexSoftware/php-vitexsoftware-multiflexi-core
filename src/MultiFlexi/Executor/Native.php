@@ -50,7 +50,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         return _('Run Job on same machine as MultiFlexi itself');
     }
 
-    public function setJob(\MultiFlexi\Job &$job): void
+    public function setJob(\MultiFlexi\Job $job): void
     {
         parent::setJob($job);
         $this->jobFiles = (new \MultiFlexi\FileStore())->extractFilesForJob($this->job);

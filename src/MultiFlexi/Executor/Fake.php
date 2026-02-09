@@ -48,7 +48,7 @@ class Fake extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         return _('Skip real job Execution. Return random exit codes.');
     }
 
-    public function setJob(\MultiFlexi\Job &$job): void
+    public function setJob(\MultiFlexi\Job $job): void
     {
         parent::setJob($job);
         $this->jobFiles = (new \MultiFlexi\FileStore())->extractFilesForJob($this->job);
