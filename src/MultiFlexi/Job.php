@@ -81,7 +81,7 @@ class Job extends Engine
         $this->myTable = 'job';
         $this->nameColumn = '';
         $this->runTemplate = new RunTemplate();
-        $this->environment(new ConfigFields(_('Job Env')));
+        $this->environment = new ConfigFields(_('Job Env'));
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->zabbixSender = new ZabbixSender(\Ease\Shared::cfg('ZABBIX_SERVER'));
