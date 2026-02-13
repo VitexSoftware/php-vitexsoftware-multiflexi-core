@@ -122,6 +122,7 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
     public function setName(string $name): self
     {
         $this->name = $name;
+        $this->setObjectName($this->name);
 
         return $this;
     }
