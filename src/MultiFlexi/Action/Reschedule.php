@@ -29,7 +29,6 @@ class Reschedule extends \MultiFlexi\CommonAction
      *
      * @param \MultiFlexi\Job $job Current job instance
      *
-     * @return void
      * @throws \Ease\Exception if scheduling fails
      */
     public function perform(\MultiFlexi\Job $job): void
@@ -38,11 +37,13 @@ class Reschedule extends \MultiFlexi\CommonAction
         $options = $this->getData();
         $delay = $options['delay'] ?? 3600; // seconds
         $scheduled = new \DateTime();
-        $scheduled->modify('+' . (int)$delay . ' seconds');
+        $scheduled->modify('+'.(int) $delay.' seconds');
 
         $runTemplate = $job->runTemplate;
+
         if (!$runTemplate || !$runTemplate->getMyKey()) {
             $this->addStatusMessage(_('No valid RunTemplate found for rescheduling.'), 'error');
+
             return;
         }
 
@@ -50,11 +51,12 @@ class Reschedule extends \MultiFlexi\CommonAction
         $scheduleType = 'reschedule';
 
         $newJob = new \MultiFlexi\Job();
+
         try {
             $newJob->prepareJob($runTemplate, $job->environment(), $scheduled, $executor, $scheduleType);
             $this->addStatusMessage(sprintf(_('RunTemplate #%d rescheduled for %s.'), $runTemplate->getMyKey(), $scheduled->format('Y-m-d H:i:s')), 'success');
         } catch (\Exception $ex) {
-            $this->addStatusMessage(_('Failed to reschedule RunTemplate: ') . $ex->getMessage(), 'error');
+            $this->addStatusMessage(_('Failed to reschedule RunTemplate: ').$ex->getMessage(), 'error');
         }
     }
 

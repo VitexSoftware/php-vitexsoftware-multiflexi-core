@@ -2256,8 +2256,8 @@
             "version": "2.1.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a49260166405408dd373272d4702a79f8b95f497",
-                "reference": "a49260166405408dd373272d4702a79f8b95f497",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a5c375db730fd9a12a5aa369eb877fd2aab8201e",
+                "reference": "a5c375db730fd9a12a5aa369eb877fd2aab8201e",
                 "shasum": ""
             },
             "require": {
@@ -2303,7 +2303,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-06T08:33:15+00:00"
+            "time": "2026-02-09T11:17:21+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2311,12 +2311,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "4d1d77610d68c8ff059ab17c76e0aaea2615d7c6"
+                "reference": "45bc1ad30669c3ebb19417d5c272b8104d155415"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/4d1d77610d68c8ff059ab17c76e0aaea2615d7c6",
-                "reference": "4d1d77610d68c8ff059ab17c76e0aaea2615d7c6",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/45bc1ad30669c3ebb19417d5c272b8104d155415",
+                "reference": "45bc1ad30669c3ebb19417d5c272b8104d155415",
                 "shasum": ""
             },
             "require": {
@@ -2360,7 +2360,7 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
             },
-            "time": "2026-02-03T10:16:20+00:00"
+            "time": "2026-02-09T11:32:05+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2750,12 +2750,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "5aab5fb27563c68016cfb813ccb70b51a792fd23"
+                "reference": "fdccb2d35addd0dbdb4eb24caa442c100ae1ebee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5aab5fb27563c68016cfb813ccb70b51a792fd23",
-                "reference": "5aab5fb27563c68016cfb813ccb70b51a792fd23",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/fdccb2d35addd0dbdb4eb24caa442c100ae1ebee",
+                "reference": "fdccb2d35addd0dbdb4eb24caa442c100ae1ebee",
                 "shasum": ""
             },
             "require": {
@@ -2848,7 +2848,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-06T06:06:56+00:00"
+            "time": "2026-02-08T08:36:26+00:00"
         },
         {
             "name": "psr/container",
@@ -3541,12 +3541,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "3a115e882d75d6ea1cb3cf9085176088915548e1"
+                "reference": "e329b9ea0c96e4d08c2cdc8f734430f3c6848351"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/3a115e882d75d6ea1cb3cf9085176088915548e1",
-                "reference": "3a115e882d75d6ea1cb3cf9085176088915548e1",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/e329b9ea0c96e4d08c2cdc8f734430f3c6848351",
+                "reference": "e329b9ea0c96e4d08c2cdc8f734430f3c6848351",
                 "shasum": ""
             },
             "require": {
@@ -3594,7 +3594,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-05T09:22:56+00:00"
+            "time": "2026-02-09T09:56:06+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -5752,12 +5752,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "09dd242537543ad34254b0e173ab287a7e39900b"
+                "reference": "c15f92d1a2d7cb61a7ca885f3ed1b0906435aac1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/09dd242537543ad34254b0e173ab287a7e39900b",
-                "reference": "09dd242537543ad34254b0e173ab287a7e39900b",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/c15f92d1a2d7cb61a7ca885f3ed1b0906435aac1",
+                "reference": "c15f92d1a2d7cb61a7ca885f3ed1b0906435aac1",
                 "shasum": ""
             },
             "require": {
@@ -5832,7 +5832,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-05T13:30:16+00:00"
+            "time": "2026-02-06T20:22:04+00:00"
         },
         {
             "name": "symfony/stopwatch",
@@ -5907,12 +5907,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "8aec8d28a116ff0edd5df7b90dda77ce477ac07f"
+                "reference": "38ef56ae8e4d5ada76d807638689f135059dc648"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/8aec8d28a116ff0edd5df7b90dda77ce477ac07f",
-                "reference": "8aec8d28a116ff0edd5df7b90dda77ce477ac07f",
+                "url": "https://api.github.com/repos/symfony/string/zipball/38ef56ae8e4d5ada76d807638689f135059dc648",
+                "reference": "38ef56ae8e4d5ada76d807638689f135059dc648",
                 "shasum": ""
             },
             "require": {
@@ -5990,7 +5990,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-05T20:46:06+00:00"
+            "time": "2026-02-09T10:17:21+00:00"
         },
         {
             "name": "theseer/tokenizer",

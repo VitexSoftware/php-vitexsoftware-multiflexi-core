@@ -231,8 +231,10 @@ class Credential extends DBEngine
             $fieldProvidedByCredType = $credentialEnv->getFieldByCode($credential['name']);
 
             if (\is_object($fieldProvidedByCredType)) {
-                $fieldProvidedByCredType->setValue((string) $credential['value']);
-                $fieldProvidedByCredType->setSource(\Ease\Euri::fromObject($this));
+                if (empty($fieldProvidedByCredType->getValue())) {
+                    $fieldProvidedByCredType->setValue((string) $credential['value']);
+                    $fieldProvidedByCredType->setSource(\Ease\Euri::fromObject($this));
+                }
             } else {
                 $field = new ConfigField($credential['name'], $credential['type'], $credential['name'], '', '', $credential['value']);
                 $field->setSource(\Ease\Functions::fromObject($this));

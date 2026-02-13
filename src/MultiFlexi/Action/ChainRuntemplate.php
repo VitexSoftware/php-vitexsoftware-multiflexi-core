@@ -42,36 +42,37 @@ class ChainRuntemplate extends \MultiFlexi\CommonAction
 
     /**
      * Is this Action Suitable for Application.
-     *
-     * @param \MultiFlexi\Application $app
      */
     public static function usableForApp(\MultiFlexi\Application $app): bool
     {
         return \is_object($app);
     }
 
-        /**
-         * Perform ChainRuntemplate Action: Schedule another RunTemplate after current job.
-         *
-         * @param \MultiFlexi\Job $job Current job instance
-         *
-         * @return void
-         * @throws \Ease\Exception if scheduling fails
-         */
+    /**
+     * Perform ChainRuntemplate Action: Schedule another RunTemplate after current job.
+     *
+     * @param \MultiFlexi\Job $job Current job instance
+     *
+     * @throws \Ease\Exception if scheduling fails
+     */
     public function perform(\MultiFlexi\Job $job): void
     {
         // Retrieve the chosen RunTemplate ID from action options
         $options = $this->getData();
         $rtid = $options['RunTemplate']['rtid'] ?? null;
+
         if (!$rtid) {
             $this->addStatusMessage(_('No RunTemplate selected for chaining.'), 'error');
+
             return;
         }
 
         // Load the RunTemplate to be scheduled
         $nextRunTemplate = new \MultiFlexi\RunTemplate($rtid);
+
         if (!$nextRunTemplate->getMyKey()) {
             $this->addStatusMessage(sprintf(_('RunTemplate #%d not found.'), $rtid), 'error');
+
             return;
         }
 
@@ -81,6 +82,7 @@ class ChainRuntemplate extends \MultiFlexi\CommonAction
         $scheduleType = 'chained';
 
         $newJob = new \MultiFlexi\Job();
+
         try {
             $newJob->prepareJob($nextRunTemplate, $job->environment(), $scheduled, $executor, $scheduleType);
             $this->addStatusMessage(sprintf(_('Chained RunTemplate #%d scheduled.'), $rtid), 'success');

@@ -162,7 +162,7 @@ class Job extends Engine
 
         $jobId = $this->insertToSQL();
 
-        $environment->addField((new ConfigField('MULTIFLEXI_JOB_ID', 'integer', _('Job ID'), _('Number of job'), '', (string) $jobId))->setSource(self::class));
+        $environment->addField((new ConfigField('MULTIFLEXI_JOB_ID', 'integer', _('Job ID'), _('Number of job'), '', (string) $jobId))->setSource(\Ease\Euri::fromObject($this)));
 
         $this->updateToSQL(['env' => serialize($environment), 'command' => $this->getCmdline()], ['id' => $jobId]);
 
@@ -1055,6 +1055,22 @@ EOD;
         }
     }
 
+    /**
+     * Update or obtain Job Environment.
+     *
+     * @param null|ConfigFields $env Environment to add
+     *
+     * @return ConfigFields Current Job Environment
+     */
+    public function environment(?ConfigFields $env = null): ConfigFields
+    {
+        if ($env) {
+            $this->environment->addFields($env);
+        }
+
+        return $this->environment;
+    }
+
     private function stortJobArtifact(string $resultfile, string $description): void
     {
         $artifactor = new Artifact();
@@ -1097,21 +1113,5 @@ EOD;
                 $this->addStatusMessage(sprintf(_('Failed to create stdout artifact: %s'), $e->getMessage()), 'warning');
             }
         }
-    }
-
-    /**
-     * Update or obtain Job Environment.
-     *
-     * @param ConfigFields|null $env Environment to add
-     *
-     * @return ConfigFields Current Job Environment
-     */
-    public function environment(?ConfigFields $env = null): ConfigFields
-    {
-        if ($env) {    
-            $this->environment->addFields($env) ;
-        }
-
-        return $this->environment;
     }
 }

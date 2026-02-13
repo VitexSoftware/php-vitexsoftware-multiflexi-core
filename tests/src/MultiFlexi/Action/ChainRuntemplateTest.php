@@ -3,22 +3,28 @@
 declare(strict_types=1);
 
 /**
- * PHPUnit test for ChainRuntemplate Action
+ * This file is part of the MultiFlexi package
  *
- * @author vitex
+ * https://multiflexi.eu/
+ *
+ * (c) Vítězslav Dvořák <http://vitexsoftware.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
 namespace MultiFlexi\Tests\Action;
 
-use PHPUnit\Framework\TestCase;
 use MultiFlexi\Action\ChainRuntemplate;
+use MultiFlexi\ConfigFields;
 use MultiFlexi\Job;
 use MultiFlexi\RunTemplate;
-use MultiFlexi\ConfigFields;
+use PHPUnit\Framework\TestCase;
 
 class ChainRuntemplateTest extends TestCase
 {
     /**
-     * Test scheduling chained RunTemplate
+     * Test scheduling chained RunTemplate.
      */
     public function testPerformSchedulesChainedRuntemplate(): void
     {
@@ -37,7 +43,7 @@ class ChainRuntemplateTest extends TestCase
     }
 
     /**
-     * Test perform with missing RunTemplate
+     * Test perform with missing RunTemplate.
      */
     public function testPerformWithMissingRuntemplate(): void
     {

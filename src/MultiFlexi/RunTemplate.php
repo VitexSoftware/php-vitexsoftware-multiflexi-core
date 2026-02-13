@@ -512,7 +512,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
     /**
      * Placeholder for legacy credentials environment.
      *
-     * @return \MultiFlexi\ConfigFields
+     * @deprecated since version 2.1
      */
     public function legacyCredentialsEnvironment(): \MultiFlexi\ConfigFields
     {

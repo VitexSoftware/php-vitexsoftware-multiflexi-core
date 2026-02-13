@@ -84,5 +84,4 @@ interface executor
     public static function logo(): string;
 
     public function setJob(Job $job): void;
-
 }
