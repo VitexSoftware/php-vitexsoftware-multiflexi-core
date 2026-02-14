@@ -1523,4 +1523,13 @@ EOD;
     {
         return $this->keyword.'.php?id='.$this->getMyKey();
     }
+
+    public function takeData(array $data): int
+    {
+        if (\array_key_exists('csrf_token', $data)) {
+            unset($data['csrf_token']);
+        }
+
+        return parent::takeData($data);
+    }
 }

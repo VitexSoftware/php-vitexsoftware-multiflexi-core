@@ -215,4 +215,16 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
 
         return $hydrated;
     }
+
+    /**
+     * Change All Fields source string.
+     */
+    public function setSources(string $sourceIdent): self
+    {
+        foreach (array_keys($this->getFields()) as $envKey) {
+            $this->getField($envKey)->setSource($sourceIdent);
+        }
+
+        return $this;
+    }
 }

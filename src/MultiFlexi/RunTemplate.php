@@ -349,7 +349,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
     public function getRuntemplateEnvironment(): ConfigFields
     {
-        $runtemplateEnv = new ConfigFields(sprintf(_('RunTemplate %s'), $this->getRecordName()));
+        $runtemplateEnv = new ConfigFields(\Ease\Euri::fromObject($this));
         $configurator = new Configuration();
         $cfg = $configurator->listingQuery()->select(['name', 'value', 'config_type'], true)->where(['runtemplate_id' => $this->getMyKey()])->fetchAll('name');
 
@@ -459,7 +459,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
         $runTemplateFields->addFields($this->getApplication()->getEnvironment()); // Environment defined by app.json
         $runTemplateFields->addFields($this->getRuntemplateEnvironment()); // Environmend defined by RunTemplate
-        $runTemplateFields->addFields($this->legacyCredentialsEnvironment()); // TODO: Remove
+
         $runTemplateFields->addFields($this->credentialsEnvironment());
 
         return $runTemplateFields;
@@ -471,7 +471,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
 
         foreach ($this->getCredentialsAssigned() as $requirement => $credentialData) {
             $credentor = new Credential($credentialData['credentials_id']);
-            $runTemplateCredTypeFields->addFields($credentor->query());
+            $runTemplateCredTypeFields->addFields($credentor->query()->setSources(\Ease\Euri::fromObject($credentor)));
         }
 
         return $runTemplateCredTypeFields;
@@ -504,16 +504,5 @@ class RunTemplate extends \MultiFlexi\DBEngine
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')
             ->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
             ->fetchAll();
-    }
-
-    /**
-     * Placeholder for legacy credentials environment.
-     *
-     * @deprecated since version 2.1
-     */
-    public function legacyCredentialsEnvironment(): \MultiFlexi\ConfigFields
-    {
-        return new \MultiFlexi\ConfigFields('Legacy Credentials');
-        // Populate $configFields with necessary fields.
     }
 }

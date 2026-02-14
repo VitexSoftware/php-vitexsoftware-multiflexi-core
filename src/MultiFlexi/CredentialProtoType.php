@@ -43,8 +43,8 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
 
     public function __construct($init = null)
     {
-        $this->configFieldsProvided = new \MultiFlexi\ConfigFields();
-        $this->configFieldsInternal = new \MultiFlexi\ConfigFields();
+        $this->configFieldsProvided = new \MultiFlexi\ConfigFields(\Ease\Functions::baseClassName($this).' provided');
+        $this->configFieldsInternal = new \MultiFlexi\ConfigFields(\Ease\Functions::baseClassName($this).' Internal');
         parent::__construct($init);
     }
 

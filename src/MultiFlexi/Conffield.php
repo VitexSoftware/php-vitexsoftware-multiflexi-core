@@ -103,7 +103,7 @@ class Conffield extends \Ease\SQL\Engine
 
     public static function getAppConfigs(Application $app): ConfigFields
     {
-        $appConfiguration = new ConfigFields(sprintf(_('Application %s Config Fields'), $app->getRecordName()));
+        $appConfiguration = new ConfigFields(\Ease\Euri::fromObject($app));
 
         foreach ((new self())->appConfigs($app->getMyKey()) as $appConfig) {
             $field = new ConfigField($appConfig['keyname'], self::fixType($appConfig['type']), $appConfig['keyname'], $appConfig['description']);

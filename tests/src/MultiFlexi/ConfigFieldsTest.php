@@ -337,4 +337,35 @@ class ConfigFieldsTest extends TestCase
         $configFields->next();
         $this->assertFalse($configFields->valid());
     }
+
+    /**
+     * Test that setSources changes the source of all fields.
+     */
+    public function testSetSources(): void
+    {
+        $configFields = new ConfigFields();
+        
+        // Add some fields with initial sources
+        $field1 = new ConfigField('field1', 'text', 'Field 1');
+        $field1->setSource('initial_source');
+        $field2 = new ConfigField('field2', 'text', 'Field 2');
+        $field2->setSource('initial_source');
+        
+        $configFields->addField($field1);
+        $configFields->addField($field2);
+        
+        // Verify initial sources
+        $this->assertEquals('initial_source', $configFields->getField('field1')->getSource());
+        $this->assertEquals('initial_source', $configFields->getField('field2')->getSource());
+        
+        // Change sources
+        $result = $configFields->setSources('new_source');
+        
+        // Verify return value is self
+        $this->assertSame($configFields, $result);
+        
+        // Verify all fields have new source
+        $this->assertEquals('new_source', $configFields->getField('field1')->getSource());
+        $this->assertEquals('new_source', $configFields->getField('field2')->getSource());
+    }
 }

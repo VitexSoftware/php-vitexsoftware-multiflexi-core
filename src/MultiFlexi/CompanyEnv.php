@@ -51,6 +51,8 @@ class CompanyEnv extends ConfigFields
 
     public function loadEnv(): void
     {
+        $this->setName(\Ease\Euri::fromObject($this->company));
+
         foreach ($this->listingQuery()->where('company_id', $this->company->getMyKey())->fetchAll() as $companyEnvRow) {
             $this->addField(new ConfigField($companyEnvRow['keyword'], 'string', $companyEnvRow['keyword'], _('Company custom environment'), '', $companyEnvRow['value']));
         }

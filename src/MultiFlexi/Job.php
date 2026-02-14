@@ -626,7 +626,7 @@ EOD;
      */
     public function getModulesEnvironment(): ConfigFields
     {
-        $jobEnvironment = new ConfigFields(sprintf(_('Job #%d'), $this->getMyKey()));
+        $jobEnvironment = new ConfigFields($this->getMyKey() ? \Ease\Euri::fromObject($this) : _('Job environment'));
 
         \Ease\Functions::loadClassesInNamespace('MultiFlexi\\Env');
         $injectors = \Ease\Functions::classesInNamespace('MultiFlexi\\Env');

@@ -174,8 +174,8 @@ class Credential extends DBEngine
 
         $dataCount = parent::loadFromSQL($itemID);
 
-        if ($this->getRecordName()) {
-            $this->fields->setName($this->getRecordName());
+        if ($this->getMyKey()) {
+            $this->fields->setSources(\Ease\Euri::fromObject($this));
         }
 
         if ($this->credentialType && $this->credentialType->getHelper()) {
@@ -237,7 +237,7 @@ class Credential extends DBEngine
                 }
             } else {
                 $field = new ConfigField($credential['name'], $credential['type'], $credential['name'], '', '', $credential['value']);
-                $field->setSource(\Ease\Functions::fromObject($this));
+                $field->setSource(\Ease\Euri::fromObject($this));
                 $credentialEnv->addField($field);
             }
 
