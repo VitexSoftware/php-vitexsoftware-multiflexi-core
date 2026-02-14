@@ -274,19 +274,19 @@ class JobTest extends \PHPUnit\Framework\TestCase
     public function testEnvironment(): void
     {
         $job = new Job();
-        
+
         // Test getter - should return ConfigFields instance
         $env = $job->environment();
         $this->assertInstanceOf(\MultiFlexi\ConfigFields::class, $env);
-        
+
         // Test setter - add fields and verify they are added
         $additionalFields = new \MultiFlexi\ConfigFields('Test Fields');
         $testField = new \MultiFlexi\ConfigField('test_key', 'string', 'Test Key', 'Test Description', 'Test Hint', 'test_value');
         $additionalFields->addField($testField);
-        
+
         $result = $job->environment($additionalFields);
         $this->assertInstanceOf(\MultiFlexi\ConfigFields::class, $result);
-        
+
         // Verify the fields were added to the environment
         $allFields = $job->environment()->getFields();
         $this->assertIsArray($allFields);
