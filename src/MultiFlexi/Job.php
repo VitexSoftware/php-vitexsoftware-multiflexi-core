@@ -183,6 +183,34 @@ class Job extends Engine
         return $jobId;
     }
 
+    public function restoreEnvironment(string $env): void
+    {
+        if (\Ease\Functions::isSerialized($env)) {
+            $envUnserialized = unserialize($env) ?: new ConfigFields('');
+
+            if (\is_object($envUnserialized)) {
+                $this->environment->addFields($envUnserialized);
+            } else {
+                $this->addStatusMessage(_('Envirnoment unserialization Error'), 'error');
+            }
+        }
+    }
+
+    public function updateEnvironment(ConfigFields $environment): void
+    {
+        if (empty($this->environment)) {
+            $this->loadEnvironment();
+        }
+
+        $this->environment->addFields($environment);
+        $this->storeEnvironment($this->environment);
+    }
+
+    public function storeEnvironment(ConfigFields $environment): int
+    {
+        return $this->saveToSQL(['env' => serialize($environment)], ['id' => $this->getMyKey()]);
+    }
+
     /**
      * Begin the Job.
      *
@@ -206,7 +234,7 @@ class Job extends Engine
         }
 
         $this->environmentCheck();
-
+        $this->ensureFiles();
         // TODO: Refresh Expirable Credentials here
         self::sanitizeResultFile($this->environment);
         $this->environment->applyMacros();
@@ -676,23 +704,7 @@ EOD;
         parent::takeData($data);
 
         if ($this->getDataValue('env')) {
-            if (\Ease\Functions::isSerialized($this->getDataValue('env'))) {
-                $envUnserialized = unserialize($this->getDataValue('env')) ?: new ConfigFields('');
-
-                if (\is_array($envUnserialized)) { // Old Serialization method fallback
-                    foreach ($envUnserialized as $key => $envInfo) {
-                        $field = new ConfigField($key, 'string', $key, '', '', (string) $envInfo['value']);
-                        $field->setSource($envInfo['source']);
-                        $this->environment->addField($field);
-                    }
-                } else {
-                    if (\is_object($envUnserialized)) {
-                        $this->environment->addFields($envUnserialized);
-                    } else {
-                        $this->addStatusMessage(_('Envirnoment unserialization Error'), 'error');
-                    }
-                }
-            }
+            $this->restoreEnvironment($this->getDataValue('env'));
         }
 
         if ((null === $this->getDataValue('company_id')) === false) {
@@ -1042,6 +1054,22 @@ EOD;
     {
         if ($this->environment->count() === 0) {
             throw new \RuntimeException(_('Empty Job Environment'));
+        }
+    }
+
+    public function ensureFiles(): void
+    {
+        foreach ($this->environment as $field) {
+            if ($field->getType() === 'file-path') {
+                if (file_exists($field->getValue()) === false) {
+                    $fileSource = $field->getSource();
+
+                    if (\Ease\Euri::validate($fileSource) && strstr($fileSource, 'FileStore')) {
+                        $fileStore = \Ease\Euri::toObject($fileSource);
+                        $fileStore->restoreFile();
+                    }
+                }
+            }
         }
     }
 

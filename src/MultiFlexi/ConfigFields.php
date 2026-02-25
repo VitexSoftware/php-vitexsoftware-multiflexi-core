@@ -43,6 +43,11 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
 
     /**
      * Add Field into stack.
+     *
+     * When a field with the same code already exists, only the value,
+     * source and logo are updated. Definition-level flags (required,
+     * secret, multiline, expiring, hint, note, description, etc.) from
+     * the original field are preserved.
      */
     public function addField(ConfigField $field): self
     {
@@ -51,8 +56,23 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
         }
 
         $code = $field->getCode();
-        $this->fields[$code] = $field;
-        ksort($this->fields);
+
+        if (isset($this->fields[$code])) {
+            $existing = $this->fields[$code];
+
+            $existing->setValue($field->getValue());
+
+            if (!empty($field->getSource())) {
+                $existing->setSource($field->getSource());
+            }
+
+            if ($field->getLogo() !== null) {
+                $existing->setLogo($field->getLogo());
+            }
+        } else {
+            $this->fields[$code] = $field;
+            ksort($this->fields);
+        }
 
         return $this;
     }
@@ -139,6 +159,20 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
     {
         foreach ($configs as $config) {
             $this->addField($config);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use only values taken.
+     */
+    public function takeValues(self $configs): self
+    {
+        foreach ($configs as $config) {
+            if ($this->getField($config->getName())) {
+                $this->getField($config->getName())->setValue($config->getValue());
+            }
         }
 
         return $this;

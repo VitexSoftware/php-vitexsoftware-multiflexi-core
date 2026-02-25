@@ -20,7 +20,7 @@ namespace MultiFlexi;
  *
  * @author vitex
  */
-class Conffield extends \Ease\SQL\Engine
+class Conffield extends Engine
 {
     public function __construct($identifier = null, $options = [])
     {
@@ -44,6 +44,9 @@ class Conffield extends \Ease\SQL\Engine
         }
 
         $data['required'] = \array_key_exists('required', $data) && $data['required'] === 'on' ? 1 : 0;
+        $data['secret'] = \array_key_exists('secret', $data) && $data['secret'] === 'on' ? 1 : 0;
+        $data['multiline'] = \array_key_exists('multiline', $data) && $data['multiline'] === 'on' ? 1 : 0;
+        $data['expiring'] = \array_key_exists('expiring', $data) && $data['expiring'] === 'on' ? 1 : 0;
 
         return $checked ? parent::takeData($data) : 0;
     }
@@ -97,6 +100,13 @@ class Conffield extends \Ease\SQL\Engine
         $this->setDataValue('type', $envProperties['type']);
         $this->setDataValue('description', $envProperties['description']);
         $this->setDataValue('defval', \array_key_exists('defval', $envProperties) ? $envProperties['defval'] : '');
+        $this->setDataValue('name', \array_key_exists('name', $envProperties) ? $envProperties['name'] : '');
+        $this->setDataValue('hint', \array_key_exists('hint', $envProperties) ? $envProperties['hint'] : '');
+        $this->setDataValue('note', \array_key_exists('note', $envProperties) ? $envProperties['note'] : '');
+        $this->setDataValue('required', !empty($envProperties['required']) ? 1 : 0);
+        $this->setDataValue('secret', !empty($envProperties['secret']) ? 1 : 0);
+        $this->setDataValue('multiline', !empty($envProperties['multiline']) ? 1 : 0);
+        $this->setDataValue('expiring', !empty($envProperties['expiring']) ? 1 : 0);
 
         return $this->dbsync();
     }
@@ -106,8 +116,16 @@ class Conffield extends \Ease\SQL\Engine
         $appConfiguration = new ConfigFields(\Ease\Euri::fromObject($app));
 
         foreach ((new self())->appConfigs($app->getMyKey()) as $appConfig) {
-            $field = new ConfigField($appConfig['keyname'], self::fixType($appConfig['type']), $appConfig['keyname'], $appConfig['description']);
-            $field->setRequired($appConfig['required'] === 1)->setDefaultValue($appConfig['defval'])->setSource(\Ease\Euri::fromObject($app));
+            $displayName = !empty($appConfig['name']) ? $appConfig['name'] : $appConfig['keyname'];
+            $hint = $appConfig['hint'] ?? '';
+            $field = new ConfigField($appConfig['keyname'], self::fixType($appConfig['type']), $displayName, $appConfig['description'], $hint);
+            $field->setRequired($appConfig['required'] === 1)
+                ->setDefaultValue($appConfig['defval'])
+                ->setSource(\Ease\Euri::fromObject($app))
+                ->setNote($appConfig['note'] ?? '')
+                ->setSecret(!empty($appConfig['secret']))
+                ->setMultiLine(!empty($appConfig['multiline']))
+                ->setExpiring(!empty($appConfig['expiring']));
             $appConfiguration->addField($field);
         }
 

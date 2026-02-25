@@ -132,7 +132,11 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         $this->addStatusMessage('pid:'.(isset($this->pid) ? (string) ($this->pid) : 'n/a').' '.$command.': '.$this->process->getExitCodeText(), $this->process->getExitCode() === 0 ? 'success' : 'warning');
 
         foreach ($this->jobFiles as $file) {
-            unlink($file['value']);
+            $filename = $file->getValue();
+
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
         }
 
         return $this->process->getExitCode();

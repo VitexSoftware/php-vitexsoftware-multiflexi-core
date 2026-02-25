@@ -31,9 +31,9 @@ class FileStore extends Engine
     }
 
     /**
-     * Load a file from the filesystem and store it in the database.
+     * Load a file from the file system and store it in the database.
      */
-    public function loadAndStoreFile(string $field, string $filePath, string $fileName, ?int $runtemplateId = null, ?int $jobId = null): bool
+    public function loadAndStoreFile(string $field, string $filePath, string $fileName, ?RunTemplate $runtemplate = null, ?Job $job = null): bool
     {
         if (!file_exists($filePath)) {
             return false;
@@ -50,13 +50,13 @@ class FileStore extends Engine
             'file_path' => $filePath,
             'file_data' => $fileData,
             'field' => $field,
-            'runtemplate_id' => $runtemplateId,
-            'job_id' => $jobId,
+            'runtemplate_id' => $runtemplate ? $runtemplate->getMyKey() : '',
+            'job_id' => $job ? $job->getMyKey() : '',
             'created_at' => date('Y-m-d H:i:s'),
         ];
 
         // Check if a record with the same filename and job_id exists
-        $existingRecord = $this->getColumnsFromSQL(['id'], ['field' => $field, 'job_id' => $jobId]);
+        $existingRecord = $this->getColumnsFromSQL(['id'], ['field' => $field, 'job_id' => $job ? $job->getMyKey() : '']);
 
         if ($existingRecord && \array_key_exists('id', $existingRecord)) {
             // Update the existing record
@@ -66,11 +66,17 @@ class FileStore extends Engine
             $result = $this->insertToSQL($data);
         }
 
+        if ($job) {
+            $configFields = new ConfigFields($fileName);
+            $configFields->addField((new ConfigField($field, 'file-path', $fileName, $filePath, '', $filePath))->setSource(\Ease\Euri::fromObject($this)));
+            $job->updateEnvironment($configFields);
+        }
+
         return $result ? unlink($filePath) : false;
     }
 
     /**
-     * Store a file related to a runtemplate.
+     * Store a file related to a RunTemplate.
      */
     public function storeFileForRuntemplate(string $field, string $filePath, string $fileName, RunTemplate $runtemplate): bool
     {
@@ -82,7 +88,7 @@ class FileStore extends Engine
      */
     public function storeFileForJob(string $field, string $filePath, string $fileName, Job $job): bool
     {
-        return $this->loadAndStoreFile($field, $filePath, $fileName, $job->getRunTemplate()->getMyKey(), $job->getMyKey());
+        return $this->loadAndStoreFile($field, $filePath, $fileName, $job->getRunTemplate(), $job);
     }
 
     /**
@@ -96,13 +102,22 @@ class FileStore extends Engine
         $records = $this->getColumnsFromSQL(['id', 'field', 'file_path', 'file_name', 'file_data'], ['job_id' => $jobId]);
 
         foreach ($records as $record) {
-            if (file_put_contents($record['file_path'].'_'.$record['file_name'], $record['file_data'])) {
-                $file = new ConfigField($record['field'], 'file-path', $record['field'], _('uploaded file'), '', $record['file_path'].'_'.$record['file_name']);
-                $file->setSource(\Ease\Logger\Message::getCallerName($this).':'.$record['id']);
-                $files->addField($file);
+            $this->setData($record);
+
+            if ($this->restoreFile()) {
+                $fileField = new ConfigField($record['field'], 'file-path', $record['field'], _('uploaded file'), '', $record['file_path'].'_'.$record['file_name']);
+                $fileField->setSource(\Ease\Euri::fromObject($this));
+                $files->addField($fileField);
             }
         }
 
         return $files;
+    }
+
+    public function restoreFile(): int
+    {
+        $record = $this->getData();
+
+        return file_put_contents($record['file_path'].'_'.$record['file_name'], $record['file_data']);
     }
 }
