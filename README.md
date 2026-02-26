@@ -90,6 +90,11 @@ Actions extend `CommonAction` and provide automated integrations and workflows:
 - **LogToZabbix**: Zabbix monitoring integration
 - **Zabbix**: Complete Zabbix monitoring namespace with metrics and alerting
 
+### Event Processing
+
+- **EventSource**: Represents an external webhook adapter database connection to poll for changes
+- **EventRule**: Maps incoming change events (evidence + operation) to MultiFlexi RunTemplates with env variable mapping
+
 ### Utility Classes
 
 - **Token**: Authentication token management
