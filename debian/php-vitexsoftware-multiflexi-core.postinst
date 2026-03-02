@@ -4,7 +4,6 @@ set -e
 case "$1" in
     configure)
 
-        composer-global-update deb/multiflexi-core
 
         # Restart services that use this library to apply fixes
         for service in multiflexi-scheduler multiflexi-executor; do
