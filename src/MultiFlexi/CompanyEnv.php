@@ -23,13 +23,94 @@ namespace MultiFlexi;
 class CompanyEnv extends ConfigFields
 {
     use \Ease\SQL\Orm;
+
     public string $myTable = 'companyenv';
+
+    public string $keyColumn = 'id';
+
+    public ?string $createColumn = null;
+
+    public ?string $lastModifiedColumn = null;
+
+    /**
+     * Internal record key value.
+     */
+    private int|string|null $myKey = null;
+
     private Company $company;
+
+    /**
+     * Internal data storage for Orm trait compatibility.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $data = null;
+
     public function __construct(Company $company, array $options = [])
     {
         parent::__construct($company->getRecordName() ?? '', $options);
         $this->company = $company;
         $this->loadEnv();
+    }
+
+    /**
+     * Get the key column name.
+     */
+    public function getKeyColumn(): string
+    {
+        return $this->keyColumn;
+    }
+
+    /**
+     * Get the current record key value.
+     *
+     * @param array<string, mixed>|null $data optional data array
+     *
+     * @return int|string|null
+     */
+    public function getMyKey(?array $data = [])
+    {
+        if ($data === null || $data === []) {
+            return $this->myKey;
+        }
+
+        return $data[$this->keyColumn] ?? null;
+    }
+
+    /**
+     * Set the current record key value.
+     *
+     * @param int|string $myKeyValue
+     */
+    public function setMyKey($myKeyValue): bool
+    {
+        $this->myKey = $myKeyValue;
+
+        return true;
+    }
+
+    /**
+     * Get internal data array (Orm trait compatibility).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getData(): ?array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Set a data value (Orm trait compatibility).
+     */
+    public function setDataValue(string $columnName, $value): bool
+    {
+        if ($this->data === null) {
+            $this->data = [];
+        }
+
+        $this->data[$columnName] = $value;
+
+        return true;
     }
 
     /**
@@ -41,7 +122,7 @@ class CompanyEnv extends ConfigFields
     public function addEnv($key, $value): void
     {
         try {
-            if (null !== $this->insertToSQL(['company_id' => $this->companyID, 'keyword' => $key, 'value' => $value])) {
+            if (null !== $this->insertToSQL(['company_id' => $this->company->getMyKey(), 'keyword' => $key, 'value' => $value])) {
                 $this->setDataValue($key, $value);
             }
         } catch (\PDOException $exc) {
