@@ -23,4 +23,5 @@ schema/report.json			  usr/lib/multiflexi
 
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/
 
-debian/autoload.php 			  usr/share/php/MultiFlexi/autoload.php
+debian/autoload.php 			  usr/share/php/MultiFlexi/
+
