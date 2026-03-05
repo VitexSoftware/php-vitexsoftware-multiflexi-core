@@ -5,7 +5,7 @@
  */
 
 // Load dependency autoloaders
-require_once '/usr/share/php/Ease/autoload.php';
+require_once '/usr/share/php/EaseCore/autoload.php';
 require_once '/usr/share/php/EaseFluentPDO/autoload.php';
 require_once '/usr/share/php/JsonSchema/autoload.php';
 
