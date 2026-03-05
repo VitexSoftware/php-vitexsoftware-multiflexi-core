@@ -1,24 +1,19 @@
 #!/usr/bin/make -f
-# You must remove unused comment lines for the released package.
 #export DH_VERBOSE = 1
-#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-#export DEB_LDFLAGS_MAINT_APPEND = -Wl,-O1
 
 %:
 	dh $@
-
-#override_dh_auto_install:
-#	dh_auto_install -- prefix=/usr
-
-#override_dh_install:
-#	dh_install --list-missing -X.pyc -X.pyo
 
 override_dh_install:
 	mkdir -p debian/tmp/
 	jq '.version = "'`dpkg-parsechangelog | sed -n 's/^Version: //p'| sed 's/~.*//'`'"'  debian/conf/composer.json |sponge debian/tmp/composer.json
 	dh_install
-	sed -i "18i require_once '/usr/share/php/JsonSchema/autoload.php';" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php
+	# Install autoloader
+	install -D -m 0644 debian/autoload.php debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/autoload.php
+	# Register autoloader for pkg-php-tools
+	install -m0755 -d debian/php-vitexsoftware-multiflexi-core/usr/share/pkg-php-tools/autoloaders
+	echo 'vitexsoftware multiflexi-core MultiFlexi/autoload.php' > debian/php-vitexsoftware-multiflexi-core/usr/share/pkg-php-tools/autoloaders/php-vitexsoftware-multiflexi-core
+	# Fix schema paths in installed files
 	sed -i "s|__DIR__\.'/../../schema/application.json'|'/usr/lib/multiflexi/application.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/Application.php
 	sed -i "s|__DIR__\.'/../../multiflexi.credential-type.schema.json'|'/usr/lib/multiflexi/credential-type.schema.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/CredentialType.php
 	sed -i "s|__DIR__\.'/../../schema/credential-prototype.json'|'/usr/lib/multiflexi/credential-prototype.json'|g" debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/CredentialProtoType.php

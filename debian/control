@@ -2,7 +2,7 @@ Source: php-vitexsoftware-multiflexi-core
 Section: unknown
 Priority: optional
 Maintainer: Vítězslav Dvořák <info@vitexsoftware.cz>
-Build-Depends: debhelper-compat (=13), jq, moreutils, composer, php-yaml, php-intl, php-simplexml
+Build-Depends: debhelper-compat (=13), jq, moreutils, pkg-php-tools, php-yaml, php-intl, php-simplexml
 Standards-Version: 4.6.1
 Homepage: https://github.com/VitexSoftware/php-vitexsoftware-multiflexi-core
 Rules-Requires-Root: no
@@ -12,7 +12,7 @@ Vcs-Browser: https://github.com/VitexSoftware/php-vitexsoftware-multiflexi-core
 Package: php-vitexsoftware-multiflexi-core
 Architecture: all
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-fluentpdo, php-vitexsoftware-ease-fluentpdo, php-json-schema
+Depends: ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-ease-core, php-vitexsoftware-ease-html, php-vitexsoftware-ease-fluentpdo, php-vitexsoftware-fluentpdo, php-json-schema
 Description: VitexSoftware Multiflexi Core Library
  This package contains the core library for the VitexSoftware Multiflexi
 
