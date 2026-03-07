@@ -55,6 +55,15 @@ Actions extend `CommonAction` and provide automated integrations and workflows:
 - **CredentialProtoType**: Prototype pattern for credential implementations
 - **Credata**: Manages credential data records
 
+#### Debian Packaging Note
+
+On Debian-based systems, the autoloader explicitly includes classes only from
+directories where additional packages can add or remove classes (for example,
+Action, Env, Executor, and CredentialProtoType classes provided by add-on
+packages like `multiflexi-abraflexi`). This ensures those classes are present in
+`get_declared_classes()` even before they are referenced, while keeping the rest
+of the namespaces lazy-loaded.
+
 #### Built-in Credential Types
 
 - **AbraFlexi**: Czech ERP system integration

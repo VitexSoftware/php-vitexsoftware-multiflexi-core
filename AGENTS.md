@@ -1,8 +1,9 @@
-# WARP.md
+# AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+This file provides guidance to AI agents when working with code in this repository.
 
 Project overview
+
 - This repository provides the core PHP library for MultiFlexi (flexible, multi-tenant orchestration). It contains core entities (Engine, Company*, Application, Credential*, Config*, Job/Scheduler/Runner, Logger, Requirement, Token, Topic*, User, FileStore, Platform*), plus environment and executor components.
 - Primary namespaces map to PSR-4 autoload paths:
   - MultiFlexi\ → src/MultiFlexi/
@@ -14,6 +15,7 @@ Project overview
 - Tests are under tests/ with PSR-4 dev autoload Test\MultiFlexi\ → tests/src/MultiFlexi/.
 
 High-level architecture
+
 - Data/ORM base: Engine is the base for DB-backed entities. DBEngine/DatabaseEngine provide table definitions and rendering, integrating with DataTables.
 - **Multi-Database Support**: Full abstraction layer supports MySQL, PostgreSQL, SQLite, and SQL Server with database-specific query optimization.
 - Domain model:
@@ -32,6 +34,7 @@ High-level architecture
 - Internationalization: Strings are intended to be translatable via an i18n library (use _() helpers in code).
 
 Common development commands
+
 - Install dependencies
   - composer install
 
@@ -60,6 +63,7 @@ Common development commands
   - Apply: vendor/bin/rector process src
 
 Repository conventions and rules worth knowing
+
 - From .github/copilot-instructions.md (important excerpts):
   - Use PHP 8.4+ and follow PSR-12.
   - Write code and messages in English; include docblocks for functions/classes with types.
@@ -67,12 +71,23 @@ Repository conventions and rules worth knowing
   - Always create/update PHPUnit tests when creating/updating classes.
 
 Paths and layout
+
 - Source: src/MultiFlexi/ (plus subnamespaces Env/, Action/, Zabbix/, Executor/, CredentialType/)
 - Tests: tests/src/MultiFlexi/
 - Config: phpunit.xml, phpstan.neon.dist
 - Packaging (optional/maintainer-focused): debian/
 
+Debian autoloader behavior
+
+- The Debian autoloader lives at /usr/share/php/MultiFlexi/autoload.php.
+- It explicitly includes classes only from directories where add-on Debian
+  packages can add/remove classes (for example, Action, Env, Executor, and
+  CredentialProtoType classes from packages like multiflexi-abraflexi). This
+  ensures those classes appear in get_declared_classes() before they are
+  referenced, while keeping other namespaces lazy-loaded.
+
 Application Import System
+
 - The Application class supports repeated imports of the same application JSON without database constraint violations
 - Import logic in importAppJson() method:
   1. Uses UUID as primary identifier for existing applications (name as fallback)
@@ -83,6 +98,6 @@ Application Import System
 - This design supports package reinstallation and application definition updates
 
 Notes
+
 - There is no Makefile in this repo; use Composer binaries under vendor/bin/ as shown above.
 - Minimum-stability is dev; this library depends on vitexsoftware/ease-fluentpdo and justinrainbow/json-schema.
-

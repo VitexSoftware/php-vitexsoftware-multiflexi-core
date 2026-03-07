@@ -5,14 +5,40 @@
  */
 
 // Load dependency autoloaders
-require_once '/usr/share/php/Ease/autoload.php';
+require_once '/usr/share/php/EaseCore/autoload.php';
 require_once '/usr/share/php/EaseFluentPDO/autoload.php';
 require_once '/usr/share/php/JsonSchema/autoload.php';
 
+// Load classes from plugin-capable directories explicitly.
+$pluginDirectories = [
+    '/usr/share/php/MultiFlexi/Action',
+    '/usr/share/php/MultiFlexi/Env',
+    '/usr/share/php/MultiFlexi/Executor',
+    '/usr/share/php/MultiFlexi/CredentialProtoType',
+];
+
+foreach ($pluginDirectories as $pluginDirectory) {
+    if (!is_dir($pluginDirectory)) {
+        continue;
+    }
+
+    $pluginFiles = glob($pluginDirectory . '/*.php');
+    if ($pluginFiles === false) {
+        continue;
+    }
+
+    sort($pluginFiles, SORT_STRING);
+    foreach ($pluginFiles as $pluginFile) {
+        include_once $pluginFile;
+    }
+}
+
 // PSR-4 autoloader for MultiFlexi classes
 spl_autoload_register(function (string $class): void {
+    $here = __DIR__;
+
     $prefixes = [
-        'MultiFlexi\\' => '/usr/share/php/MultiFlexi/',
+      "MultiFlexi\\" => $here . "/",
     ];
     foreach ($prefixes as $prefix => $baseDir) {
         $len = strlen($prefix);
