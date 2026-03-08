@@ -9,6 +9,27 @@ require_once '/usr/share/php/EaseCore/autoload.php';
 require_once '/usr/share/php/EaseFluentPDO/autoload.php';
 require_once '/usr/share/php/JsonSchema/autoload.php';
 
+// PSR-4 autoloader for MultiFlexi classes
+spl_autoload_register(function (string $class): void {
+    $here = __DIR__;
+
+    $prefixes = [
+      "MultiFlexi\\" => $here . "/",
+    ];
+    foreach ($prefixes as $prefix => $baseDir) {
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) !== 0) {
+            continue;
+        }
+        $relativeClass = substr($class, $len);
+        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+        if (file_exists($file)) {
+            require $file;
+            return;
+        }
+    }
+});
+
 // Load classes from plugin-capable directories explicitly.
 $pluginDirectories = [
     '/usr/share/php/MultiFlexi/Action',
@@ -33,23 +54,3 @@ foreach ($pluginDirectories as $pluginDirectory) {
     }
 }
 
-// PSR-4 autoloader for MultiFlexi classes
-spl_autoload_register(function (string $class): void {
-    $here = __DIR__;
-
-    $prefixes = [
-      "MultiFlexi\\" => $here . "/",
-    ];
-    foreach ($prefixes as $prefix => $baseDir) {
-        $len = strlen($prefix);
-        if (strncmp($prefix, $class, $len) !== 0) {
-            continue;
-        }
-        $relativeClass = substr($class, $len);
-        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-        if (file_exists($file)) {
-            require $file;
-            return;
-        }
-    }
-});
