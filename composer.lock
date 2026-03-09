@@ -4,25 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e32a4d9071bfc6b666bf53e1a4b78117",
+    "content-hash": "1e29b45e06734a8c7320e5796231b2da",
     "packages": [
         {
             "name": "jalismrs/bitwarden-php",
-            "version": "1.1.0",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jalismrs/bitwarden-service.php.git",
-                "reference": "74632037b43331b2f27ffb35ed56cfd4a373b116"
+                "reference": "3d5306eb6e7f67830a10200c8ce763fae4789e27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jalismrs/bitwarden-service.php/zipball/74632037b43331b2f27ffb35ed56cfd4a373b116",
-                "reference": "74632037b43331b2f27ffb35ed56cfd4a373b116",
+                "url": "https://api.github.com/repos/jalismrs/bitwarden-service.php/zipball/3d5306eb6e7f67830a10200c8ce763fae4789e27",
+                "reference": "3d5306eb6e7f67830a10200c8ce763fae4789e27",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0",
-                "symfony/process": "^6.0"
+                "symfony/process": "^6.0 || ^7.0 || ^8.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "^9.5"
@@ -37,9 +37,9 @@
             "description": "Services to access bitwarden data",
             "support": {
                 "issues": "https://github.com/jalismrs/bitwarden-service.php/issues",
-                "source": "https://github.com/jalismrs/bitwarden-service.php/tree/1.1.0"
+                "source": "https://github.com/jalismrs/bitwarden-service.php/tree/1.2.0"
             },
-            "time": "2022-11-14T09:30:18+00:00"
+            "time": "2026-03-04T14:21:46+00:00"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -473,21 +473,22 @@
         },
         {
             "name": "symfony/process",
-            "version": "6.4.x-dev",
+            "version": "8.1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "c46e854e79b52d07666e43924a20cb6dc546644e"
+                "reference": "7d571c714fc3950ad85685b9a6be6998769206d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/c46e854e79b52d07666e43924a20cb6dc546644e",
-                "reference": "c46e854e79b52d07666e43924a20cb6dc546644e",
+                "url": "https://api.github.com/repos/symfony/process/zipball/7d571c714fc3950ad85685b9a6be6998769206d3",
+                "reference": "7d571c714fc3950ad85685b9a6be6998769206d3",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.1"
+                "php": ">=8.4"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -514,7 +515,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/6.4"
+                "source": "https://github.com/symfony/process/tree/8.1"
             },
             "funding": [
                 {
@@ -534,7 +535,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-23T16:02:12+00:00"
+            "time": "2026-01-29T09:42:44+00:00"
         },
         {
             "name": "vitexsoftware/ease-core",
@@ -6044,5 +6045,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
