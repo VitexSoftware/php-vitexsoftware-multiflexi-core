@@ -45,6 +45,12 @@ class FioBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cre
         $this->configFieldsInternal->addField($tokenNameField);
     }
 
+    #[\Override]
+    public static function uuid(): string
+    {
+        return 'f79aaa38-2eaf-453a-beee-3a2afa1221d5';
+    }
+
     public function load(int $credTypeId)
     {
         $loaded = parent::load($credTypeId);
