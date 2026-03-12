@@ -961,7 +961,7 @@ EOD;
      */
     public function deleteFromSQL($data = null): bool
     {
-        $jobId = $this->getMyKey();
+        $jobId = (\is_int($data) ? $data : (\is_array($data) ? $this->getMyKey($data) : $this->getMyKey()));
 
         if (!$jobId) {
             $this->addStatusMessage(_('Cannot delete job without ID'), 'error');

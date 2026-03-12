@@ -41,14 +41,14 @@ class EventSource extends DBEngine
     public ?string $lastModifiedColumn = 'modified';
 
     /**
-     * @var \PDO|null Cached PDO connection to adapter database
+     * @var null|\PDO Cached PDO connection to adapter database
      */
     private ?\PDO $adapterConnection = null;
 
     /**
      * EventSource constructor.
      *
-     * @param int|null $identifier Record ID
+     * @param null|int $identifier Record ID
      * @param array    $options    Additional options
      */
     public function __construct($identifier = null, $options = [])
@@ -56,6 +56,14 @@ class EventSource extends DBEngine
         $this->myTable = 'event_source';
         $this->keyColumn = 'id';
         parent::__construct($identifier, $options);
+    }
+
+    /**
+     * Close the adapter database connection on destruct.
+     */
+    public function __destruct()
+    {
+        $this->adapterConnection = null;
     }
 
     /**
@@ -85,6 +93,7 @@ class EventSource extends DBEngine
                 $dsn = sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database);
 
                 break;
+
             default:
                 $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database);
 
@@ -178,13 +187,5 @@ class EventSource extends DBEngine
     public function getEnabledSources(): array
     {
         return $this->listingQuery()->where('enabled', true)->fetchAll();
-    }
-
-    /**
-     * Close the adapter database connection on destruct.
-     */
-    public function __destruct()
-    {
-        $this->adapterConnection = null;
     }
 }

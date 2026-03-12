@@ -115,6 +115,12 @@ class RunTemplate extends \MultiFlexi\DBEngine
         $rtpl->setmyTable('runtemplate_topics');
         $rtpl->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
 
+        $jobber = new Job();
+
+        foreach ($jobber->listingQuery()->where(['runtemplate_id' => $this->getMyKey()]) as $jobData) {
+            $jobber->deleteFromSQL($jobData['id']);
+        }
+
         return (int) parent::deleteFromSQL($data);
     }
 
@@ -172,10 +178,9 @@ class RunTemplate extends \MultiFlexi\DBEngine
      */
     public function getAppEnvironment()
     {
-        $appInfo = $this->getAppInfo() ?: ['company_id' => null, 'app_id' => null];
         $jobber = new Job();
-        $jobber->company = new Company((int) $appInfo['company_id']);
-        $jobber->application = new Application((int) $appInfo['app_id']);
+        $jobber->company = $this->getCompany();
+        $jobber->application = $this->getApplication();
         $jobber->runTemplate = $this;
 
         return $jobber->getModulesEnvironment();

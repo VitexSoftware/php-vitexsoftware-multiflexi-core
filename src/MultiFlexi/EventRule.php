@@ -64,7 +64,7 @@ class EventRule extends DBEngine
     /**
      * EventRule constructor.
      *
-     * @param int|null $identifier Record ID
+     * @param null|int $identifier Record ID
      * @param array    $options    Additional options
      */
     public function __construct($identifier = null, $options = [])

@@ -39,7 +39,6 @@ class EnvFile extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cre
         return ' df5c8ba3-7207-4c9b-a5b0-07e75e8c433a ';
     }
 
-
     public function load(int $credTypeId)
     {
         $loaded = parent::load($credTypeId);

@@ -23,26 +23,21 @@ namespace MultiFlexi;
 class CompanyEnv extends ConfigFields
 {
     use \Ease\SQL\Orm;
-
     public string $myTable = 'companyenv';
-
     public string $keyColumn = 'id';
-
     public ?string $createColumn = null;
-
     public ?string $lastModifiedColumn = null;
 
     /**
      * Internal record key value.
      */
-    private int|string|null $myKey = null;
-
+    private null|int|string $myKey = null;
     private Company $company;
 
     /**
      * Internal data storage for Orm trait compatibility.
      *
-     * @var array<string, mixed>|null
+     * @var null|array<string, mixed>
      */
     private ?array $data = null;
 
@@ -64,9 +59,9 @@ class CompanyEnv extends ConfigFields
     /**
      * Get the current record key value.
      *
-     * @param array<string, mixed>|null $data optional data array
+     * @param null|array<string, mixed> $data optional data array
      *
-     * @return int|string|null
+     * @return null|int|string
      */
     public function getMyKey(?array $data = [])
     {
@@ -92,7 +87,7 @@ class CompanyEnv extends ConfigFields
     /**
      * Get internal data array (Orm trait compatibility).
      *
-     * @return array<string, mixed>|null
+     * @return null|array<string, mixed>
      */
     public function getData(): ?array
     {
@@ -101,6 +96,8 @@ class CompanyEnv extends ConfigFields
 
     /**
      * Set a data value (Orm trait compatibility).
+     *
+     * @param mixed $value
      */
     public function setDataValue(string $columnName, $value): bool
     {
