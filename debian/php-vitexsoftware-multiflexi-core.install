@@ -14,7 +14,6 @@ src/MultiFlexi/Action/LaunchJob.php       usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Reschedule.php      usr/share/php/MultiFlexi/Action
 src/MultiFlexi/Action/Stop.php            usr/share/php/MultiFlexi/Action
 #src/MultiFlexi/Action/TriggerJenkins.php usr/share/php/MultiFlexi/Action
-src/MultiFlexi/Action/Zabbix.php  	  usr/share/php/MultiFlexi/Action
 
 schema/application.json			  usr/lib/multiflexi
 schema/credential-prototype.json	  usr/lib/multiflexi
