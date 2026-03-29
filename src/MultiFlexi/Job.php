@@ -126,8 +126,8 @@ class Job extends Engine
     public function newJob(RunTemplate $runtemplate, ConfigFields $environment, \DateTime $scheduled, $executor = 'Native', $scheduleType = 'adhoc')
     {
         $this->runTemplate = $runtemplate;
-        $this->application = $this->runTemplate->getApplication();
-        $this->company = $this->runTemplate->getCompany();
+        $this->application = $this->getRunTemplate()->getApplication();
+        $this->company = $this->getRunTemplate()->getCompany();
 
         // Ensure we always have a valid user ID
         $launchedByUserId = \Ease\Shared::user()->getMyKey();
@@ -136,7 +136,7 @@ class Job extends Engine
             throw new \Ease\Exception(_('Cannot create job without authenticated user. User ID is required.'));
         }
 
-        $companyId = $this->runTemplate->getDataValue('company_id');
+        $companyId = $this->getRunTemplate()->getDataValue('company_id');
 
         if (empty($companyId) && $this->company) {
             $companyId = $this->company->getMyKey();
@@ -145,7 +145,7 @@ class Job extends Engine
         $this->setData([
             'runtemplate_id' => $runtemplate->getMyKey(),
             'company_id' => $companyId,
-            'app_id' => $this->runTemplate->getDataValue('app_id'),
+            'app_id' => $this->getRunTemplate()->getDataValue('app_id'),
             'env' => \serialize($environment),
             'exitcode' => null,
             'stdout' => '',
@@ -169,11 +169,11 @@ class Job extends Engine
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->setZabbixValue('phase', 'created');
             $this->setZabbixValue('job_id', $jobId);
-            $this->setZabbixValue('app_id', $this->runTemplate->getDataValue('app_id'));
-            $this->setZabbixValue('app_name', $this->runTemplate->getApplication()->getDataValue('name'));
-            $this->setZabbixValue('company_id', $this->runTemplate->getDataValue('company_id'));
-            $this->setZabbixValue('company_name', $this->runTemplate->getCompany()->getDataValue('name'));
-            $this->setZabbixValue('company_code', $this->runTemplate->getCompany()->getDataValue('code'));
+            $this->setZabbixValue('app_id', $this->getApplication()->getMyKey());
+            $this->setZabbixValue('app_name', $this->getApplication()->getDataValue('name'));
+            $this->setZabbixValue('company_id', $this->getRunTemplate()->getDataValue('company_id'));
+            $this->setZabbixValue('company_name', $this->getCompany()->getDataValue('name'));
+            $this->setZabbixValue('company_code', $this->getCompany()->getDataValue('code'));
             $this->setZabbixValue('runtemplate_id', $runtemplate->getMyKey());
             $this->setZabbixValue('executor', $executor);
 
@@ -255,7 +255,7 @@ class Job extends Engine
             $this->setZabbixValue('interval', $this->runTemplate->getDataValue('interv'));
             $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($this->runTemplate->getDataValue('interv')));
             $this->setZabbixValue('app_name', $this->runTemplate->getApplication()->getRecordName());
-            $this->setZabbixValue('app_id', $this->runTemplate->getDataValue('app_id'));
+            $this->setZabbixValue('app_id', $this->getApplication()->getMyKey());
             $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());
             $this->setZabbixValue('runtemplate_name', $this->runTemplate->getRecordName());
             $this->setZabbixValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
@@ -404,7 +404,7 @@ class Job extends Engine
             'end' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
             'stdout' => addslashes($stdout),
             'stderr' => addslashes($stderr),
-            'app_version' => $this->application->getDataValue('version'),
+            'app_version' => $this->getApplication()->getDataValue('version'),
             // 'command' => $this->commandline,
             'exitcode' => $statusCode,
         ], ['id' => $this->getMyKey()]);
@@ -450,13 +450,13 @@ EOD;
     {
         $outline = '';
         $this->runTemplate = $runTemplate;
-        $appId = $this->runTemplate->getDataValue('app_id');
-        $companyId = $this->runTemplate->getDataValue('company_id');
+        $appId = $this->getRunTemplate()->getDataValue('app_id');
+        $companyId = $this->getRunTemplate()->getDataValue('company_id');
 
-        $this->application = $this->runTemplate->getApplication();
+        $this->application = $this->getRunTemplate()->getApplication();
         LogToSQL::singleton()->setApplication($appId);
 
-        $this->company = $this->runTemplate->getCompany();
+        $this->company = $this->getCompany();
         $this->setDataValue('executor', $executor);
 
         $this->setupEnvironment($envOverride);
@@ -908,8 +908,8 @@ EOD;
         // 2 Runtemplate
 
         $jobEnvironment = new ConfigFields(sprintf(_('Job #%d'), $this->getMyKey()));
-        $jobEnvironment->addFields($this->company->getEnvironment());
-        $jobEnvironment->addFields($this->runTemplate->getEnvironment());
+        $jobEnvironment->addFields($this->getCompany()->getEnvironment());
+        $jobEnvironment->addFields($this->getRunTemplate()->getEnvironment());
 
         return $jobEnvironment;
     }
@@ -1097,6 +1097,33 @@ EOD;
         }
 
         return $this->environment;
+    }
+
+    public function getApplication(): ?Application
+    {
+        if (null === $this->application) {
+            $this->application = new Application($this->getDataValue('application_id'));
+        }
+
+        return $this->application;
+    }
+
+    public function getRuntemplate(): ?RunTemplate
+    {
+        if (null === $this->runTemplate) {
+            $this->runTemplate = new RunTemplate($this->getDataValue('runtemplate_id'));
+        }
+
+        return $this->runTemplate;
+    }
+
+    public function getUser(): ?User
+    {
+        if (null === $this->user) {
+            $this->user = new User($this->getDataValue('user_id'));
+        }
+
+        return $this->user;
     }
 
     private function stortJobArtifact(string $resultfile, string $description): void
