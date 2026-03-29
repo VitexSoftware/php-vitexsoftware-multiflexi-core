@@ -66,19 +66,12 @@ class DBEngine extends \Ease\SQL\Engine
     /**
      * Data Processing Engine.
      *
-     * @param int $init
-     * @param int $filter Initial conditions
+     * @param int   $init
+     * @param array $filter Initial conditions
      */
-    public function __construct($init = null, $filter = [])
+    public function __construct($init = null, array $filter = [])
     {
-        $this->keyColumn = 'id';
-        parent::__construct();
-
-        if (is_numeric($init)) {
-            $this->loadFromSQL($init);
-        } elseif (\is_array($init)) {
-            $this->takeData($init);
-        }
+        parent::__construct($init, $filter);
 
         $this->translate();
         $this->filter = $filter;

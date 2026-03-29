@@ -100,10 +100,18 @@ class CredentialType extends DBEngine
             $credTypeClass = '\\MultiFlexi\\CredentialProtoType\\'.$class;
 
             if ((\is_object($this->helper) === false) || (\Ease\Functions::baseClassName($this->helper) !== $class)) {
-                $this->helper = new $credTypeClass();
+                if (class_exists($credTypeClass)) {
+                    $this->helper = new $credTypeClass();
 
-                if ($this->getMyKey() && method_exists($this->helper, 'load')) {
-                    $this->helper->load($this->getMyKey());
+                    if ($this->getMyKey() && method_exists($this->helper, 'load')) {
+                        $this->helper->load($this->getMyKey());
+                    }
+                } else { // Does exist the credential prototype defined in database ?
+                    $crdPrtype = new CredentialProtoType($class, ['nameColumn' => 'class', 'autoload' => true]);
+
+                    if ($crdPrtype->getMyKey()) {
+                        $this->helper = $crdPrtype;
+                    }
                 }
             }
         }
