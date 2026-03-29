@@ -41,11 +41,16 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
     protected \MultiFlexi\ConfigFields $configFieldsProvided;
     protected \MultiFlexi\ConfigFields $configFieldsInternal;
 
-    public function __construct($init = null)
+    /**
+     * Credential protype helper class.
+     *
+     * @param int|string $init
+     */
+    public function __construct($init = null, array $options = [])
     {
         $this->configFieldsProvided = new \MultiFlexi\ConfigFields(\Ease\Functions::baseClassName($this).' provided');
         $this->configFieldsInternal = new \MultiFlexi\ConfigFields(\Ease\Functions::baseClassName($this).' Internal');
-        parent::__construct($init);
+        parent::__construct($init, $options);
     }
 
     public function load(int $credTypeId)
