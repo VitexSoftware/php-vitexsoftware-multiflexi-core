@@ -29,7 +29,7 @@ namespace MultiFlexi;
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
  */
-class DBEngine extends \Ease\SQL\Engine
+class DBEngine extends Engine
 {
     /**
      * Filter results by.

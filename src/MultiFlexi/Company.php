@@ -21,10 +21,9 @@ namespace MultiFlexi;
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
  * @copyright  2018-2026 VitexSoftware
  */
-class Company extends \MultiFlexi\Engine
+class Company extends DBEngine
 {
-    use \Ease\SQL\Orm;
-    public string $keyword = 'company';
+    public ?string $keyword = 'company';
     public ?string $createColumn = null;
     public int $abraflexiId;
 

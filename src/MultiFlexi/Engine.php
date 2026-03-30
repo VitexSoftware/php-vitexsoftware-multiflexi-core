@@ -22,8 +22,8 @@ namespace MultiFlexi;
  */
 class Engine extends \Ease\SQL\Engine
 {
-    public $filter = [];
-    public $limit = 0;
+    public array $filter = [];
+    public int $limit = 0;
 
     /**
      * MultiFlexi Engine.

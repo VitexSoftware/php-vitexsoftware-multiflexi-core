@@ -138,9 +138,8 @@ class CredentialType extends DBEngine
             $field->setMyKey($fieldData['id']);
 
             if (empty($fieldData['helper']) === false) {
-                $fieldHelper = $this->getHelper()->fieldsProvided()->getFieldByCode($fieldData['helper']);
-
-                if ($fieldHelper) {
+                if ($this->getHelper()) {
+                    $fieldHelper = $this->getHelper()->fieldsProvided()->getFieldByCode($fieldData['helper']);
                     $field->setManual($fieldHelper->isManual());
                     $field->setRequired($fieldHelper->isRequired());
                     $field->setSecret($fieldHelper->isSecret());
