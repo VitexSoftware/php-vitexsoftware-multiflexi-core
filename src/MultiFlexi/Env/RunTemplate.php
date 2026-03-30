@@ -39,8 +39,8 @@ class RunTemplate extends \MultiFlexi\Environmentor implements injector
     {
         $envRuntemplate = new \MultiFlexi\ConfigFields(self::name());
 
-        $envRuntemplate->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_RUNTEMPLATE_NAME', 'string'))->setValue($this->engine->runTemplate->getRecordName()));
-        $envRuntemplate->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_RUNTEMPLATE_ID', 'integer'))->setValue((string) $this->engine->runTemplate->getMyKey()));
+        $envRuntemplate->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_RUNTEMPLATE_NAME', 'string'))->setValue($this->engine->getRuntemplate()->getRecordName()));
+        $envRuntemplate->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_RUNTEMPLATE_ID', 'integer'))->setValue((string) $this->engine->getRuntemplate()->getMyKey()));
 
         return $envRuntemplate;
     }

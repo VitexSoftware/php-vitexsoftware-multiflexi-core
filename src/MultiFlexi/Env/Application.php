@@ -40,9 +40,9 @@ class Application extends \MultiFlexi\Environmentor implements injector
     public function getEnvironment(): \MultiFlexi\ConfigFields
     {
         $envApplication = new \MultiFlexi\ConfigFields(self::name());
-        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_APPLICATION_ID', 'integer'))->setValue((string) $this->engine->application->getMyKey()));
-        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_APPLICATION_NAME', 'string'))->setValue($this->engine->application->getDataValue('name')));
-        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_APPLICATION_UUID', 'string'))->setValue($this->engine->application->getDataValue('uuid')));
+        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_APPLICATION_ID', 'integer'))->setValue((string) $this->engine->getApplication()->getMyKey()));
+        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_APPLICATION_NAME', 'string'))->setValue($this->engine->getApplication()->getDataValue('name')));
+        $envApplication->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_APPLICATION_UUID', 'string'))->setValue($this->engine->getApplication()->getDataValue('uuid')));
 
         return $envApplication;
     }

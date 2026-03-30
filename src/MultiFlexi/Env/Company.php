@@ -42,9 +42,9 @@ class Company extends \MultiFlexi\Environmentor implements injector
         $envCompany = new \MultiFlexi\ConfigFields(self::name());
         $envCompany->addFields($this->engine->company->getEnvironment());
 
-        $envCompany->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_COMPANY_ID', 'integer'))->setValue((string) $this->engine->company->getMyKey()));
-        $envCompany->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_COMPANY_CODE', 'string'))->setValue($this->engine->company->getDataValue('code')));
-        $envCompany->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_COMPANY_NAME', 'string'))->setValue($this->engine->company->getRecordName()));
+        $envCompany->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_COMPANY_ID', 'integer'))->setValue((string) $this->engine->getCompany()->getMyKey()));
+        $envCompany->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_COMPANY_CODE', 'string'))->setValue($this->engine->getCompany()->getDataValue('code')));
+        $envCompany->addField((new \MultiFlexi\ConfigField('MULTIFLEXI_COMPANY_NAME', 'string'))->setValue($this->engine->getCompany()->getRecordName()));
 
         return $envCompany;
     }
