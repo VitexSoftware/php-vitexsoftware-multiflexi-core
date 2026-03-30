@@ -58,6 +58,7 @@ class Job extends Engine
     public ?Application $application = null;
     public ?Company $company = null;
     public ?RunTemplate $runTemplate;
+    public ?User $user = null;
 
     /**
      * Environment for Current Job.
@@ -86,7 +87,7 @@ class Job extends Engine
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->zabbixSender = new ZabbixSender(\Ease\Shared::cfg('ZABBIX_SERVER'));
             $this->setZabbixValue('phase', 'loaded');
-            $this->setZabbixValue('job_id', $this->getMyKey());
+            $this->setZabbixValue('job_id', 0);
             $this->setZabbixValue('app_id', null);
             $this->setZabbixValue('app_name', null);
             $this->setZabbixValue('begin', null);
@@ -707,23 +708,6 @@ EOD;
             $this->restoreEnvironment($this->getDataValue('env'));
         }
 
-        if ((null === $this->getDataValue('company_id')) === false) {
-            $this->company = new Company((int) $this->getDataValue('company_id'));
-        }
-
-        if ((null === $this->getDataValue('app_id')) === false) {
-            $this->application = new Application((int) $this->getDataValue('app_id'));
-        }
-
-        if (\array_key_exists('runtemplate_id', $data) && !empty($data['runtemplate_id'])) {
-            $this->runTemplate->loadFromSQL($data['runtemplate_id']);
-        } else {
-            if ($this->application->getMyKey() && $this->company->getMyKey()) {
-                $this->runTemplate->loadFromSQL($this->runTemplate->runTemplateID($this->application->getMyKey(), $this->company->getMyKey()));
-                $this->addStatusMessage(_('No runtemplate ID proveided'), 'warning');
-            }
-        }
-
         if ($this->getDataValue('executor')) {
             $executorClass = '\\MultiFlexi\\Executor\\'.$this->getDataValue('executor');
 
@@ -744,7 +728,7 @@ EOD;
     {
         $creds = $this->runTemplate->credentialsEnvironment();
 
-        $launcher[] = '# '.\Ease\Shared::appName().' v'.\Ease\Shared::AppVersion().' Job 🏁 #'.$this->getMyKey().' environment. Generated '.(new \DateTime())->format('Y-m-d H:i:s').' for company: '.$this->company->getDataValue('name');
+        $launcher[] = '# '.\Ease\Shared::appName().' v'.\Ease\Shared::AppVersion().' Job 🏁 #'.$this->getMyKey().' environment. Generated '.(new \DateTime())->format('Y-m-d H:i:s').' for company: '.$this->getCompany()->getDataValue('name');
         $launcher[] = '';
 
         if ($this->getDataValue('env')) {
@@ -1097,7 +1081,9 @@ EOD;
     public function getApplication(): ?Application
     {
         if (null === $this->application) {
-            $this->application = new Application($this->getDataValue('application_id'));
+            $this->application = new Application($this->getDataValue('app_id'));
+        } elseif (null === $this->application->getMyKey()) {
+            $this->application->loadFromSQL($this->getDataValue('app_id'));
         }
 
         return $this->application;
@@ -1107,6 +1093,8 @@ EOD;
     {
         if (null === $this->runTemplate) {
             $this->runTemplate = new RunTemplate($this->getDataValue('runtemplate_id'));
+        } elseif (null === $this->runTemplate->getMyKey()) {
+            $this->runTemplate->loadFromSQL($this->getDataValue('runtemplate_id'));
         }
 
         return $this->runTemplate;
@@ -1116,6 +1104,8 @@ EOD;
     {
         if (null === $this->company) {
             $this->company = new Company($this->getDataValue('company_id'));
+        } elseif (null === $this->company->getMyKey()) {
+            $this->company->loadFromSQL($this->getDataValue('company_id'));
         }
 
         return $this->company;
@@ -1125,6 +1115,8 @@ EOD;
     {
         if (null === $this->user) {
             $this->user = new User($this->getDataValue('user_id'));
+        } elseif (null === $this->user->getMyKey()) {
+            $this->user->loadFromSQL($this->getDataValue('user_id'));
         }
 
         return $this->user;
