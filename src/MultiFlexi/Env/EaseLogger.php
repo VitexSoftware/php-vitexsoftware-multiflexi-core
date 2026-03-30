@@ -39,7 +39,7 @@ class EaseLogger extends \MultiFlexi\Environmentor implements injector
     {
         $envEaseLogger = new \MultiFlexi\ConfigFields(self::name());
 
-        $actions = $this->engine->runTemplate->getPostActions();
+        $actions = $this->engine->getRuntemplate()->getPostActions();
         $methods[] = 'syslog';
         $methods[] = 'console';
 
