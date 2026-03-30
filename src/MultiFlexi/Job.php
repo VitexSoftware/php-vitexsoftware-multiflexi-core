@@ -914,11 +914,6 @@ EOD;
         return $jobEnvironment;
     }
 
-    public function getRunTemplate(): ?RunTemplate
-    {
-        return $this->runTemplate;
-    }
-
     public function setRunTemplate(RunTemplate $runtemplate): self
     {
         $this->runTemplate = $runtemplate;
@@ -1115,6 +1110,15 @@ EOD;
         }
 
         return $this->runTemplate;
+    }
+
+    public function getCompany(): ?Company
+    {
+        if (null === $this->company) {
+            $this->company = new Company($this->getDataValue('company_id'));
+        }
+
+        return $this->company;
     }
 
     public function getUser(): ?User
