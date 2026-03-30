@@ -23,7 +23,7 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
  *
  * @author vitex
  */
-class Job extends Engine
+class Job extends DBEngine
 {
     public executor $executor;
     public static array $intervalCode = [
@@ -54,11 +54,11 @@ class Job extends Engine
         'm' => 'md1',
         'y' => '31556926',
     ];
-    public ?ZabbixSender $zabbixSender = null;
-    public ?Application $application = null;
-    public ?Company $company = null;
-    public ?RunTemplate $runTemplate;
-    public ?User $user = null;
+    protected ?ZabbixSender $zabbixSender = null;
+    protected ?Application $application = null;
+    protected ?Company $company = null;
+    protected ?RunTemplate $runTemplate;
+    protected ?User $user = null;
 
     /**
      * Environment for Current Job.
@@ -87,7 +87,7 @@ class Job extends Engine
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->zabbixSender = new ZabbixSender(\Ease\Shared::cfg('ZABBIX_SERVER'));
             $this->setZabbixValue('phase', 'loaded');
-            $this->setZabbixValue('job_id', 0);
+            $this->setZabbixValue('job_id', $identifier);
             $this->setZabbixValue('app_id', null);
             $this->setZabbixValue('app_name', null);
             $this->setZabbixValue('begin', null);
@@ -219,8 +219,8 @@ class Job extends Engine
      */
     public function runBegin()
     {
-        $appId = $this->getRunTemplate()->getApplication()->getMyKey();
-        $companyId = $this->company->getMyKey();
+        $appId = $this->getApplication()->getMyKey();
+        $companyId = $this->getCompany()->getMyKey();
         $this->setObjectName();
         $sqlLogger = LogToSQL::singleton();
         $sqlLogger->setCompany($companyId);
@@ -253,20 +253,20 @@ class Job extends Engine
             $this->setZabbixValue('phase', 'jobStart');
             $this->setZabbixValue('executor', $this->getDataValue('executor'));
             $this->setZabbixValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
-            $this->setZabbixValue('interval', $this->runTemplate->getDataValue('interv'));
-            $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($this->runTemplate->getDataValue('interv')));
-            $this->setZabbixValue('app_name', $this->runTemplate->getApplication()->getRecordName());
+            $this->setZabbixValue('interval', $this->getRuntemplate()->getDataValue('interv'));
+            $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($this->getRuntemplate()->getDataValue('interv')));
+            $this->setZabbixValue('app_name', $this->getApplication()->getRecordName());
             $this->setZabbixValue('app_id', $this->getApplication()->getMyKey());
-            $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());
-            $this->setZabbixValue('runtemplate_name', $this->runTemplate->getRecordName());
+            $this->setZabbixValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
+            $this->setZabbixValue('runtemplate_name', $this->getRuntemplate()->getRecordName());
             $this->setZabbixValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
             $this->setZabbixValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
 
             $this->setZabbixValue('scheduled', $this->getDataValue('schedule'));
             $this->setZabbixValue('schedule_type', $this->getDataValue('schedule_type'));
-            $this->setZabbixValue('company_id', $this->company->getMyKey());
-            $this->setZabbixValue('company_name', $this->company->getDataValue('name'));
-            $this->setZabbixValue('company_code', $this->company->getDataValue('code'));
+            $this->setZabbixValue('company_id', $this->getCompany()->getMyKey());
+            $this->setZabbixValue('company_name', $this->getCompany()->getDataValue('name'));
+            $this->setZabbixValue('company_code', $this->getCompany()->getDataValue('code'));
             $this->reportToZabbix($this->zabbixMessageData);
         }
 
@@ -275,7 +275,7 @@ class Job extends Engine
             'id' => $this->getMyKey(),
             'env' => serialize($this->environment),
             'command' => $this->executor->commandline(),
-            'runtemplate_id' => $this->runTemplate->getMyKey(),
+            'runtemplate_id' => $this->getRuntemplate()->getMyKey(),
             'begin' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
         ]);
 
@@ -285,12 +285,12 @@ class Job extends Engine
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
                 $otelExporter->recordJobStart(
                     $jobId,
-                    $this->application->getMyKey(),
-                    $this->application->getRecordName(),
-                    $this->company->getMyKey(),
-                    $this->company->getRecordName(),
-                    $this->runTemplate->getMyKey(),
-                    $this->runTemplate->getRecordName(),
+                    $this->getApplication()->getMyKey(),
+                    $this->getApplication()->getRecordName(),
+                    $this->getCompany()->getMyKey(),
+                    $this->getCompany()->getRecordName(),
+                    $this->getRuntemplate()->getMyKey(),
+                    $this->getRuntemplate()->getRecordName(),
                 );
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
@@ -381,18 +381,18 @@ class Job extends Engine
 
         if ($scheduleType !== 'adhoc') {
             $rtUpdate['next_schedule'] = null;
-            $rtUpdate['last_schedule'] = $this->runTemplate->getDataValue('next_schedule');
+            $rtUpdate['last_schedule'] = $this->getRunTemplate()->getDataValue('next_schedule');
         }
 
         // Always update job counters (for all job types)
         if ($statusCode) {
-            $rtUpdate['failed_jobs_count'] = $this->runTemplate->getDataValue('failed_jobs_count') + 1;
+            $rtUpdate['failed_jobs_count'] = $this->getRunTemplate()->getDataValue('failed_jobs_count') + 1;
         } else {
-            $rtUpdate['successfull_jobs_count'] = $this->runTemplate->getDataValue('successfull_jobs_count') + 1;
+            $rtUpdate['successfull_jobs_count'] = $this->getRunTemplate()->getDataValue('successfull_jobs_count') + 1;
         }
 
         if (!empty($rtUpdate)) {
-            $this->runTemplate->updateToSQL($rtUpdate, ['id' => $this->runTemplate->getMyKey()]);
+            $this->getRunTemplate()->updateToSQL($rtUpdate, ['id' => $this->getRunTemplate()->getMyKey()]);
         }
 
         // TODO
@@ -1082,7 +1082,7 @@ EOD;
     {
         if (null === $this->application) {
             $this->application = new Application($this->getDataValue('app_id'));
-        } elseif (null === $this->application->getMyKey()) {
+        } elseif (null === $this->application->getMyKey() || empty($this->application->getRecordName())) {
             $this->application->loadFromSQL($this->getDataValue('app_id'));
         }
 
@@ -1093,7 +1093,7 @@ EOD;
     {
         if (null === $this->runTemplate) {
             $this->runTemplate = new RunTemplate($this->getDataValue('runtemplate_id'));
-        } elseif (null === $this->runTemplate->getMyKey()) {
+        } elseif (null === $this->runTemplate->getMyKey() || empty($this->runTemplate->getRecordName())) {
             $this->runTemplate->loadFromSQL($this->getDataValue('runtemplate_id'));
         }
 
@@ -1104,7 +1104,7 @@ EOD;
     {
         if (null === $this->company) {
             $this->company = new Company($this->getDataValue('company_id'));
-        } elseif (null === $this->company->getMyKey()) {
+        } elseif (null === $this->company->getMyKey() || empty($this->company->getRecordName())) {
             $this->company->loadFromSQL($this->getDataValue('company_id'));
         }
 
@@ -1115,7 +1115,7 @@ EOD;
     {
         if (null === $this->user) {
             $this->user = new User($this->getDataValue('user_id'));
-        } elseif (null === $this->user->getMyKey()) {
+        } elseif (null === $this->user->getMyKey() || empty($this->getRecordName())) {
             $this->user->loadFromSQL($this->getDataValue('user_id'));
         }
 
