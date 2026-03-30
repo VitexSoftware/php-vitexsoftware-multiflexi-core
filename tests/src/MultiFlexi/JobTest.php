@@ -46,9 +46,9 @@ class JobTest extends \PHPUnit\Framework\TestCase
         $mockRunTemplate->method('getCompany')->willReturn($mockCompany);
         $mockRunTemplate->method('getDataValue')->willReturn('dummy');
         $mockRunTemplate->method('getRecordName')->willReturn('dummy');
-        $this->object->application = $mockApp;
-        $this->object->company = $mockCompany;
-        $this->object->runTemplate = $mockRunTemplate;
+        $this->object->setApplication($mockApp);
+        $this->object->setCompany($mockCompany);
+        $this->object->setRunTemplate($mockRunTemplate);
         $mockExecutor = $this->getMockBuilder(\MultiFlexi\Executor\Native::class)
             ->setConstructorArgs([$this->object])
             ->onlyMethods(['commandline', 'getPid', 'getExitCode', 'getOutput', 'getErrorOutput', 'setJob', 'launchJob'])

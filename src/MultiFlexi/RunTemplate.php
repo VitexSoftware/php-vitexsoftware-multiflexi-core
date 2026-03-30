@@ -179,9 +179,9 @@ class RunTemplate extends \MultiFlexi\DBEngine
     public function getAppEnvironment()
     {
         $jobber = new Job();
-        $jobber->company = $this->getCompany();
-        $jobber->application = $this->getApplication();
-        $jobber->runTemplate = $this;
+        $jobber->setCompany($this->getCompany());
+        $jobber->setApplication($this->getApplication());
+        $jobber->setRunTemplate($this);
 
         return $jobber->getModulesEnvironment();
     }

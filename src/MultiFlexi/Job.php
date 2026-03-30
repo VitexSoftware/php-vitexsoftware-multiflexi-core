@@ -898,6 +898,16 @@ EOD;
         return $jobEnvironment;
     }
 
+    public function setCompany(Company $company): void
+    {
+        $this->company = $company;
+    }
+
+    public function setApplication(Application $app): void
+    {
+        $this->application = $app;
+    }
+
     public function setRunTemplate(RunTemplate $runtemplate): self
     {
         $this->runTemplate = $runtemplate;
