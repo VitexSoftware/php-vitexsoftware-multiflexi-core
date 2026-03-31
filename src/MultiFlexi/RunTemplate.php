@@ -486,7 +486,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
     {
         $credentor = new RunTplCreds();
 
-        return $credentor->listingQuery()->select(['credentials.name AS credential_name', 'credential_type.name AS credential_type_name', 'credential_type.class AS credential_type_class', 'credential_type.uuid AS credential_type_uuid', 'credential_type.logo AS credential_type_logo'])->where('runtemplate_id', $this->getMyKey())->leftJoin('credentials ON credentials.id = runtplcreds.credentials_id')->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')->fetchAll('credential_type_class');
+        return $credentor->listingQuery()->select(['credentials.name AS credential_name', 'credential_type.name AS credential_type_name', 'credential_type.prototype AS credential_prototype', 'credential_type.uuid AS credential_type_uuid', 'credential_type.logo AS credential_type_logo'])->where('runtemplate_id', $this->getMyKey())->leftJoin('credentials ON credentials.id = runtplcreds.credentials_id')->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')->fetchAll('credential_prototype');
     }
 
     public function isScheduled(\DateTime $startTime): bool

@@ -46,7 +46,7 @@ class FioBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cre
     }
 
     #[\Override]
-    public static function uuid(): string
+    public function uuid(): string
     {
         return 'f79aaa38-2eaf-453a-beee-3a2afa1221d5';
     }
@@ -69,18 +69,18 @@ class FioBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cre
         // Implement the configuration form logic if needed
     }
 
-    public static function name(): string
+    public function name(): string
     {
         return _('Fio Bank');
     }
 
-    public static function description(): string
+    public function description(): string
     {
         return _('Fio Bank credential type for integration with Fio Bank API');
     }
 
     #[\Override]
-    public static function logo(): string
+    public function logo(): string
     {
         return self::$logo;
     }

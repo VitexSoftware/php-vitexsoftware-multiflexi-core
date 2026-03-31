@@ -67,23 +67,23 @@ class SQLServer extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\c
         // Implement the configuration form logic if needed
     }
 
-    public static function name(): string
+    public function name(): string
     {
         return _('SQL Server');
     }
 
-    public static function description(): string
+    public function description(): string
     {
         return _('Credential type for connecting to Microsoft SQL Server');
     }
 
-    public static function uuid(): string
+    public function uuid(): string
     {
-        return '6ba7b817-9dad-11d1-80b4-00c04fd430c8';
+        return '84c157ce-57d5-45cd-ae67-75fdfedab57f';
     }
 
     #[\Override]
-    public static function logo(): string
+    public function logo(): string
     {
         return self::$logo;
     }

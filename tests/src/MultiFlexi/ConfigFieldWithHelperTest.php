@@ -61,12 +61,12 @@ class ConfigFieldWithHelperTest extends TestCase
     }
 
     /**
-     * Test helper functionality - setHelper and getHelper methods.
+     * Test helper functionality - setHelper and getPrototype methods.
      */
     public function testHelperMethods(): void
     {
         // Initial value should be empty string
-        $this->assertEquals('', $this->object->getHelper());
+        $this->assertEquals('', $this->object->getPrototype());
 
         // Set a helper name
         $result = $this->object->setHelper('username_helper');
@@ -75,7 +75,7 @@ class ConfigFieldWithHelperTest extends TestCase
         $this->assertSame($this->object, $result);
 
         // Test that the helper was set correctly
-        $this->assertEquals('username_helper', $this->object->getHelper());
+        $this->assertEquals('username_helper', $this->object->getPrototype());
     }
 
     /**
@@ -156,14 +156,14 @@ class ConfigFieldWithHelperTest extends TestCase
         $passwordField->setSecret(true);
 
         $this->assertEquals('password', $passwordField->getType());
-        $this->assertEquals('password_helper', $passwordField->getHelper());
+        $this->assertEquals('password_helper', $passwordField->getPrototype());
         $this->assertTrue($passwordField->isSecret());
 
         $emailField = new ConfigFieldWithHelper('email_field', 'email', 'Email', 'Enter email');
         $emailField->setHelper('email_helper');
 
         $this->assertEquals('email', $emailField->getType());
-        $this->assertEquals('email_helper', $emailField->getHelper());
+        $this->assertEquals('email_helper', $emailField->getPrototype());
     }
 
     /**

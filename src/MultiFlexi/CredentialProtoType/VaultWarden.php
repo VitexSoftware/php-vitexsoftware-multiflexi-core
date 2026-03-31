@@ -38,19 +38,19 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
         $this->configFieldsProvided = new \MultiFlexi\ConfigFields('VaultWarden Provided');
     }
 
-    public static function name(): string
+    public function name(): string
     {
         return _('VaultWarden');
     }
 
-    public static function description(): string
+    public function description(): string
     {
         return _('Use VaultWarden secrets');
     }
 
-    public static function uuid(): string
+    public function uuid(): string
     {
-        return '6ba7b818-9dad-11d1-80b4-00c04fd430c8';
+        return '745787fe-27da-4b50-a441-d96925d84be0';
     }
 
     #[\Override]
@@ -73,7 +73,7 @@ class VaultWarden extends \MultiFlexi\CredentialProtoType implements \MultiFlexi
     }
 
     #[\Override]
-    public static function logo(): string
+    public function logo(): string
     {
         return 'vaultwarden.svg';
     }

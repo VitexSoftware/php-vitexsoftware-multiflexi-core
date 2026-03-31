@@ -20,7 +20,7 @@ namespace MultiFlexi;
  *
  * @author Vitex <info@vitexsoftware.cz>
  */
-class CredentialProtoType extends \MultiFlexi\DBEngine
+class CredentialProtoType extends \MultiFlexi\Engine
 {
     use \Ease\recordkey;
 
@@ -48,6 +48,8 @@ class CredentialProtoType extends \MultiFlexi\DBEngine
      */
     public function __construct($init = null, array $options = [])
     {
+        $this->createColumn = 'created_at';
+        $this->lastModifiedColumn = 'updated_at';
         $this->configFieldsProvided = new \MultiFlexi\ConfigFields(\Ease\Functions::baseClassName($this).' provided');
         $this->configFieldsInternal = new \MultiFlexi\ConfigFields(\Ease\Functions::baseClassName($this).' Internal');
         parent::__construct($init, $options);

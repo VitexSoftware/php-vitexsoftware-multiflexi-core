@@ -24,6 +24,22 @@ namespace MultiFlexi\CredentialProtoType;
  */
 class Common extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\credentialTypeInterface
 {
+    public function takeData($data): int
+    {
+        $this->setData($data);
+        $fields = $this->getFluentPDO()->from('credential_prototype_field')->where(['credential_prototype_id' => $this->getDataValue('id')])->fetchAll('keyword');
+        $imported = 0;
+
+        foreach ($fields as $code => $fieldData) {
+            $field = new \MultiFlexi\ConfigField($code, $fieldData['type'], $fieldData['name'], $fieldData['description'], $fieldData['hint']);
+            $field->setDefaultValue($fieldData['default_value'])->setRequired((bool) $fieldData['required']);
+            $this->fieldsProvided()->addField($field);
+            ++$imported;
+        }
+
+        return $imported;
+    }
+
     // put your code here
     #[\Override]
     public function prepareConfigForm(): void
@@ -31,25 +47,25 @@ class Common extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cred
     }
 
     #[\Override]
-    public static function description(): string
+    public function description(): string
     {
         return _('Non specialised credential type');
     }
 
     #[\Override]
-    public static function uuid(): string
+    public function uuid(): string
     {
-        return '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+        return '';
     }
 
     #[\Override]
-    public static function logo(): string
+    public function logo(): string
     {
         return 'CommonCredentialType.svg';
     }
 
     #[\Override]
-    public static function name(): string
+    public function name(): string
     {
         return _('Common type');
     }

@@ -43,7 +43,7 @@ class Requirement
         $credentialType = new CredentialType();
 
         foreach ($credentialType->listingQuery()->where('credential_type.company_id', $company->getMyKey()) as $credType) {
-            $credentialTypes[$credType['class']][$credType['id']] = $credType;
+            $credentialTypes[$credType['prototype']][$credType['id']] = $credType;
         }
 
         return $credentialTypes;
@@ -61,7 +61,7 @@ class Requirement
 
         foreach ($credentialType->listingQuery()->select(['credential_type.*', 'credentials.id AS credential_id'])->leftJoin('credential_type ON credentials.credential_type_id = credential_type.id')->where('credential_type.company_id', $company->getMyKey()) as $credential) {
             if ($credential['credential_type_id']) {
-                $credentialsByType[$credential['class']][$credential['credential_id']] = $credential;
+                $credentialsByType[$credential['prototype']][$credential['credential_id']] = $credential;
             }
         }
 

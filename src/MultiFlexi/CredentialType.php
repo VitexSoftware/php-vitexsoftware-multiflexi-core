@@ -28,13 +28,23 @@ class CredentialType extends DBEngine
      * @var string Name Column
      */
     public string $nameColumn = 'name';
-    private ?\MultiFlexi\credentialTypeInterface $helper = null;
+    private ?\MultiFlexi\credentialTypeInterface $prototype = null;
 
     public function __construct($init = null, array $filter = [])
     {
         $this->myTable = 'credential_type';
         $this->setDataValue('uuid', \Ease\Functions::guidv4());
         parent::__construct($init, $filter);
+    }
+
+    public function name(): string
+    {
+        return (string) $this->getRecordName();
+    }
+
+    public function uuid(): string
+    {
+        return $this->getDataValue('uuid');
     }
 
     /**
@@ -60,12 +70,6 @@ class CredentialType extends DBEngine
         if (\array_key_exists('name', $data) && empty($data['name'])) {
             $nameparts = [];
 
-            if (\array_key_exists('class', $data) && $data['class']) {
-                $credTypeClass = '\\MultiFlexi\\CredentialProtoType\\'.$data['class'];
-                $nameparts['class'] = $credTypeClass::name();
-                $this->getHelper();
-            }
-
             if (\array_key_exists('company_id', $data) && (int) $data['company_id']) {
                 $nameparts['company'] = (new Company((int) $data['company_id']))->getRecordName();
             }
@@ -82,41 +86,51 @@ class CredentialType extends DBEngine
         $class = $this->getDataValue('class');
 
         if ($class) {
-            $this->getHelper();
+            $this->getPrototype();
 
             if (empty($this->getDataValue('logo'))) {
-                $this->setDataValue('logo', $this->helper->logo());
+                $this->setDataValue('logo', $this->prototype->logo());
             }
         }
 
         return $loaded;
     }
 
-    public function getHelper(): ?\MultiFlexi\credentialTypeInterface
+    public function setPrototypeClass(string $class): ?\MultiFlexi\credentialTypeInterface
     {
-        $class = $this->getDataValue('class');
+        $this->setDataValue('prototype', $class);
+        $this->prototype = null;
 
-        if ($class) {
-            $credTypeClass = '\\MultiFlexi\\CredentialProtoType\\'.$class;
+        return $this->getPrototype();
+    }
 
-            if ((\is_object($this->helper) === false) || (\Ease\Functions::baseClassName($this->helper) !== $class)) {
-                if (class_exists($credTypeClass)) {
-                    $this->helper = new $credTypeClass();
+    public function getPrototype(): ?\MultiFlexi\credentialTypeInterface
+    {
+        if (null === $this->prototype) {
+            $class = $this->getDataValue('prototype');
 
-                    if ($this->getMyKey() && method_exists($this->helper, 'load')) {
-                        $this->helper->load($this->getMyKey());
-                    }
-                } else { // Does exist the credential prototype defined in database ?
-                    $crdPrtype = new CredentialProtoType($class, ['nameColumn' => 'class', 'autoload' => true]);
+            if ($class) {
+                $credTypeClass = '\\MultiFlexi\\CredentialProtoType\\'.$class;
 
-                    if ($crdPrtype->getMyKey()) {
-                        $this->helper = $crdPrtype;
+                if ((\is_object($this->prototype) === false) || (\Ease\Functions::baseClassName($this->prototype) !== $class)) {
+                    if (class_exists($credTypeClass)) {
+                        $this->prototype = new $credTypeClass();
+
+                        if ($this->getMyKey() && method_exists($this->prototype, 'load')) {
+                            $this->prototype->load($this->getMyKey());
+                        }
+                    } else { // Does exist the credential prototype defined in database ?
+                        $crdPrtype = new CredentialProtoType\Common($class, ['nameColumn' => 'code', 'autoload' => true]);
+
+                        if ($crdPrtype->getMyKey()) {
+                            $this->prototype = $crdPrtype;
+                        }
                     }
                 }
             }
         }
 
-        return $this->helper;
+        return $this->prototype;
     }
 
     public function getFields(): ConfigFields
@@ -124,10 +138,10 @@ class CredentialType extends DBEngine
         $fields = new ConfigFields();
         $fielder = new \MultiFlexi\CrTypeField();
 
-        if ($this->getHelper()) {
-            foreach ($this->getHelper()->fieldsProvided() as $providedField) {
+        if ($this->getPrototype()) {
+            foreach ($this->getPrototype()->fieldsProvided() as $providedField) {
                 $rField = new ConfigFieldWithHelper($providedField->getCode(), $providedField->getType(), $providedField->getName(), $providedField->getDescription());
-                $rField->setHint($providedField->getHint())->setDefaultValue($providedField->getDefaultValue())->setRequired($providedField->isRequired())->setManual($providedField->isManual())->setMultiLine($providedField->isMultiline())->setHelper(\Ease\Functions::baseClassName($this->getHelper()));
+                $rField->setHint($providedField->getHint())->setDefaultValue($providedField->getDefaultValue())->setRequired($providedField->isRequired())->setManual($providedField->isManual())->setMultiLine($providedField->isMultiline())->setHelper(\Ease\Functions::baseClassName($this->getPrototype()));
                 $fields->addField($rField);
             }
         }
@@ -138,8 +152,8 @@ class CredentialType extends DBEngine
             $field->setMyKey($fieldData['id']);
 
             if (empty($fieldData['helper']) === false) {
-                if ($this->getHelper()) {
-                    $fieldHelper = $this->getHelper()->fieldsProvided()->getFieldByCode($fieldData['helper']);
+                if ($this->getPrototype()) {
+                    $fieldHelper = $this->getPrototype()->fieldsProvided()->getFieldByCode($fieldData['helper']);
                     $field->setManual($fieldHelper->isManual());
                     $field->setRequired($fieldHelper->isRequired());
                     $field->setSecret($fieldHelper->isSecret());
@@ -162,8 +176,8 @@ class CredentialType extends DBEngine
     {
         $fields = $this->getFields();
 
-        if ($this->getHelper()) {
-            $fields->addFields($this->getHelper()->query());
+        if ($this->getPrototype()) {
+            $fields->addFields($this->getPrototype()->query());
         }
 
         return $fields;
@@ -241,7 +255,6 @@ class CredentialType extends DBEngine
 
         // Note: description field doesn't exist in current schema
         // It will need to be stored in translations table
-
         // Add optional fields if present in current schema
         if (isset($data['class'])) {
             $insertData['class'] = $data['class'];
@@ -261,7 +274,6 @@ class CredentialType extends DBEngine
 
         // Set default company_id to 1 (or handle this properly)
         $insertData['company_id'] = 1; // TODO: This should be configurable
-
         // Clear current data and set new data
         $this->unsetDataValue($this->getKeyColumn());
         $this->setData($insertData);

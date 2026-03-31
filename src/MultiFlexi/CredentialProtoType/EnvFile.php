@@ -97,18 +97,18 @@ class EnvFile extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cre
     {
     }
 
-    public static function name(): string
+    public function name(): string
     {
         return _('.env file');
     }
 
-    public static function description(): string
+    public function description(): string
     {
         return _('Load configuration values from .env file');
     }
 
     #[\Override]
-    public static function logo(): string
+    public function logo(): string
     {
         return 'env-file.svg';
     }

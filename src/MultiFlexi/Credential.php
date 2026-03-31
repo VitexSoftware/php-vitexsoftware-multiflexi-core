@@ -178,8 +178,8 @@ class Credential extends DBEngine
             $this->fields->setSources(\Ease\Euri::fromObject($this));
         }
 
-        if ($this->credentialType && $this->credentialType->getHelper()) {
-            $this->fields->addFields($this->credentialType->getHelper()->fieldsProvided());
+        if ($this->credentialType && $this->credentialType->getPrototype()) {
+            $this->fields->addFields($this->credentialType->getPrototype()->fieldsProvided());
         }
 
         foreach ($this->credator->listingQuery()->where('credential_id', $this->getMyKey()) as $credential) {
@@ -222,8 +222,8 @@ class Credential extends DBEngine
     {
         $credentialEnv = new CredentialConfigFields($this);
 
-        if ($this->getCredentialType() && $this->credentialType->getHelper()) {
-            $credentialEnv->addFields($this->credentialType->getHelper()->query());
+        if ($this->getCredentialType() && $this->credentialType->getPrototype()) {
+            $credentialEnv->addFields($this->credentialType->getPrototype()->query());
         }
 
         // Load Credential values stored in database

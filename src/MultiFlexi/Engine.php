@@ -38,7 +38,6 @@ class Engine extends \Ease\SQL\Engine
         }
 
         parent::__construct($identifier, $options);
-        $this->setObjectName(\get_class($this));
     }
 
     /**

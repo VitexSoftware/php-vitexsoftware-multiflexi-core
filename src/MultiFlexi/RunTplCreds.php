@@ -58,7 +58,7 @@ class RunTplCreds extends Engine
     {
         $runtemplater = new RunTemplate($runtemplate_id);
         $kredenc = new Credential();
-        $candidates = $kredenc->listingQuery()->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')->where(['credentials.company_id' => $runtemplater->getDataValue('company_id'), 'credential_type.class' => $reqType]);
+        $candidates = $kredenc->listingQuery()->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')->where(['credentials.company_id' => $runtemplater->getDataValue('company_id'), 'credential_type.prototype' => $reqType]);
 
         foreach ($candidates as $candidat) {
             $this->unbind($runtemplate_id, $candidat['id']);

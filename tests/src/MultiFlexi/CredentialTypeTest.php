@@ -88,7 +88,7 @@ class CredentialTypeTest extends TestCase
 
         // Create a partial mock for CredentialProtoType
         $credType = $this->getMockBuilder(CredentialProtoType::class)
-            ->setMethods(['getHelper'])
+            ->setMethods(['getPrototype'])
             ->getMock();
 
         // Create a mock for the helper class
@@ -96,7 +96,7 @@ class CredentialTypeTest extends TestCase
         $helperMock->method('name')->willReturn('Common Helper');
 
         // Configure the credential type mock
-        $credType->method('getHelper')->willReturn($helperMock);
+        $credType->method('getPrototype')->willReturn($helperMock);
 
         // Create reflection class to replace global new operator for Company
         $reflection = new \ReflectionClass(Company::class);
@@ -149,9 +149,9 @@ EOD);
     }
 
     /**
-     * Test getHelper method.
+     * Test getPrototype method.
      */
-    public function testGetHelper(): void
+    public function testgetPrototype(): void
     {
         // Create a partial mock for CredentialProtoType
         $credType = $this->getMockBuilder(CredentialProtoType::class)
@@ -167,7 +167,7 @@ EOD);
             ->willReturn(1);
 
         // Get the helper
-        $helper = $credType->getHelper();
+        $helper = $credType->getPrototype();
 
         // Assert that helper is an instance of credentialTypeInterface
         $this->assertInstanceOf(credentialTypeInterface::class, $helper);
@@ -202,7 +202,7 @@ EOD);
     {
         // Create a partial mock for the CredentialProtoType
         $credType = $this->getMockBuilder(CredentialProtoType::class)
-            ->setMethods(['getHelper', 'getMyKey'])
+            ->setMethods(['getPrototype', 'getMyKey'])
             ->getMock();
 
         // Create a mock for the helper
@@ -211,7 +211,7 @@ EOD);
         $helperMock->method('logo')->willReturn('test-logo.png');
 
         // Configure the credential type mock
-        $credType->method('getHelper')->willReturn($helperMock);
+        $credType->method('getPrototype')->willReturn($helperMock);
         $credType->method('getMyKey')->willReturn(1);
 
         // Set raw data for the test
@@ -275,7 +275,7 @@ EOD);
 
         // Create a partial mock for CredentialProtoType
         $credType = $this->getMockBuilder(CredentialProtoType::class)
-            ->setMethods(['getMyKey', 'getHelper'])
+            ->setMethods(['getMyKey', 'getPrototype'])
             ->getMock();
 
         // Create a mock for the helper
@@ -295,7 +295,7 @@ EOD);
 
         // Configure the credential type mock
         $credType->method('getMyKey')->willReturn(1);
-        $credType->method('getHelper')->willReturn($helperMock);
+        $credType->method('getPrototype')->willReturn($helperMock);
 
         // Replace the CrTypeField constructor
         $GLOBALS['mockCrTypeField'] = $fieldMock;
@@ -361,7 +361,7 @@ EOD);
     {
         // Create a partial mock for CredentialProtoType
         $credType = $this->getMockBuilder(CredentialProtoType::class)
-            ->setMethods(['getFields', 'getHelper', 'getDataValue'])
+            ->setMethods(['getFields', 'getPrototype', 'getDataValue'])
             ->getMock();
 
         // Create mock fields
@@ -388,7 +388,7 @@ EOD);
 
         // Configure the credential type mock
         $credType->method('getFields')->willReturn($fieldsMock);
-        $credType->method('getHelper')->willReturn($helperMock);
+        $credType->method('getPrototype')->willReturn($helperMock);
         $credType->method('getDataValue')->with($this->equalTo('class'))->willReturn('Common');
 
         // Call the method
@@ -427,7 +427,7 @@ EOD);
     {
         // Create a partial mock for CredentialProtoType
         $credType = $this->getMockBuilder(CredentialProtoType::class)
-            ->setMethods(['getHelper', 'getDataValue', 'setDataValue'])
+            ->setMethods(['getPrototype', 'getDataValue', 'setDataValue'])
             ->getMock();
 
         // Create a mock for the helper
@@ -435,7 +435,7 @@ EOD);
         $helperMock->method('logo')->willReturn('helper-logo.png');
 
         // Configure the credential type mock
-        $credType->method('getHelper')->willReturn($helperMock);
+        $credType->method('getPrototype')->willReturn($helperMock);
         $credType->method('getDataValue')->willReturnMap([
             ['class', 'Common'],
             ['logo', ''],

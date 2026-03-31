@@ -26,7 +26,7 @@ class ConfigFieldWithHelper extends ConfigField
     public array $data = [];
     protected string $helper = '';
 
-    public function getHelper(): string
+    public function getPrototype(): string
     {
         return $this->helper;
     }
@@ -42,7 +42,7 @@ class ConfigFieldWithHelper extends ConfigField
     public function getData(): ?array
     {
         $data = $this->getArray();
-        $data['helper'] = $this->getHelper();
+        $data['helper'] = $this->getPrototype();
 
         return $data;
     }
