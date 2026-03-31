@@ -1,8 +1,15 @@
-php-vitexsoftware-multiflexi-core (2.8.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.9.0) UNRELEASED; urgency=medium
 
+  * Credential prototypes does not ude static method anymore
+
+ -- Vitex <vitezslav.dvorak@spojenet.cz>  Tue, 31 Mar 2026 14:44:48 +0200
+
+php-vitexsoftware-multiflexi-core (2.8.0) unstable; urgency=medium
+
+  [ vitex ]
   * Add EventSource and EventRule domain classes for event-driven job triggering
 
- -- vitex <info@vitexsoftware.cz>  Wed, 26 Feb 2026 20:30:00 +0100
+ -- Vitex <vitezslav.dvorak@spojenet.cz>  Tue, 31 Mar 2026 14:44:27 +0200
 
 php-vitexsoftware-multiflexi-core (2.7.1) UNRELEASED; urgency=medium
 
