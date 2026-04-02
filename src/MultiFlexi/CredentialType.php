@@ -151,15 +151,13 @@ class CredentialType extends DBEngine
             $field->setHint($fieldData['hint'])->setDefaultValue($fieldData['defval'])->setRequired($fieldData['required'] === 1)->setHelper((string) $fieldData['helper']);
             $field->setMyKey($fieldData['id']);
 
-            if (empty($fieldData['helper']) === false) {
-                if ($this->getPrototype()) {
-                    $fieldHelper = $this->getPrototype()->fieldsProvided()->getFieldByCode($fieldData['helper']);
-                    $field->setManual($fieldHelper->isManual());
-                    $field->setRequired($fieldHelper->isRequired());
-                    $field->setSecret($fieldHelper->isSecret());
-                } else {
-                    $this->addStatusMessage(sprintf(_('Unexistent field helper %s ?!?'), $fieldData['helper']), 'info'); // TODO:
-                }
+            if ($this->getPrototype()) {
+                $fieldHelper = $this->getPrototype()->fieldsProvided()->getFieldByCode($fieldData['helper']);
+                $field->setManual($fieldHelper->isManual());
+                $field->setRequired($fieldHelper->isRequired());
+                $field->setSecret($fieldHelper->isSecret());
+            } else {
+                $this->addStatusMessage(sprintf(_('Unexistent field helper %s ?!?'), $fieldData['helper']), 'info'); // TODO:
             }
 
             $fields->addField($field);

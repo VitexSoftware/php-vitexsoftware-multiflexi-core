@@ -2256,8 +2256,8 @@
             "version": "2.2.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8acfa3876b05be91d398d5f171cee45be0398401",
-                "reference": "8acfa3876b05be91d398d5f171cee45be0398401",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6777f6de4a3461761429a3db5954cffcc8a9079e",
+                "reference": "6777f6de4a3461761429a3db5954cffcc8a9079e",
                 "shasum": ""
             },
             "require": {
@@ -2303,7 +2303,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-30T14:56:13+00:00"
+            "time": "2026-03-31T15:27:10+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2368,12 +2368,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "0b9e6ed206f5dac50781c6e9e118d057ea7a0eb0"
+                "reference": "c108257f3c91b1f1b9ec8825e20637fe37327791"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/0b9e6ed206f5dac50781c6e9e118d057ea7a0eb0",
-                "reference": "0b9e6ed206f5dac50781c6e9e118d057ea7a0eb0",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/c108257f3c91b1f1b9ec8825e20637fe37327791",
+                "reference": "c108257f3c91b1f1b9ec8825e20637fe37327791",
                 "shasum": ""
             },
             "require": {
@@ -2448,7 +2448,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-30T07:41:11+00:00"
+            "time": "2026-03-31T14:33:09+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -2749,12 +2749,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "f95ddcbef0faeacf9b5b0810b6e2e7a2733de230"
+                "reference": "0b8d714a5bf4a2b3cb98cb58157104fccb4277e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f95ddcbef0faeacf9b5b0810b6e2e7a2733de230",
-                "reference": "f95ddcbef0faeacf9b5b0810b6e2e7a2733de230",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/0b8d714a5bf4a2b3cb98cb58157104fccb4277e4",
+                "reference": "0b8d714a5bf4a2b3cb98cb58157104fccb4277e4",
                 "shasum": ""
             },
             "require": {
@@ -2831,7 +2831,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-03-29T07:48:12+00:00"
+            "time": "2026-03-31T14:32:00+00:00"
         },
         {
             "name": "psr/container",
@@ -3524,12 +3524,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "43394b8f67578a2e4815357ced15d025aa9ae46a"
+                "reference": "bcf39aa94d1fbee13cd1e98392b303f0840ff84e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/43394b8f67578a2e4815357ced15d025aa9ae46a",
-                "reference": "43394b8f67578a2e4815357ced15d025aa9ae46a",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/bcf39aa94d1fbee13cd1e98392b303f0840ff84e",
+                "reference": "bcf39aa94d1fbee13cd1e98392b303f0840ff84e",
                 "shasum": ""
             },
             "require": {
@@ -3577,7 +3577,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-30T12:32:18+00:00"
+            "time": "2026-03-31T05:28:26+00:00"
         },
         {
             "name": "sebastian/cli-parser",
