@@ -236,7 +236,14 @@ class Application extends DBEngine
             $appData['environment'] = [];
         }
 
-        unset($appData['id'], $appData['DatCreate'], $appData['DatUpdate'], $appData['enabled']);
+        unset($appData['id'], $appData['DatCreate'], $appData['DatUpdate'], $appData['enabled'], $appData['deffile']);
+
+        // Move helmchart into kubernetes.helm.chart structure for export
+        if (!empty($appData['helmchart'])) {
+            $appData['kubernetes']['helm']['chart'] = $appData['helmchart'];
+        }
+
+        unset($appData['helmchart']);
 
         $appData['multiflexi'] = \Ease\Shared::appVersion();
 
@@ -564,6 +571,11 @@ class Application extends DBEngine
                 } else {
                     $fields['artifacts'] = $appSpec['artifacts'];
                 }
+            }
+
+            // Extract helmchart from kubernetes.helm.chart if present
+            if (!empty($appSpec['kubernetes']['helm']['chart'])) {
+                $fields['helmchart'] = $appSpec['kubernetes']['helm']['chart'];
             }
 
             // Handle environment configurations
