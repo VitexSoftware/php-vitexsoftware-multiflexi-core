@@ -754,16 +754,77 @@ class Application extends DBEngine
         return $exitCodeDescriptionRaw->count() ? (string) $exitCodeDescriptionRaw->fetch('description') : _('Undocumented');
     }
 
-    public function getResultFiles()
+    /**
+     * Get all output files produced by this application.
+     *
+     * Collects files from two sources:
+     * 1. Legacy RESULT_FILE environment variable (backward compatibility)
+     * 2. Artifact definitions from app_artifacts table (pattern-matched in temp dir)
+     *
+     * @return array<string> List of existing file paths
+     */
+    public function getResultFiles(): array
     {
         $resultFiles = [];
+        $appId = $this->getMyKey();
+
+        if (!$appId) {
+            return $resultFiles;
+        }
+
+        $tmpDir = file_exists('/var/lib/multiflexi/tmp') ? '/var/lib/multiflexi/tmp' : sys_get_temp_dir();
+
+        // Legacy: RESULT_FILE environment variable
         $cfgField = $this->getEnvironment()->getFieldByCode('RESULT_FILE');
 
-        if ($cfgField) {
+        if ($cfgField && !empty($cfgField->getValue())) {
             $resultFiles[] = Job::tmpfilepath($cfgField->getValue());
         }
 
-        return []; // TODO Return all files defined in app manifest
+        // Artifact definitions from app manifest (app_artifacts table)
+        if ($appId) {
+            $artifactDefs = $this->getFluentPDO()
+                ->from('app_artifacts')
+                ->where('app_id', $appId)
+                ->fetchAll();
+
+            foreach ($artifactDefs as $artifactDef) {
+                $pattern = $artifactDef['path'];
+
+                if (empty($pattern)) {
+                    continue;
+                }
+
+                // Scan temp directory for files matching the artifact path pattern
+                $files = @scandir($tmpDir);
+
+                if ($files === false) {
+                    continue;
+                }
+
+                foreach ($files as $file) {
+                    if ($file === '.' || $file === '..') {
+                        continue;
+                    }
+
+                    $fullPath = $tmpDir.\DIRECTORY_SEPARATOR.$file;
+
+                    if (!is_file($fullPath)) {
+                        continue;
+                    }
+
+                    // Match against artifact path pattern (regex)
+                    if (@preg_match('/'.$pattern.'/', $file) === 1) {
+                        // Avoid duplicates
+                        if (!\in_array($fullPath, $resultFiles, true)) {
+                            $resultFiles[] = $fullPath;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $resultFiles;
     }
 
     /**
@@ -773,18 +834,62 @@ class Application extends DBEngine
     {
         $defaultLang = 'en';
 
+        // Delete existing artifact definitions for this app to ensure clean import
+        $this->getFluentPDO()
+            ->deleteFrom('app_artifacts')
+            ->where('app_id', $appId)
+            ->execute();
+
         foreach ($artifactDefs as $artifactDef) {
-            // Handle localized description field
+            $artifactRecord = [
+                'app_id' => $appId,
+                'path' => $artifactDef['path'] ?? '',
+                'type' => $artifactDef['type'] ?? 'file',
+            ];
+
+            $artifactId = $this->getFluentPDO()
+                ->insertInto('app_artifacts', $artifactRecord)
+                ->execute();
+
+            if (!$artifactId) {
+                $this->addStatusMessage(sprintf(_('Failed to insert artifact definition: %s'), $artifactDef['path'] ?? ''), 'warning');
+
+                continue;
+            }
+
+            // Collect localized strings for name and description
+            $translations = [];
+
+            // Handle localized name
+            if (isset($artifactDef['name'])) {
+                if (\is_string($artifactDef['name'])) {
+                    $translations[$defaultLang]['name'] = $artifactDef['name'];
+                } elseif (\is_array($artifactDef['name'])) {
+                    foreach ($artifactDef['name'] as $lang => $value) {
+                        $translations[$lang]['name'] = $value;
+                    }
+                }
+            }
+
+            // Handle localized description
             if (isset($artifactDef['description'])) {
                 if (\is_string($artifactDef['description'])) {
-                    // Legacy string format
-                    $configData['description'] = $artifactDef['description'];
+                    $translations[$defaultLang]['description'] = $artifactDef['description'];
                 } elseif (\is_array($artifactDef['description'])) {
-                    // Localized object format - use default language for main table
-                    $artifactDef['description'] = $artifactDef['description'][$defaultLang] ?? reset($artifactDef['description']);
+                    foreach ($artifactDef['description'] as $lang => $value) {
+                        $translations[$lang]['description'] = $value;
+                    }
                 }
-            } else {
-                $artifactDef['description'] = '';
+            }
+
+            // Insert translations
+            foreach ($translations as $lang => $data) {
+                $this->getFluentPDO()
+                    ->insertInto('app_artifact_translations', array_merge($data, [
+                        'app_artifact_id' => $artifactId,
+                        'lang' => $lang,
+                    ]))
+                    ->execute();
             }
         }
     }

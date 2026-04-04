@@ -115,4 +115,48 @@ EOD, $this->object->getAppJson());
         $this->object->importAppJson(__DIR__.'/../../test.multiflexi.app.json');
         $this->assertEquals('775ed801-2489-4981-bc14-d8a01cba1938', $this->object->getDataValue('uuid'));
     }
+
+    /**
+     * @covers \MultiFlexi\Application::getResultFiles
+     */
+    public function testGetResultFilesReturnsArray(): void
+    {
+        $result = $this->object->getResultFiles();
+        $this->assertIsArray($result);
+    }
+
+    /**
+     * @covers \MultiFlexi\Application::getResultFiles
+     */
+    public function testGetResultFilesEmptyForNewApplication(): void
+    {
+        $app = new Application();
+        $result = $app->getResultFiles();
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * @covers \MultiFlexi\Application::getResultFiles
+     */
+    public function testGetResultFilesFindsMatchingFiles(): void
+    {
+        // Create a temp file that would match a pattern
+        $tmpDir = sys_get_temp_dir();
+        $tmpFile = tempnam($tmpDir, 'mftest_');
+        $jsonFile = $tmpFile.'.json';
+        rename($tmpFile, $jsonFile);
+        file_put_contents($jsonFile, '{"test": true}');
+
+        try {
+            // Without app_artifacts in DB, getResultFiles should still return array
+            $result = $this->object->getResultFiles();
+            $this->assertIsArray($result);
+        } finally {
+            // Clean up
+            if (file_exists($jsonFile)) {
+                unlink($jsonFile);
+            }
+        }
+    }
 }

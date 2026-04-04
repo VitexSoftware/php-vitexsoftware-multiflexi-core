@@ -97,6 +97,20 @@ Application Import System
 - The importEnvironmentConfigs() method ensures clean environment configuration imports by removing existing configs before inserting new ones
 - This design supports package reinstallation and application definition updates
 
+Artifact System (Multi-File Output)
+
+- Applications can define multiple output artifacts in their JSON manifest via the `artifacts` array (each entry has `name`, `path`, `type`, `description`)
+- The `path` field is a regex pattern matched against files in the temp directory after job execution
+- Database tables:
+  - `app_artifacts`: stores artifact definitions per application (app_id, path, type)
+  - `app_artifact_translations`: stores localized name/description per artifact
+  - `artifacts`: stores actual artifact content produced by completed jobs (job_id, filename, content_type, artifact blob)
+- Import flow: `importAppJson()` calls `importDefinedArtifacts()` which persists artifact definitions to `app_artifacts` and `app_artifact_translations` tables (deletes existing first for clean re-import)
+- Execution flow: `Job::runEnd()` calls `Application::getResultFiles()` which collects output files from two sources:
+  1. Legacy `RESULT_FILE` environment variable (backward compatibility)
+  2. All artifact definitions from `app_artifacts` table — each `path` regex is matched against files in the temp directory
+- Each matched file is stored via `Job::stortJobArtifact()` into the `artifacts` table
+
 Notes
 
 - There is no Makefile in this repo; use Composer binaries under vendor/bin/ as shown above.
