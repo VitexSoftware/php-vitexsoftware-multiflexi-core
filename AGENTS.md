@@ -109,7 +109,7 @@ Artifact System (Multi-File Output)
 - Execution flow: `Job::runEnd()` calls `Application::getResultFiles()` which collects output files from two sources:
   1. Legacy `RESULT_FILE` environment variable (backward compatibility)
   2. All artifact definitions from `app_artifacts` table — each `path` regex is matched against files in the temp directory
-- Each matched file is stored via `Job::stortJobArtifact()` into the `artifacts` table
+- Each matched file is stored via `Job::storeJobArtifact()` into the `artifacts` table
 
 Notes
 

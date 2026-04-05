@@ -237,7 +237,7 @@ class Job extends DBEngine
         $this->environmentCheck();
         $this->ensureFiles();
         // TODO: Refresh Expirable Credentials here
-        self::sanitizeResultFile($this->environment);
+        self::sanitizeResultFile($this->environment, $this->application);
         $this->environment->applyMacros();
 
         if (isset($this->executor) === false) {
@@ -314,11 +314,9 @@ class Job extends DBEngine
         $sqlLogger->setCompany(0);
         $sqlLogger->setApplication(0);
 
-        $this->storeJobOutput('stdout.txt', $stdout, _('Standard output from job execution'));
-        $this->storeJobOutput('stderr.txt', $stderr, _('Standard error from job execution'));
-
         foreach ($this->application->getResultFiles() as $resultFile) {
-            $this->stortJobArtifact($resultFile, sprintf(_('Result file from job execution: %s'), basename($resultFile)));
+            $description = $this->getArtifactDescription($resultFile);
+            $this->storeJobArtifact($resultFile, $description);
         }
 
         $resultfile = $this->environment->getFieldByCode('RESULT_FILE') ? $this->environment->getFieldByCode('RESULT_FILE')->getValue() : '';
@@ -668,12 +666,74 @@ EOD;
         return $jobEnvironment;
     }
 
-    public static function sanitizeResultFile(ConfigFields $jobEnvironment)
+    /**
+     * Sanitize all result file paths in the job environment.
+     *
+     * Ensures that output file paths referenced by environment variables
+     * point to the temp directory. Uses artifact definitions from the
+     * application's app_artifacts table to identify which env vars
+     * represent result files, with RESULT_FILE as a legacy fallback.
+     *
+     * @param ConfigFields     $jobEnvironment Job environment to sanitize
+     * @param null|Application $application    Application with artifact definitions
+     *
+     * @return ConfigFields Sanitized job environment
+     */
+    public static function sanitizeResultFile(ConfigFields $jobEnvironment, ?Application $application = null): ConfigFields
     {
-        $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE'); // TODO: Use "Output" App specifiaction instead of RESULT_FILE
+        $sanitizedCodes = [];
 
-        if ($resultFileField) {
+        // Legacy: always sanitize RESULT_FILE for backward compatibility
+        $resultFileField = $jobEnvironment->getFieldByCode('RESULT_FILE');
+
+        if ($resultFileField && !empty($resultFileField->getValue())) {
             $resultFileField->setValue(self::tmpfilepath($resultFileField->getValue()));
+            $sanitizedCodes[] = 'RESULT_FILE';
+        }
+
+        // Sanitize env fields whose values match artifact path patterns
+        if ($application && $application->getMyKey()) {
+            $artifactDefs = $application->getFluentPDO()
+                ->from('app_artifacts')
+                ->where('app_id', $application->getMyKey())
+                ->fetchAll();
+
+            $artifactPatterns = array_filter(array_column($artifactDefs, 'path'));
+
+            if (!empty($artifactPatterns)) {
+                foreach ($jobEnvironment as $code => $field) {
+                    if (\in_array($code, $sanitizedCodes, true)) {
+                        continue;
+                    }
+
+                    $value = $field->getValue();
+
+                    if (empty($value)) {
+                        continue;
+                    }
+
+                    // Skip absolute paths (already resolved) and non-file types
+                    if ($value[0] === \DIRECTORY_SEPARATOR) {
+                        continue;
+                    }
+
+                    if ($field->getType() === 'file-path') {
+                        continue; // file-path type is for input files
+                    }
+
+                    // Replace unresolved macros {VAR_NAME} with a generic placeholder for matching
+                    $matchValue = preg_replace('/\{[A-Z_0-9]+\}/', 'PLACEHOLDER', $value);
+
+                    foreach ($artifactPatterns as $pattern) {
+                        if (@preg_match('/'.$pattern.'/', $matchValue) === 1) {
+                            $field->setValue(self::tmpfilepath($value));
+                            $sanitizedCodes[] = $code;
+
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         return $jobEnvironment;
@@ -1132,7 +1192,70 @@ EOD;
         return $this->user;
     }
 
-    private function stortJobArtifact(string $resultfile, string $description): void
+    /**
+     * Get the localized description for a result file from artifact definitions.
+     *
+     * Matches the result file basename against artifact path patterns from
+     * app_artifacts and returns the localized description from
+     * app_artifact_translations. Falls back to a generic description.
+     *
+     * @param string $resultFile Full path to the result file
+     * @param string $lang       Language code for localization
+     *
+     * @return string Localized artifact description
+     */
+    private function getArtifactDescription(string $resultFile, string $lang = 'en'): string
+    {
+        $appId = $this->application ? $this->application->getMyKey() : null;
+
+        if ($appId) {
+            $artifactDefs = $this->application->getFluentPDO()
+                ->from('app_artifacts')
+                ->where('app_id', $appId)
+                ->fetchAll();
+
+            $basename = basename($resultFile);
+
+            foreach ($artifactDefs as $artifactDef) {
+                $pattern = $artifactDef['path'] ?? '';
+
+                if (empty($pattern)) {
+                    continue;
+                }
+
+                if (@preg_match('/'.$pattern.'/', $basename) === 1) {
+                    $translation = $this->application->getFluentPDO()
+                        ->from('app_artifact_translations')
+                        ->where('app_artifact_id', $artifactDef['id'])
+                        ->where('lang', $lang)
+                        ->fetch();
+
+                    if ($translation && !empty($translation['description'])) {
+                        return $translation['description'];
+                    }
+
+                    // Try fallback to 'en' if requested language not found
+                    if ($lang !== 'en') {
+                        $fallback = $this->application->getFluentPDO()
+                            ->from('app_artifact_translations')
+                            ->where('app_artifact_id', $artifactDef['id'])
+                            ->where('lang', 'en')
+                            ->fetch();
+
+                        if ($fallback && !empty($fallback['description'])) {
+                            return $fallback['description'];
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return sprintf(_('Result file from job execution: %s'), basename($resultFile));
+    }
+
+    private function storeJobArtifact(string $resultfile, string $description): void
     {
         $artifactor = new Artifact();
 
@@ -1153,25 +1276,6 @@ EOD;
                 }
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('Failed to create artifact for result file %s: %s'), $resultfile, $e->getMessage()), 'warning');
-            }
-        }
-    }
-
-    private function storeJobOutput(string $name, string $body, $description = ''): void
-    {
-        if (!empty(trim($body))) {
-            $artifactor = new Artifact();
-
-            try {
-                $artifactor->createArtifact(
-                    $this->getMyKey(),
-                    $body,
-                    $name,
-                    'text/plain',
-                    $description,
-                );
-            } catch (\Exception $e) {
-                $this->addStatusMessage(sprintf(_('Failed to create stdout artifact: %s'), $e->getMessage()), 'warning');
             }
         }
     }

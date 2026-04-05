@@ -772,7 +772,7 @@ class Application extends DBEngine
             return $resultFiles;
         }
 
-        $tmpDir = file_exists('/var/lib/multiflexi/tmp') ? '/var/lib/multiflexi/tmp' : sys_get_temp_dir();
+        $tmpDir = Defaults::$MULTIFLEXI_TMP;
 
         // Legacy: RESULT_FILE environment variable
         $cfgField = $this->getEnvironment()->getFieldByCode('RESULT_FILE');
