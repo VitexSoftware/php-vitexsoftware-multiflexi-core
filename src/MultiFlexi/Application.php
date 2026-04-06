@@ -227,37 +227,152 @@ class Application extends DBEngine
      */
     public function getAppJson()
     {
-        $appData = $this->getData();
+        $appId = $this->getMyKey();
+        $rawData = $this->getData();
+        $export = [];
 
-        if ($this->getMyKey()) {
-            $confField = new Conffield();
-            $appData['environment'] = $confField->getAppConfigs($this)->getEnvArray();
+        $export['$schema'] = 'https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/application.json';
+
+        $export['image'] = $rawData['image'] ?? '';
+
+        // Localized fields: name, description
+        $localizedFields = ['name', 'description'];
+
+        if ($appId) {
+            $translations = $this->getFluentPDO()
+                ->from('app_translations')
+                ->where('app_id', $appId)
+                ->fetchAll();
         } else {
-            $appData['environment'] = [];
+            $translations = [];
         }
 
-        unset($appData['id'], $appData['DatCreate'], $appData['DatUpdate'], $appData['enabled'], $appData['deffile']);
+        foreach ($localizedFields as $field) {
+            if (!empty($translations)) {
+                $localized = [];
 
-        // Move helmchart into kubernetes.helm.chart structure for export
-        if (!empty($appData['helmchart'])) {
-            $appData['kubernetes']['helm']['chart'] = $appData['helmchart'];
+                foreach ($translations as $tr) {
+                    if (!empty($tr[$field])) {
+                        $localized[$tr['lang']] = $tr[$field];
+                    }
+                }
+
+                if (\count($localized) > 0) {
+                    $export[$field] = $localized;
+                } else {
+                    $export[$field] = $rawData[$field] ?? '';
+                }
+            } else {
+                $export[$field] = $rawData[$field] ?? '';
+            }
         }
 
-        unset($appData['helmchart']);
+        $export['executable'] = $rawData['executable'] ?? '';
 
-        $appData['multiflexi'] = \Ease\Shared::appVersion();
+        if (!empty($rawData['cmdparams'])) {
+            $export['cmdparamsTemplate'] = $rawData['cmdparams'];
+        }
 
-        $appData['version'] = '2.0.0'; // Set a default version, can be updated later
-        // Only include artifacts if a valid pattern is present in the current data
-        $artifactsPattern = $this->getDataValue('artifacts');
+        $export['homepage'] = $rawData['homepage'] ?? '';
 
-        if (!empty($artifactsPattern) && \is_string($artifactsPattern)) {
-            $appData['artifacts'] = [
-                'pattern' => $artifactsPattern,
+        if (!empty($rawData['ociimage'])) {
+            $export['ociimage'] = $rawData['ociimage'];
+        }
+
+        $export['uuid'] = $rawData['uuid'] ?? '';
+
+        // Tags: stored as comma-separated topics in DB
+        if (!empty($rawData['topics'])) {
+            $export['tags'] = array_map('trim', explode(',', $rawData['topics']));
+        }
+
+        $export['version'] = $rawData['version'] ?? '';
+        $export['schemaVersion'] = '3.3.0';
+
+        // Requirements: stored as comma-separated in DB
+        if (!empty($rawData['requirements'])) {
+            $export['requirements'] = array_map('trim', explode(',', $rawData['requirements']));
+        }
+
+        // Environment: full structure from conffield table
+        if ($appId) {
+            $confField = new Conffield();
+            $configFields = $confField->getAppConfigs($this);
+            $environment = [];
+
+            foreach ($configFields as $field) {
+                $envEntry = [
+                    'type' => $field->getType(),
+                    'description' => $field->getDescription(),
+                    'defval' => $field->getDefaultValue() ?? '',
+                    'required' => $field->isRequired(),
+                ];
+                $environment[$field->getCode()] = $envEntry;
+            }
+
+            if (!empty($environment)) {
+                $export['environment'] = $environment;
+            }
+        }
+
+        // Artifacts from app_artifacts table
+        if ($appId) {
+            $artifactRows = $this->getFluentPDO()
+                ->from('app_artifacts')
+                ->where('app_id', $appId)
+                ->fetchAll();
+
+            if (!empty($artifactRows)) {
+                $artifacts = [];
+
+                foreach ($artifactRows as $row) {
+                    $artifact = [
+                        'name' => '',
+                        'path' => $row['path'],
+                        'type' => $row['type'],
+                    ];
+
+                    // Get artifact translations
+                    $artTranslations = $this->getFluentPDO()
+                        ->from('app_artifact_translations')
+                        ->where('app_artifact_id', $row['id'])
+                        ->fetchAll();
+
+                    if (!empty($artTranslations)) {
+                        $names = [];
+                        $descs = [];
+
+                        foreach ($artTranslations as $atr) {
+                            if (!empty($atr['name'])) {
+                                $names[$atr['lang']] = $atr['name'];
+                            }
+
+                            if (!empty($atr['description'])) {
+                                $descs[$atr['lang']] = $atr['description'];
+                            }
+                        }
+
+                        $artifact['name'] = \count($names) > 1 ? $names : ($names['en'] ?? reset($names) ?: '');
+                        $artifact['description'] = \count($descs) > 1 ? $descs : ($descs['en'] ?? reset($descs) ?: '');
+                    }
+
+                    $artifacts[] = $artifact;
+                }
+
+                $export['artifacts'] = $artifacts;
+            }
+        }
+
+        // Kubernetes: helmchart column
+        if (!empty($rawData['helmchart'])) {
+            $export['kubernetes'] = [
+                'helm' => [
+                    'chart' => $rawData['helmchart'],
+                ],
             ];
         }
 
-        return json_encode($appData, \JSON_PRETTY_PRINT);
+        return json_encode($export, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
     }
 
     /**
