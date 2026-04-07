@@ -281,9 +281,9 @@ class Application extends DBEngine
 
         $export['uuid'] = $rawData['uuid'] ?? '';
 
-        // Tags: stored as comma-separated topics in DB
-        if (!empty($rawData['topics'])) {
-            $export['tags'] = array_map('trim', explode(',', $rawData['topics']));
+        // Tags: stored as comma-separated in DB
+        if (!empty($rawData['tags'])) {
+            $export['tags'] = array_map('trim', explode(',', $rawData['tags']));
         }
 
         $export['version'] = $rawData['version'] ?? '';
@@ -633,12 +633,16 @@ class Application extends DBEngine
 
             // Extract non-localized fields
             $nonLocalizedFields = ['executable', 'setup', 'cmdparams', 'deploy', 'homepage', 'requirements',
-                'ociimage', 'version', 'code', 'uuid', 'topics', 'resultfile'];
+                'ociimage', 'version', 'code', 'uuid', 'tags', 'resultfile'];
 
             foreach ($nonLocalizedFields as $field) {
                 if (isset($appSpec[$field])) {
                     $fields[$field] = $appSpec[$field];
                 }
+            }
+
+            if (isset($appSpec['topics'])) { //Backward compatibility for old specs
+                $fields['tags'] = $appSpec['topics'];
             }
 
             // Set defaults for required fields if not present
@@ -659,16 +663,14 @@ class Application extends DBEngine
                 $fields['requirements'] = ''; // Empty string as default
             }
 
-            // Handle topics field (convert array to comma-separated string if needed)
+            // Handle tags field (convert array to comma-separated string if needed)
             if (isset($fields['tags'])) {
-                if (\is_array($fields['topics'])) {
-                    $fields['topics'] = implode(',', array_filter($fields['topics']));
+                if (\is_array($fields['tags'])) {
+                    $fields['tags'] = implode(',', array_filter($fields['tags']));
                 }
             } else {
-                $fields['topics'] = ''; // Empty string as default
+                $fields['tags'] = ''; // Empty string as default
             }
-
-            unset($fields['tags']);
 
             // Handle artifacts field (convert array to string if needed)
             if (isset($appSpec['artifacts'])) {
