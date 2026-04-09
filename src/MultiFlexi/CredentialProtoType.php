@@ -163,44 +163,180 @@ class CredentialProtoType extends \MultiFlexi\Engine
      */
     public function importJson(array $jsonData): bool
     {
-        // Set basic prototype data
-        $this->setData([
-            'uuid' => $jsonData['uuid'] ?? '',
-            'code' => $jsonData['code'] ?? '',
-            'name' => $jsonData['name'] ?? '',
-            'description' => $jsonData['description'] ?? '',
-            'version' => $jsonData['version'] ?? '1.0',
-            'logo' => $jsonData['logo'] ?? '',
-            'url' => $jsonData['url'] ?? '',
-        ]);
+        $defaultLang = 'en';
+        $translations = [];
 
-        $saved = $this->saveToSQL();
+        // Extract localized name
+        $name = '';
 
-        if ($saved && isset($jsonData['fields']) && \is_array($jsonData['fields'])) {
-            $fielder = new \MultiFlexi\CredentialProtoTypeField();
+        if (isset($jsonData['name'])) {
+            if (\is_string($jsonData['name'])) {
+                $name = $jsonData['name'];
+            } elseif (\is_array($jsonData['name'])) {
+                $name = $jsonData['name'][$defaultLang] ?? reset($jsonData['name']);
 
-            // Clear existing fields for this prototype
-            $fielder->deleteFromSQL(['credential_prototype_id' => $this->getMyKey()]);
-
-            // Import fields
-            foreach ($jsonData['fields'] as $fieldData) {
-                $fielder->dataReset();
-                $fielder->setData([
-                    'credential_prototype_id' => $this->getMyKey(),
-                    'keyword' => $fieldData['keyword'] ?? '',
-                    'type' => $fieldData['type'] ?? 'string',
-                    'name' => $fieldData['name'] ?? $fieldData['keyword'],
-                    'description' => $fieldData['description'] ?? '',
-                    'hint' => $fieldData['hint'] ?? '',
-                    'default_value' => $fieldData['default_value'] ?? '',
-                    'required' => $fieldData['required'] ?? false,
-                    'options' => isset($fieldData['options']) ? json_encode($fieldData['options']) : null,
-                ]);
-                $fielder->saveToSQL();
+                foreach ($jsonData['name'] as $lang => $value) {
+                    $translations[$lang]['name'] = $value;
+                }
             }
         }
 
-        return $saved !== false;
+        // Extract localized description
+        $description = '';
+
+        if (isset($jsonData['description'])) {
+            if (\is_string($jsonData['description'])) {
+                $description = $jsonData['description'];
+            } elseif (\is_array($jsonData['description'])) {
+                $description = $jsonData['description'][$defaultLang] ?? reset($jsonData['description']);
+
+                foreach ($jsonData['description'] as $lang => $value) {
+                    $translations[$lang]['description'] = $value;
+                }
+            }
+        }
+
+        // Check if prototype already exists by UUID or code
+        $existing = null;
+
+        if (!empty($jsonData['uuid'])) {
+            $existing = $this->getFluentPDO()
+                ->from($this->myTable)
+                ->where('uuid', $jsonData['uuid'])
+                ->fetch();
+        }
+
+        if (!$existing && !empty($jsonData['code'])) {
+            $existing = $this->getFluentPDO()
+                ->from($this->myTable)
+                ->where('code', $jsonData['code'])
+                ->fetch();
+        }
+
+        $protoData = [
+            'uuid' => $jsonData['uuid'] ?? '',
+            'code' => $jsonData['code'] ?? '',
+            'name' => $name,
+            'description' => $description,
+            'version' => $jsonData['version'] ?? '1.0',
+            'logo' => $jsonData['logo'] ?? '',
+            'url' => $jsonData['url'] ?? '',
+        ];
+
+        if (isset($jsonData['user'])) {
+            $protoData['user'] = (int) $jsonData['user'];
+        }
+
+        if ($existing) {
+            $this->setMyKey($existing['id']);
+            $this->takeData($protoData);
+            $this->saveToSQL();
+        } else {
+            $this->takeData($protoData);
+            $this->saveToSQL();
+        }
+
+        $protoId = $this->getMyKey();
+
+        if (!$protoId) {
+            return false;
+        }
+
+        // Save translations
+        foreach ($translations as $lang => $data) {
+            $existingTrans = $this->getFluentPDO()
+                ->from('credential_prototype_translations')
+                ->where('credential_prototype_id', $protoId)
+                ->where('lang', $lang)
+                ->fetch();
+
+            if ($existingTrans) {
+                $this->getFluentPDO()
+                    ->update('credential_prototype_translations')
+                    ->set($data)
+                    ->where('credential_prototype_id', $protoId)
+                    ->where('lang', $lang)
+                    ->execute();
+            } else {
+                $this->getFluentPDO()
+                    ->insertInto('credential_prototype_translations', array_merge($data, [
+                        'credential_prototype_id' => $protoId,
+                        'lang' => $lang,
+                    ]))
+                    ->execute();
+            }
+        }
+
+        // Import fields
+        if (isset($jsonData['fields']) && \is_array($jsonData['fields'])) {
+            // Clear existing fields
+            $this->getFluentPDO()
+                ->deleteFrom('credential_prototype_field')
+                ->where('credential_prototype_id', $protoId)
+                ->execute();
+
+            foreach ($jsonData['fields'] as $fieldData) {
+                $fieldTranslations = [];
+
+                // Handle localized field name
+                $fieldName = '';
+
+                if (isset($fieldData['name'])) {
+                    if (\is_string($fieldData['name'])) {
+                        $fieldName = $fieldData['name'];
+                    } elseif (\is_array($fieldData['name'])) {
+                        $fieldName = $fieldData['name'][$defaultLang] ?? reset($fieldData['name']);
+
+                        foreach ($fieldData['name'] as $lang => $value) {
+                            $fieldTranslations[$lang]['name'] = $value;
+                        }
+                    }
+                }
+
+                // Handle localized field description
+                $fieldDescription = '';
+
+                if (isset($fieldData['description'])) {
+                    if (\is_string($fieldData['description'])) {
+                        $fieldDescription = $fieldData['description'];
+                    } elseif (\is_array($fieldData['description'])) {
+                        $fieldDescription = $fieldData['description'][$defaultLang] ?? reset($fieldData['description']);
+
+                        foreach ($fieldData['description'] as $lang => $value) {
+                            $fieldTranslations[$lang]['description'] = $value;
+                        }
+                    }
+                }
+
+                $fieldRecord = [
+                    'credential_prototype_id' => $protoId,
+                    'keyword' => $fieldData['keyword'] ?? '',
+                    'type' => $fieldData['type'] ?? 'string',
+                    'name' => $fieldName,
+                    'description' => $fieldDescription,
+                    'hint' => $fieldData['hint'] ?? '',
+                    'default_value' => (string) ($fieldData['default'] ?? $fieldData['default_value'] ?? ''),
+                    'required' => isset($fieldData['required']) ? (int) $fieldData['required'] : 0,
+                    'options' => isset($fieldData['options']) ? json_encode($fieldData['options']) : null,
+                ];
+
+                $fieldId = $this->getFluentPDO()
+                    ->insertInto('credential_prototype_field', $fieldRecord)
+                    ->execute();
+
+                // Save field translations
+                foreach ($fieldTranslations as $lang => $ftData) {
+                    $this->getFluentPDO()
+                        ->insertInto('credential_prototype_field_translations', array_merge($ftData, [
+                            'credential_prototype_field_id' => $fieldId,
+                            'lang' => $lang,
+                        ]))
+                        ->execute();
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -208,50 +344,121 @@ class CredentialProtoType extends \MultiFlexi\Engine
      */
     public function exportJson(): array
     {
-        $data = [
-            'uuid' => $this->getDataValue('uuid'),
-            'code' => $this->getDataValue('code'),
-            'name' => $this->getDataValue('name'),
-            'description' => $this->getDataValue('description'),
-            'version' => $this->getDataValue('version'),
-            'logo' => $this->getDataValue('logo'),
-            'url' => $this->getDataValue('url'),
-            'fields' => [],
-        ];
+        $protoId = $this->getMyKey();
+        $export = [];
 
-        // Export fields
-        if ($this->getMyKey()) {
-            $fielder = new \MultiFlexi\CredentialProtoTypeField();
-            $fields = $fielder->listingQuery()
-                ->where('credential_prototype_id', $this->getMyKey())
+        $export['schema'] = 'https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json';
+        $export['version'] = $this->getDataValue('version') ?? '1.0';
+        $export['uuid'] = $this->getDataValue('uuid') ?? '';
+        $export['code'] = $this->getDataValue('code') ?? '';
+
+        // Localized name and description
+        $localizedFields = ['name', 'description'];
+
+        if ($protoId) {
+            $translations = $this->getFluentPDO()
+                ->from('credential_prototype_translations')
+                ->where('credential_prototype_id', $protoId)
                 ->fetchAll();
+        } else {
+            $translations = [];
+        }
 
-            foreach ($fields as $field) {
-                $fieldData = [
-                    'keyword' => $field['keyword'],
-                    'type' => $field['type'],
-                    'name' => $field['name'],
-                    'description' => $field['description'],
-                    'required' => (bool) $field['required'],
-                ];
+        foreach ($localizedFields as $field) {
+            if (!empty($translations)) {
+                $localized = [];
 
-                if (!empty($field['hint'])) {
-                    $fieldData['hint'] = $field['hint'];
+                foreach ($translations as $tr) {
+                    if (!empty($tr[$field])) {
+                        $localized[$tr['lang']] = $tr[$field];
+                    }
                 }
 
-                if (!empty($field['default_value'])) {
-                    $fieldData['default_value'] = $field['default_value'];
+                if (\count($localized) > 0) {
+                    $export[$field] = $localized;
+                } else {
+                    $export[$field] = $this->getDataValue($field) ?? '';
                 }
-
-                if (!empty($field['options'])) {
-                    $fieldData['options'] = json_decode($field['options'], true);
-                }
-
-                $data['fields'][] = $fieldData;
+            } else {
+                $export[$field] = $this->getDataValue($field) ?? '';
             }
         }
 
-        return $data;
+        $url = $this->getDataValue('url');
+
+        if (!empty($url)) {
+            $export['url'] = $url;
+        }
+
+        $logo = $this->getDataValue('logo');
+
+        if (!empty($logo)) {
+            $export['logo'] = $logo;
+        }
+
+        // Export fields
+        $export['fields'] = [];
+
+        if ($protoId) {
+            $fieldRows = $this->getFluentPDO()
+                ->from('credential_prototype_field')
+                ->where('credential_prototype_id', $protoId)
+                ->fetchAll();
+
+            foreach ($fieldRows as $row) {
+                $fieldExport = [
+                    'keyword' => $row['keyword'],
+                ];
+
+                // Get field translations
+                $fieldTranslations = $this->getFluentPDO()
+                    ->from('credential_prototype_field_translations')
+                    ->where('credential_prototype_field_id', $row['id'])
+                    ->fetchAll();
+
+                // Localized field name
+                if (!empty($fieldTranslations)) {
+                    $names = [];
+                    $descs = [];
+
+                    foreach ($fieldTranslations as $ft) {
+                        if (!empty($ft['name'])) {
+                            $names[$ft['lang']] = $ft['name'];
+                        }
+
+                        if (!empty($ft['description'])) {
+                            $descs[$ft['lang']] = $ft['description'];
+                        }
+                    }
+
+                    $fieldExport['name'] = \count($names) > 0 ? $names : ($row['name'] ?? '');
+                    $fieldExport['type'] = $row['type'];
+                    $fieldExport['description'] = \count($descs) > 0 ? $descs : ($row['description'] ?? '');
+                } else {
+                    $fieldExport['name'] = $row['name'] ?? '';
+                    $fieldExport['type'] = $row['type'];
+                    $fieldExport['description'] = $row['description'] ?? '';
+                }
+
+                $fieldExport['required'] = (bool) $row['required'];
+
+                if (!empty($row['default_value'])) {
+                    $fieldExport['default'] = $row['default_value'];
+                }
+
+                if (!empty($row['hint'])) {
+                    $fieldExport['hint'] = $row['hint'];
+                }
+
+                if (!empty($row['options'])) {
+                    $fieldExport['options'] = json_decode($row['options'], true);
+                }
+
+                $export['fields'][] = $fieldExport;
+            }
+        }
+
+        return $export;
     }
 
     /**

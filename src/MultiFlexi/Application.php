@@ -641,7 +641,7 @@ class Application extends DBEngine
                 }
             }
 
-            if (isset($appSpec['topics'])) { //Backward compatibility for old specs
+            if (isset($appSpec['topics'])) { // Backward compatibility for old specs
                 $fields['tags'] = $appSpec['topics'];
             }
 

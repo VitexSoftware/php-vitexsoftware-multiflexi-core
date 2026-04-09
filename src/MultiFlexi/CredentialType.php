@@ -152,10 +152,15 @@ class CredentialType extends DBEngine
             $field->setMyKey($fieldData['id']);
 
             if ($this->getPrototype()) {
-                $fieldHelper = $this->getPrototype()->fieldsProvided()->getFieldByCode($fieldData['helper']);
-                $field->setManual($fieldHelper->isManual());
-                $field->setRequired($fieldHelper->isRequired());
-                $field->setSecret($fieldHelper->isSecret());
+                $fieldHelper = $this->getPrototype()->fieldsProvided()->getFieldByCode($fieldData['keyname']);
+
+                if ($fieldHelper) {
+                    $field->setManual($fieldHelper->isManual());
+                    $field->setRequired($fieldHelper->isRequired());
+                    $field->setSecret($fieldHelper->isSecret());
+                } else {
+                    $this->addStatusMessage(sprintf(_('Try to access Undefined field %s'), $fieldData['keyname']), 'error');
+                }
             } else {
                 $this->addStatusMessage(sprintf(_('Unexistent field helper %s ?!?'), $fieldData['helper']), 'info'); // TODO:
             }
