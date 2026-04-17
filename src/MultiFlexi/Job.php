@@ -481,6 +481,8 @@ EOD;
             $this->setZabbixValue('executor', $executor);
             $this->setZabbixValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
             $this->setZabbixValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
+            $this->setZabbixValue('interval', $runTemplate->getDataValue('interv'));
+            $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv')));
             $this->reportToZabbix($this->zabbixMessageData);
         }
 

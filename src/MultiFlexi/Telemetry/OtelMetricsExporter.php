@@ -18,6 +18,7 @@ namespace MultiFlexi\Telemetry;
 use MultiFlexi\Application;
 use MultiFlexi\Company;
 use MultiFlexi\Job;
+use MultiFlexi\Reporting\MetricSinkInterface;
 use MultiFlexi\RunTemplate;
 use OpenTelemetry\API\Metrics\ObserverInterface;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
@@ -33,7 +34,7 @@ use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
  *
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
  */
-class OtelMetricsExporter extends \Ease\Sand
+class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
 {
     /**
      * MeterProvider instance.
