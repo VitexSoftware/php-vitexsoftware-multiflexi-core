@@ -741,13 +741,20 @@ EOD;
         return $jobEnvironment;
     }
 
+    /**
+     * Path to tmp/file
+     * 
+     * @param string $tmpfile raw tmp/file
+     * 
+     * @return string sane tmp/file
+     */
     public static function tmpfilepath(string $tmpfile): string
     {
         if ($tmpfile[0] !== \DIRECTORY_SEPARATOR) {
             $tmpfile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$tmpfile;
         }
 
-        return $tmpfile === sys_get_temp_dir() ? $tmpfile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString() : sys_get_temp_dir().\DIRECTORY_SEPARATOR.basename($tmpfile);
+        return $tmpfile === sys_get_temp_dir() ? $tmpfile.\DIRECTORY_SEPARATOR.\Ease\Functions::randomString() : $tmpfile;
     }
 
     /**
