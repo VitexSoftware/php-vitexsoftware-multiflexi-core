@@ -13,13 +13,9 @@ override_dh_install:
 	dh_install
 	# Install autoloader
 	install -D -m 0644 debian/autoload.php debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/autoload.php
-	sed -i "1a defined('APP_NAME') || define('APP_NAME', '$(PKG_SOURCE)');" \
-		debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/autoload.php
 	sed -i "s|: 'unknown'|: '$(PKG_SOURCE)'|" \
 		debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/autoload.php
 	sed -i "s|: '0.0.0'|: '$(PKG_VERSION)'|" \
-		debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/autoload.php
-	sed -i "2a defined('APP_VERSION') || define('APP_VERSION', '$(PKG_VERSION)');" \
 		debian/php-vitexsoftware-multiflexi-core/usr/share/php/MultiFlexi/autoload.php
 	# Register autoloader for pkg-php-tools
 	install -m0755 -d debian/php-vitexsoftware-multiflexi-core/usr/share/pkg-php-tools/autoloaders
