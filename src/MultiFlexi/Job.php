@@ -742,10 +742,10 @@ EOD;
     }
 
     /**
-     * Path to tmp/file
-     * 
+     * Path to tmp/file.
+     *
      * @param string $tmpfile raw tmp/file
-     * 
+     *
      * @return string sane tmp/file
      */
     public static function tmpfilepath(string $tmpfile): string

@@ -118,9 +118,7 @@ class EventSource extends DBEngine
         $pdo = $this->getConnection();
         $lastProcessedId = (int) $this->getDataValue('last_processed_id');
 
-        $stmt = $pdo->prepare(
-            'SELECT * FROM changes_cache WHERE inversion > :last_id ORDER BY inversion ASC',
-        );
+        $stmt = $pdo->prepare('SELECT * FROM changes_cache WHERE inversion > :last_id ORDER BY inversion ASC');
         $stmt->execute([':last_id' => $lastProcessedId]);
 
         return $stmt->fetchAll();

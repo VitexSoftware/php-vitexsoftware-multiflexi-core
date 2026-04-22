@@ -154,13 +154,11 @@ class ZabbixSender
         );
 
         if (!$socketConnected) {
-            throw new ZabbixNetworkException(
-                sprintf(
-                    "can't connect to %s:%d",
-                    $this->serverAddress,
-                    $this->serverPort,
-                ),
-            );
+            throw new ZabbixNetworkException(sprintf(
+                "can't connect to %s:%d",
+                $this->serverAddress,
+                $this->serverPort,
+            ),);
         }
 
         $bytesCount = socket_send(
@@ -172,23 +170,19 @@ class ZabbixSender
 
         switch (true) {
             case !$bytesCount:
-                throw new ZabbixNetworkException(
-                    sprintf(
-                        "can't send %d bytes to zabbix server %s:%d",
-                        $payloadLength,
-                        $this->serverAddress,
-                        $this->serverPort,
-                    ),
-                );
+                throw new ZabbixNetworkException(sprintf(
+                    "can't send %d bytes to zabbix server %s:%d",
+                    $payloadLength,
+                    $this->serverAddress,
+                    $this->serverPort,
+                ),);
 
             case $bytesCount !== $payloadLength:
-                throw new ZabbixNetworkException(
-                    sprintf(
-                        'incorrect count of bytes %s sended, expected: %d',
-                        $bytesCount,
-                        $payloadLength,
-                    ),
-                );
+                throw new ZabbixNetworkException(sprintf(
+                    'incorrect count of bytes %s sended, expected: %d',
+                    $bytesCount,
+                    $payloadLength,
+                ),);
 
             default:
                 break;
@@ -237,9 +231,7 @@ class ZabbixSender
         );
 
         if (!$bytesCount) {
-            throw new ZabbixNetworkException(
-                "can't receive response from socket",
-            );
+            throw new ZabbixNetworkException("can't receive response from socket");
         }
 
         $rspnsWithoutHeader = substr(
@@ -254,13 +246,11 @@ class ZabbixSender
         switch (true) {
             case $response === null:
             case $response === false:
-                throw new ZabbixResponseException(
-                    sprintf(
-                        "can't decode zabbix server response %s, reason: %s",
-                        $rspnsWithoutHeader,
-                        json_last_error_msg(),
-                    ),
-                );
+                throw new ZabbixResponseException(sprintf(
+                    "can't decode zabbix server response %s, reason: %s",
+                    $rspnsWithoutHeader,
+                    json_last_error_msg(),
+                ),);
 
             default:
                 break;
@@ -269,9 +259,7 @@ class ZabbixSender
         $zabbixResponse = new ZabbixResponse($response);
 
         if (!$zabbixResponse->isSuccess()) {
-            throw new ZabbixResponseException(
-                'zabbix server returned non-successfull response',
-            );
+            throw new ZabbixResponseException('zabbix server returned non-successfull response');
         }
 
         return true;

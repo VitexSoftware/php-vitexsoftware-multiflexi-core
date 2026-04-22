@@ -103,14 +103,12 @@ class Credential extends DBEngine
 
         if ($fieldData) {
             foreach ($fieldData as $filedName => $fieldValue) {
-                $this->credator->insertToSQL(
-                    [
-                        'credential_id' => $recordId,
-                        'name' => $filedName,
-                        'value' => $fieldValue,
-                        'type' => $fields->getFieldByCode($filedName)->getType(),
-                    ],
-                );
+                $this->credator->insertToSQL([
+                    'credential_id' => $recordId,
+                    'name' => $filedName,
+                    'value' => $fieldValue,
+                    'type' => $fields->getFieldByCode($filedName)->getType(),
+                ],);
             }
         }
 
@@ -149,13 +147,11 @@ class Credential extends DBEngine
                     ],
                 );
             } else {
-                $this->credator->insertToSQL(
-                    ['value' => $fieldData[$field],
-                        'credential_id' => $this->getMyKey(),
-                        'name' => $field,
-                        'type' => $fields->getFieldByCode($field)->getType(),
-                    ],
-                );
+                $this->credator->insertToSQL(['value' => $fieldData[$field],
+                    'credential_id' => $this->getMyKey(),
+                    'name' => $field,
+                    'type' => $fields->getFieldByCode($field)->getType(),
+                ],);
             }
 
             unset($originalData[$field]); // Processed field data

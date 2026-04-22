@@ -25,7 +25,9 @@ namespace MultiFlexi\Reporting;
  */
 class MetricReporter extends \Ease\Sand implements MetricSinkInterface
 {
-    /** @var MetricSinkInterface[] */
+    /**
+     * @var MetricSinkInterface[]
+     */
     private array $sinks = [];
 
     /**

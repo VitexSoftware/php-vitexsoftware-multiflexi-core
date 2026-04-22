@@ -24,8 +24,6 @@ interface MetricSinkInterface
 {
     /**
      * Record a job start event.
-     *
-     * @param array<string,mixed> $attributes Additional key-value attributes
      */
     public function recordJobStart(
         int $jobId,
@@ -40,7 +38,7 @@ interface MetricSinkInterface
     /**
      * Record a job end event.
      *
-     * @param array<string,mixed> $attributes Additional key-value attributes (app_id, company_id, …)
+     * @param array<string, mixed> $attributes Additional key-value attributes (app_id, company_id, …)
      */
     public function recordJobEnd(int $exitCode, float $duration, array $attributes): void;
 

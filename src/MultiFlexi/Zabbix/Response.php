@@ -74,17 +74,13 @@ class Response
     private function parseZabbixResponse(array $response): void
     {
         if (!isset($response['response'])) {
-            throw new ZabbixResponseException(
-                'invalid zabbix server response, missing `response` field',
-            );
+            throw new ZabbixResponseException('invalid zabbix server response, missing `response` field');
         }
 
         $this->responceStatus = $response['response'];
 
         if (!isset($response['info'])) {
-            throw new ZabbixResponseException(
-                'invalid zabbix server response, missing `info` field',
-            );
+            throw new ZabbixResponseException('invalid zabbix server response, missing `info` field');
         }
 
         $pattern = '/\w+: (\d+); \w+: (\d+); \w+: (\d+); [a-z ]+: (\d+\.\d+)/';
@@ -98,21 +94,17 @@ class Response
 
         switch (true) {
             case $matched === false:
-                throw new ZabbixResponseException(
-                    sprintf(
-                        "can't decode info into values, preg_match error: %d",
-                        preg_last_error(),
-                    ),
-                );
+                throw new ZabbixResponseException(sprintf(
+                    "can't decode info into values, preg_match error: %d",
+                    preg_last_error(),
+                ),);
 
             case $matched === 0:
-                throw new ZabbixResponseException(
-                    sprintf(
-                        "pattern '%s' didn't satisfy to subject '%s'",
-                        $pattern,
-                        $response['info'],
-                    ),
-                );
+                throw new ZabbixResponseException(sprintf(
+                    "pattern '%s' didn't satisfy to subject '%s'",
+                    $pattern,
+                    $response['info'],
+                ),);
 
             default:
                 break;
