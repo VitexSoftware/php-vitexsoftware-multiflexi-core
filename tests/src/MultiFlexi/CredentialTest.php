@@ -512,7 +512,7 @@ class CredentialTest extends TestCase
                             'name' => $filedName,
                             'value' => $fieldValue,
                             'type' => $fields->getFieldByCode($filedName)->getType(),
-                        ],);
+                        ], );
                     }
                 }
 
@@ -602,7 +602,7 @@ class CredentialTest extends TestCase
                             'credential_id' => $this->getMyKey(),
                             'name' => $field,
                             'type' => $fields->getFieldByCode($field)->getType(),
-                        ],);
+                        ], );
                     }
 
                     unset($fieldData[$field]); // Processed field data
