@@ -183,7 +183,7 @@ class Job extends DBEngine
     public function updateEnvironment(ConfigFields $environment): void
     {
         if (empty($this->environment)) {
-         //   $this->loadJobEnvironment();
+            //   $this->loadJobEnvironment();
         }
 
         $this->environment->addFields($environment);
@@ -249,8 +249,9 @@ class Job extends DBEngine
         $this->reporter->setDataValue('company_id', $this->getCompany()->getMyKey());
         $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
         $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('slug'));
-        if($this->getRuntemplate()->getDataValue('cron')){
-            $cron = new CronExpression((string)$this->getRuntemplate()->getDataValue('cron'));
+
+        if ($this->getRuntemplate()->getDataValue('cron')) {
+            $cron = new CronExpression((string) $this->getRuntemplate()->getDataValue('cron'));
             $startTime = $cron->getNextRunDate(new \DateTime(), 0, true);
         }
 
@@ -310,15 +311,17 @@ class Job extends DBEngine
         $resultfile = $this->environment->getFieldByCode('RESULT_FILE') ? $this->environment->getFieldByCode('RESULT_FILE')->getValue() : '';
 
         $this->reporter->setDataValue('phase', 'jobDone');
+        $this->reporter->setDataValue('job_id', $this->getMyKey());
         $this->reporter->setDataValue('data', file_exists($resultfile) ? file_get_contents($resultfile) : '');
         $this->reporter->setDataValue('stdout', $stdout);
         $this->reporter->setDataValue('stderr', $stderr);
-        $this->reporter->setDataValue('version', $this->application->getDataValue('version'));
+        $this->reporter->setDataValue('version', $this->getApplication()->getDataValue('version'));
         $this->reporter->setDataValue('exitcode', $statusCode);
-        $this->reporter->setDataValue('exitcode_description', $this->executor->meaning().' '.$this->application->exitCodeDescription($statusCode));
+        $this->reporter->setDataValue('exitcode_description', $this->executor->meaning().' '.$this->getApplication()->exitCodeDescription($statusCode));
         $this->reporter->setDataValue('scheduled', $this->getDataValue('schedule'));
         $this->reporter->setDataValue('end', (new \DateTime())->format('Y-m-d H:i:s'));
-        $this->reporter->setDataValue('runtemplate_id', $this->runTemplate->getMyKey());
+        $this->reporter->setDataValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
+        $this->reporter->setDataValue('result_file', $resultfile);
         $this->reporter->setDataValue('pid', $this->executor->getPid());
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
@@ -894,10 +897,6 @@ EOD;
 
     /**
      * Set PID of the running job.
-     *
-     * @param int $pid
-     *
-     * @return void
      */
     public function setPid(int $pid): void
     {
