@@ -8,6 +8,7 @@
 require_once '/usr/share/php/EaseFluentPDO/autoload.php';
 require_once '/usr/share/php/JsonSchema/autoload.php';
 require_once '/usr/share/php/Symfony/Component/Process/autoload.php';
+require_once 'php-dragonmantank-cron-expression/usr/share/php/Cron/autoload.php';
 
 // PSR-4 autoloader for MultiFlexi classes
 spl_autoload_register(function (string $class): void {

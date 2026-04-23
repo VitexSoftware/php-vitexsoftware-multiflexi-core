@@ -1,8 +1,14 @@
-php-vitexsoftware-multiflexi-core (2.9.1) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.9.2) UNRELEASED; urgency=medium
+
+  * The dragonmantank/cron-expression required now
+
+ -- vitex <info@vitexsoftware.cz>  Thu, 23 Apr 2026 11:26:20 +0200
+
+php-vitexsoftware-multiflexi-core (2.9.1) unstable; urgency=medium
 
   * no deb/ease-core used anymore
 
- -- vitex <info@vitexsoftware.cz>  Thu, 23 Apr 2026 10:53:28 +0200
+ -- vitex <info@vitexsoftware.cz>  Thu, 23 Apr 2026 11:26:15 +0200
 
 php-vitexsoftware-multiflexi-core (2.9.0) unstable; urgency=medium
 
