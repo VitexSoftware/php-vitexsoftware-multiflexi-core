@@ -183,7 +183,7 @@ class Job extends DBEngine
     public function updateEnvironment(ConfigFields $environment): void
     {
         if (empty($this->environment)) {
-            $this->loadEnvironment();
+         //   $this->loadJobEnvironment();
         }
 
         $this->environment->addFields($environment);
@@ -522,7 +522,7 @@ EOD;
                 $result = false;
             }
         } else {
-            $this->addStatusMessage('Problem Jsonizing of '.serialize($metrics->getData()), 'debug');
+            $this->addStatusMessage('Problem Jsonizing of '.serialize($this->reporter->getData()), 'debug');
         }
 
         return (bool) $result;
@@ -890,10 +890,17 @@ EOD;
         return $this->environment;
     }
 
+    /**
+     * Set PID of the running job.
+     *
+     * @param int $pid
+     *
+     * @return void
+     */
     public function setPid(int $pid): void
     {
         $this->setDataValue('pid', $pid);
-        $this->setZabbixValue('pid', $pid);
+        $this->reporter->setDataValue('pid', $pid);
     }
 
     public function setEnvironment(ConfigFields $environment): self
