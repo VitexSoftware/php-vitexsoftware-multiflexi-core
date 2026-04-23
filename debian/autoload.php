@@ -35,6 +35,7 @@ $pluginDirectories = [
     '/usr/share/php/MultiFlexi/Action',
     '/usr/share/php/MultiFlexi/Env',
     '/usr/share/php/MultiFlexi/Executor',
+    '/usr/share/php/MultiFlexi/Reporting',
     '/usr/share/php/MultiFlexi/CredentialProtoType',
 ];
 

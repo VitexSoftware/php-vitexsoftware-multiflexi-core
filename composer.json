@@ -23,6 +23,7 @@
             "MultiFlexi\\Action\\": "src/MultiFlexi/Action",
             "MultiFlexi\\Zabbix\\": "src/MultiFlexi/Zabbix",
             "MultiFlexi\\Executor\\": "src/MultiFlexi/Executor",
+            "MultiFlexi\\Reporting\\": "src/MultiFlexi/Reporting",
             "MultiFlexi\\CredentialProtoType\\": "src/MultiFlexi/CredentialProtoType"
         }
     },
