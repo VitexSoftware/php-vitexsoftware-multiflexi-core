@@ -233,6 +233,7 @@ class Job extends DBEngine
         $jobId = $this->getMyKey();
 
         $this->reporter->setDataValue('phase', 'jobStart');
+        $this->reporter->setDataValue('job_id', $this->getMyKey());
         $this->reporter->setDataValue('executor', $this->getDataValue('executor'));
         $this->reporter->setDataValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
         $this->reporter->setDataValue('interval', $this->getRuntemplate()->getDataValue('cron'));
@@ -313,8 +314,6 @@ class Job extends DBEngine
         $this->reporter->setDataValue('phase', 'jobDone');
         $this->reporter->setDataValue('job_id', $this->getMyKey());
         $this->reporter->setDataValue('data', file_exists($resultfile) ? file_get_contents($resultfile) : '');
-        $this->reporter->setDataValue('stdout', $stdout);
-        $this->reporter->setDataValue('stderr', $stderr);
         $this->reporter->setDataValue('version', $this->getApplication()->getDataValue('version'));
         $this->reporter->setDataValue('exitcode', $statusCode);
         $this->reporter->setDataValue('exitcode_description', $this->executor->meaning().' '.$this->getApplication()->exitCodeDescription($statusCode));
@@ -460,8 +459,6 @@ EOD;
         $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('code'));
         $this->reporter->setDataValue('runtemplate_id', $runTemplate->getMyKey());
         $this->reporter->setDataValue('exitcode', null);
-        $this->reporter->setDataValue('stdout', null);
-        $this->reporter->setDataValue('stderr', null);
         $this->reporter->setDataValue('executor', $executor);
         $this->reporter->setDataValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
         $this->reporter->setDataValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
@@ -1050,17 +1047,11 @@ EOD;
 
                     if (!empty($updates)) {
                         $runTemplate->updateToSQL($updates, ['id' => $runtemplateId]);
-                        $this->addStatusMessage(
-                            _('Updated runtemplate counters after job deletion'),
-                            'debug',
-                        );
+                        $this->addStatusMessage(_('Updated runtemplate counters after job deletion'), 'debug');
                     }
                 }
             } catch (\Exception $e) {
-                $this->addStatusMessage(
-                    sprintf(_('Failed to update runtemplate counters: %s'), $e->getMessage()),
-                    'warning',
-                );
+                $this->addStatusMessage(sprintf(_('Failed to update runtemplate counters: %s'), $e->getMessage()), 'warning');
                 // Continue with deletion even if counter update fails
             }
         }
