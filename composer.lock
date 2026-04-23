@@ -4,8 +4,73 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e32a4d9071bfc6b666bf53e1a4b78117",
+    "content-hash": "28cc3180d82b973b277c990de43a7029",
     "packages": [
+        {
+            "name": "dragonmantank/cron-expression",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dragonmantank/cron-expression.git",
+                "reference": "d425a2403c17d7cf911c55a7170f073979a9f382"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dragonmantank/cron-expression/zipball/d425a2403c17d7cf911c55a7170f073979a9f382",
+                "reference": "d425a2403c17d7cf911c55a7170f073979a9f382",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2|^8.3|^8.4|^8.5"
+            },
+            "replace": {
+                "mtdowling/cron-expression": "^1.0"
+            },
+            "require-dev": {
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan": "^2.1.31",
+                "phpunit/phpunit": "^11.5.43 || ^12.4"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cron\\": "src/Cron/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chris Tankersley",
+                    "email": "chris@ctankersley.com",
+                    "homepage": "https://github.com/dragonmantank"
+                }
+            ],
+            "description": "CRON for PHP: Calculate the next or previous run date and determine if a CRON expression is due",
+            "keywords": [
+                "cron",
+                "schedule"
+            ],
+            "support": {
+                "issues": "https://github.com/dragonmantank/cron-expression/issues",
+                "source": "https://github.com/dragonmantank/cron-expression/tree/master"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/dragonmantank",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-12-20T20:18:24+00:00"
+        },
         {
             "name": "jalismrs/bitwarden-php",
             "version": "1.2.0",
@@ -2329,8 +2394,8 @@
             "version": "2.2.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/574cdcdd9c1b9f8048091f8d45c63db0e78dc985",
-                "reference": "574cdcdd9c1b9f8048091f8d45c63db0e78dc985",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ea4e3209e35f993fbc5255f96490bba37fa2860f",
+                "reference": "ea4e3209e35f993fbc5255f96490bba37fa2860f",
                 "shasum": ""
             },
             "require": {
@@ -2387,7 +2452,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-22T05:19:37+00:00"
+            "time": "2026-04-23T05:22:16+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2833,12 +2898,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "d456184754f65be6ba56be25e7191ea78f7f6400"
+                "reference": "ca1f4fbd32aaaafb67fa4c17cdd110a27d032996"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d456184754f65be6ba56be25e7191ea78f7f6400",
-                "reference": "d456184754f65be6ba56be25e7191ea78f7f6400",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ca1f4fbd32aaaafb67fa4c17cdd110a27d032996",
+                "reference": "ca1f4fbd32aaaafb67fa4c17cdd110a27d032996",
                 "shasum": ""
             },
             "require": {
@@ -2915,7 +2980,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-04-21T10:03:00+00:00"
+            "time": "2026-04-23T04:34:03+00:00"
         },
         {
             "name": "psr/container",
@@ -4690,12 +4755,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "ad665e88b844414e81707b0a33dfe757c65393f7"
+                "reference": "8c576a888693f99ddcb0bc4ad3acb48761d0bbe1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/ad665e88b844414e81707b0a33dfe757c65393f7",
-                "reference": "ad665e88b844414e81707b0a33dfe757c65393f7",
+                "url": "https://api.github.com/repos/symfony/console/zipball/8c576a888693f99ddcb0bc4ad3acb48761d0bbe1",
+                "reference": "8c576a888693f99ddcb0bc4ad3acb48761d0bbe1",
                 "shasum": ""
             },
             "require": {
@@ -4782,7 +4847,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-18T13:52:23+00:00"
+            "time": "2026-04-22T10:29:21+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",

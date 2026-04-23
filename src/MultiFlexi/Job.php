@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace MultiFlexi;
 
+use Cron\CronExpression;
 use MultiFlexi\Reporting\JobReport;
 use MultiFlexi\Zabbix\Request\Metric as ZabbixMetric;
 use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
