@@ -249,8 +249,10 @@ class Job extends DBEngine
         $this->reporter->setDataValue('company_id', $this->getCompany()->getMyKey());
         $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
         $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('slug'));
-        $cron = new CronExpression((string)$this->getRuntemplate()->getDataValue('cron'));
-        $startTime = $cron->getNextRunDate(new \DateTime(), 0, true);
+        if($this->getRuntemplate()->getDataValue('cron')){
+            $cron = new CronExpression((string)$this->getRuntemplate()->getDataValue('cron'));
+            $startTime = $cron->getNextRunDate(new \DateTime(), 0, true);
+        }
 
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');
