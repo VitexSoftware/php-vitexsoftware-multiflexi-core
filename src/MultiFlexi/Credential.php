@@ -108,7 +108,7 @@ class Credential extends DBEngine
                     'name' => $filedName,
                     'value' => $fieldValue,
                     'type' => $fields->getFieldByCode($filedName)->getType(),
-                ],);
+                ], );
             }
         }
 
@@ -151,7 +151,7 @@ class Credential extends DBEngine
                     'credential_id' => $this->getMyKey(),
                     'name' => $field,
                     'type' => $fields->getFieldByCode($field)->getType(),
-                ],);
+                ], );
             }
 
             unset($originalData[$field]); // Processed field data

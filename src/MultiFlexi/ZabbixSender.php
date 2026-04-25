@@ -140,7 +140,7 @@ class ZabbixSender extends \MultiFlexi\Zabbix\ZabbixSender
                 "can't connect to %s:%d",
                 $this->serverAddress,
                 $this->serverPort,
-            ),);
+            ), );
         }
 
         $bytesCount = socket_send(
@@ -157,13 +157,13 @@ class ZabbixSender extends \MultiFlexi\Zabbix\ZabbixSender
                     $payloadLength,
                     $this->serverAddress,
                     $this->serverPort,
-                ),);
+                ), );
             case $bytesCount !== $payloadLength:
                 throw new ZabbixNetworkException(sprintf(
                     'incorrect count of bytes %s sended, expected: %d',
                     $bytesCount,
                     $payloadLength,
-                ),);
+                ), );
 
             default:
                 break;
@@ -213,7 +213,7 @@ class ZabbixSender extends \MultiFlexi\Zabbix\ZabbixSender
                     "can't decode zabbix server response %s, reason: %s",
                     $responseWithoutHeader,
                     json_last_error_msg(),
-                ),);
+                ), );
 
             default:
                 break;

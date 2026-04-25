@@ -15,6 +15,8 @@ declare(strict_types=1);
 
 namespace MultiFlexi;
 
+use Cron\CronExpression;
+use MultiFlexi\Reporting\JobReport;
 use MultiFlexi\Zabbix\Request\Metric as ZabbixMetric;
 use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
 
@@ -68,8 +70,8 @@ class Job extends DBEngine
     /**
      * Executed command line.
      */
-    private string $commandline;
-    private array $zabbixMessageData = [];
+    // private string $commandline;
+    private JobReport $reporter;
 
     /**
      * Job Object.
@@ -84,30 +86,10 @@ class Job extends DBEngine
         $this->runTemplate = new RunTemplate();
         $this->environment = new ConfigFields(_('Job Env'));
 
+        $this->reporter = new JobReport();
+
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
             $this->zabbixSender = new ZabbixSender(\Ease\Shared::cfg('ZABBIX_SERVER'));
-            $this->setZabbixValue('phase', 'loaded');
-            $this->setZabbixValue('job_id', $identifier);
-            $this->setZabbixValue('app_id', null);
-            $this->setZabbixValue('app_name', null);
-            $this->setZabbixValue('begin', null);
-            $this->setZabbixValue('end', null);
-            $this->setZabbixValue('scheduled', null);
-            $this->setZabbixValue('schedule_type', null);
-            $this->setZabbixValue('company_id', null);
-            $this->setZabbixValue('company_name', null);
-            $this->setZabbixValue('company_code', null);
-            $this->setZabbixValue('runtemplate_id', null);
-            $this->setZabbixValue('exitcode', null);
-            $this->setZabbixValue('exitcode_description', _('n/a'));
-            $this->setZabbixValue('stdout', null);
-            $this->setZabbixValue('stderr', null);
-            $this->setZabbixValue('executor', null);
-            $this->setZabbixValue('launched_by_id', null);
-            $this->setZabbixValue('launched_by', null);
-            $this->setZabbixValue('data', null);
-            $this->setZabbixValue('pid', null);
-            $this->setZabbixValue('interval_seconds', null);
         }
 
         parent::__construct($identifier, $options);
@@ -167,18 +149,19 @@ class Job extends DBEngine
 
         $this->updateToSQL(['env' => serialize($environment), 'command' => $this->getCmdline()], ['id' => $jobId]);
 
-        if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
-            $this->setZabbixValue('phase', 'created');
-            $this->setZabbixValue('job_id', $jobId);
-            $this->setZabbixValue('app_id', $this->getApplication()->getMyKey());
-            $this->setZabbixValue('app_name', $this->getApplication()->getDataValue('name'));
-            $this->setZabbixValue('company_id', $this->getRunTemplate()->getDataValue('company_id'));
-            $this->setZabbixValue('company_name', $this->getCompany()->getDataValue('name'));
-            $this->setZabbixValue('company_code', $this->getCompany()->getDataValue('code'));
-            $this->setZabbixValue('runtemplate_id', $runtemplate->getMyKey());
-            $this->setZabbixValue('executor', $executor);
+        $this->reporter->setDataValue('phase', 'created');
+        $this->reporter->setDataValue('job_id', $jobId);
+        $this->reporter->setDataValue('app_id', $this->getApplication()->getMyKey());
+        $this->reporter->setDataValue('app_name', $this->getApplication()->getDataValue('name'));
+        $this->reporter->setDataValue('company_id', $this->getRunTemplate()->getDataValue('company_id'));
+        $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
+        $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('slug'));
+        $this->reporter->setDataValue('runtemplate_id', $runtemplate->getMyKey());
+        $this->reporter->setDataValue('runtemplate_name', $this->getRuntemplate()->getRecordName());
+        $this->reporter->setDataValue('executor', $executor);
 
-            $this->reportToZabbix($this->zabbixMessageData);
+        if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
+            $this->reportToZabbix('multiflexi.job.lld', null, true);
         }
 
         return $jobId;
@@ -200,7 +183,7 @@ class Job extends DBEngine
     public function updateEnvironment(ConfigFields $environment): void
     {
         if (empty($this->environment)) {
-            $this->loadEnvironment();
+            //   $this->loadJobEnvironment();
         }
 
         $this->environment->addFields($environment);
@@ -249,25 +232,32 @@ class Job extends DBEngine
 
         $jobId = $this->getMyKey();
 
-        if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
-            $this->setZabbixValue('phase', 'jobStart');
-            $this->setZabbixValue('executor', $this->getDataValue('executor'));
-            $this->setZabbixValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
-            $this->setZabbixValue('interval', $this->getRuntemplate()->getDataValue('interv'));
-            $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($this->getRuntemplate()->getDataValue('interv')));
-            $this->setZabbixValue('app_name', $this->getApplication()->getRecordName());
-            $this->setZabbixValue('app_id', $this->getApplication()->getMyKey());
-            $this->setZabbixValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
-            $this->setZabbixValue('runtemplate_name', $this->getRuntemplate()->getRecordName());
-            $this->setZabbixValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
-            $this->setZabbixValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
+        $this->reporter->setDataValue('phase', 'jobStart');
+        $this->reporter->setDataValue('job_id', $this->getMyKey());
+        $this->reporter->setDataValue('executor', $this->getDataValue('executor'));
+        $this->reporter->setDataValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
+        $this->reporter->setDataValue('interval', $this->getRuntemplate()->getDataValue('cron'));
+        $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($this->getRuntemplate()->getDataValue('interv')));
+        $this->reporter->setDataValue('app_name', $this->getApplication()->getRecordName());
+        $this->reporter->setDataValue('app_id', $this->getApplication()->getMyKey());
+        $this->reporter->setDataValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
+        $this->reporter->setDataValue('runtemplate_name', $this->getRuntemplate()->getRecordName());
+        $this->reporter->setDataValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
+        $this->reporter->setDataValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
 
-            $this->setZabbixValue('scheduled', $this->getDataValue('schedule'));
-            $this->setZabbixValue('schedule_type', $this->getDataValue('schedule_type'));
-            $this->setZabbixValue('company_id', $this->getCompany()->getMyKey());
-            $this->setZabbixValue('company_name', $this->getCompany()->getDataValue('name'));
-            $this->setZabbixValue('company_code', $this->getCompany()->getDataValue('code'));
-            $this->reportToZabbix($this->zabbixMessageData);
+        $this->reporter->setDataValue('scheduled', $this->getDataValue('schedule'));
+        $this->reporter->setDataValue('schedule_type', $this->getDataValue('schedule_type'));
+        $this->reporter->setDataValue('company_id', $this->getCompany()->getMyKey());
+        $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
+        $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('slug'));
+
+        if ($this->getRuntemplate()->getDataValue('cron')) {
+            $cron = new CronExpression((string) $this->getRuntemplate()->getDataValue('cron'));
+            $startTime = $cron->getNextRunDate(new \DateTime(), 0, true);
+        }
+
+        if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
+            $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');
         }
 
         /* Preserve used Envirnoment */
@@ -321,19 +311,20 @@ class Job extends DBEngine
 
         $resultfile = $this->environment->getFieldByCode('RESULT_FILE') ? $this->environment->getFieldByCode('RESULT_FILE')->getValue() : '';
 
+        $this->reporter->setDataValue('phase', 'jobDone');
+        $this->reporter->setDataValue('job_id', $this->getMyKey());
+        $this->reporter->setDataValue('data', file_exists($resultfile) ? file_get_contents($resultfile) : '');
+        $this->reporter->setDataValue('version', $this->getApplication()->getDataValue('version'));
+        $this->reporter->setDataValue('exitcode', $statusCode);
+        $this->reporter->setDataValue('exitcode_description', $this->executor->meaning().' '.$this->getApplication()->exitCodeDescription($statusCode));
+        $this->reporter->setDataValue('scheduled', $this->getDataValue('schedule'));
+        $this->reporter->setDataValue('end', (new \DateTime())->format('Y-m-d H:i:s'));
+        $this->reporter->setDataValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
+        $this->reporter->setDataValue('result_file', $resultfile);
+        $this->reporter->setDataValue('pid', $this->executor->getPid());
+
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
-            $this->setZabbixValue('phase', 'jobDone');
-            $this->setZabbixValue('data', file_exists($resultfile) ? file_get_contents($resultfile) : '');
-            $this->setZabbixValue('stdout', $stdout);
-            $this->setZabbixValue('stderr', $stderr);
-            $this->setZabbixValue('version', $this->application->getDataValue('version'));
-            $this->setZabbixValue('exitcode', $statusCode);
-            $this->setZabbixValue('exitcode_description', $this->executor->meaning().' '.$this->application->exitCodeDescription($statusCode));
-            $this->setZabbixValue('scheduled', $this->getDataValue('schedule'));
-            $this->setZabbixValue('end', (new \DateTime())->format('Y-m-d H:i:s'));
-            $this->setZabbixValue('runtemplate_id', $this->runTemplate->getMyKey());
-            $this->setZabbixValue('pid', $this->executor->getPid());
-            $this->reportToZabbix($this->zabbixMessageData);
+            $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');
         }
 
         $this->setData([
@@ -354,16 +345,7 @@ class Job extends DBEngine
                 $duration = $end->getTimestamp() - $begin->getTimestamp();
 
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
-                $otelExporter->recordJobEnd($statusCode, (float) $duration, [
-                    'job_id' => $this->getMyKey(),
-                    'app_id' => $this->application->getMyKey(),
-                    'app_name' => $this->application->getRecordName(),
-                    'company_id' => $this->company->getMyKey(),
-                    'company_name' => $this->company->getRecordName(),
-                    'runtemplate_id' => $this->runTemplate->getMyKey(),
-                    'runtemplate_name' => $this->runTemplate->getRecordName(),
-                    'executor' => $this->getDataValue('executor'),
-                ]);
+                $otelExporter->recordJobEnd($statusCode, (float) $duration, $this->reporter);
                 $otelExporter->flush();
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
@@ -444,6 +426,8 @@ EOD;
      * @param ConfigFields $envOverride use to change default env [env with info]
      * @param \DateTime    $scheduled   Time to launch
      * @param string       $executor    Executor Class Name
+     *
+     * @return string ????
      */
     public function prepareJob(RunTemplate $runTemplate, ConfigFields $envOverride, \DateTime $scheduled, string $executor = 'Native', string $scheduleType = 'adhoc'): string
     {
@@ -462,28 +446,27 @@ EOD;
 
         $this->loadFromSQL($this->newJob($runTemplate, $this->environment, $scheduled, $executor, $scheduleType));
 
+        $this->reporter->setDataValue('phase', 'prepared');
+        $this->reporter->setDataValue('job_id', $this->getMyKey());
+        $this->reporter->setDataValue('app_id', $appId);
+        $this->reporter->setDataValue('app_name', $this->getApplication()->getDataValue('name'));
+        $this->reporter->setDataValue('begin', null);
+        $this->reporter->setDataValue('end', null);
+        $this->reporter->setDataValue('scheduled', $scheduled->format('Y-m-d H:i:s'));
+        $this->reporter->setDataValue('schedule_type', $scheduleType);
+        $this->reporter->setDataValue('company_id', $companyId);
+        $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
+        $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('code'));
+        $this->reporter->setDataValue('runtemplate_id', $runTemplate->getMyKey());
+        $this->reporter->setDataValue('exitcode', null);
+        $this->reporter->setDataValue('executor', $executor);
+        $this->reporter->setDataValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
+        $this->reporter->setDataValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
+        $this->reporter->setDataValue('interval', $runTemplate->getDataValue('interv'));
+        $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv')));
+
         if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
-            $this->setZabbixValue('phase', 'prepared');
-            $this->setZabbixValue('job_id', $this->getMyKey());
-            $this->setZabbixValue('app_id', $appId);
-            $this->setZabbixValue('app_name', $this->application->getDataValue('name'));
-            $this->setZabbixValue('begin', null);
-            $this->setZabbixValue('end', null);
-            $this->setZabbixValue('scheduled', $scheduled->format('Y-m-d H:i:s'));
-            $this->setZabbixValue('schedule_type', $scheduleType);
-            $this->setZabbixValue('company_id', $companyId);
-            $this->setZabbixValue('company_name', $this->company->getDataValue('name'));
-            $this->setZabbixValue('company_code', $this->company->getDataValue('code'));
-            $this->setZabbixValue('runtemplate_id', $runTemplate->getMyKey());
-            $this->setZabbixValue('exitcode', null);
-            $this->setZabbixValue('stdout', null);
-            $this->setZabbixValue('stderr', null);
-            $this->setZabbixValue('executor', $executor);
-            $this->setZabbixValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
-            $this->setZabbixValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
-            $this->setZabbixValue('interval', $runTemplate->getDataValue('interv'));
-            $this->setZabbixValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv')));
-            $this->reportToZabbix($this->zabbixMessageData);
+            // TODO $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');
         }
 
         // Automatically schedule the job for execution
@@ -508,18 +491,23 @@ EOD;
     /**
      * Send Job phase Message to Zabbix.
      *
-     * @param array<string, mixed> $messageData override fields
+     * @param string $itemKey destination zabbix item name
+     *
+     * @return bool send result
      */
-    public function reportToZabbix(array $messageData): bool
+    public function reportToZabbix(string $itemKey, ?string $overrideHost = null, bool $lldMode = false): bool
     {
         $packet = new ZabbixPacket();
 
-        $overrideHost = $this->getRunTemplate()->getCompany()->getDataValue('zabbix_host');
+        $companyHost = $this->getRunTemplate()->getCompany()->getDataValue('zabbix_host');
 
-        $hostname = empty($overrideHost) ? \Ease\Shared::cfg('ZABBIX_HOST', gethostname()) : $overrideHost;
-        $itemKey = 'job-['.$this->company->getDataValue('slug').'-'.$this->application->getDataValue('code').'-'.$this->runTemplate->getMyKey().']';
+        $hostname = $overrideHost ?? $companyHost ?? \Ease\Shared::cfg('ZABBIX_HOST', gethostname());
 
-        $zabbixMetric = json_encode($this->zabbixMessageData);
+        if ($lldMode) {
+            $zabbixMetric = json_encode(array_change_key_case($this->reporter->getData(), \CASE_UPPER));
+        } else {
+            $zabbixMetric = json_encode($this->reporter->getData());
+        }
 
         if ($zabbixMetric) {
             $packet->addMetric((new ZabbixMetric($itemKey, $zabbixMetric))->withHostname($hostname));
@@ -530,13 +518,13 @@ EOD;
                 $result = $this->zabbixSender->send($packet);
 
                 if ($this->debug) {
-                    $this->addStatusMessage('Data Sent To Zabbix: '.$itemKey.' '.json_encode($messageData), 'debug');
+                    $this->addStatusMessage('Data Sent To Zabbix: '.$itemKey.' '.json_encode($this->reporter->getData()), 'debug');
                 }
             } catch (\Exception $exc) {
                 $result = false;
             }
         } else {
-            $this->addStatusMessage('Problem Jsonizing of '.serialize($this->zabbixMessageData), 'debug');
+            $this->addStatusMessage('Problem Jsonizing of '.serialize($this->reporter->getData()), 'debug');
         }
 
         return (bool) $result;
@@ -904,17 +892,13 @@ EOD;
         return $this->environment;
     }
 
-    public function setZabbixValue(string $field, $value): self
-    {
-        $this->zabbixMessageData[$field] = $value;
-
-        return $this;
-    }
-
+    /**
+     * Set PID of the running job.
+     */
     public function setPid(int $pid): void
     {
         $this->setDataValue('pid', $pid);
-        $this->setZabbixValue('pid', $pid);
+        $this->reporter->setDataValue('pid', $pid);
     }
 
     public function setEnvironment(ConfigFields $environment): self
@@ -1063,17 +1047,11 @@ EOD;
 
                     if (!empty($updates)) {
                         $runTemplate->updateToSQL($updates, ['id' => $runtemplateId]);
-                        $this->addStatusMessage(
-                            _('Updated runtemplate counters after job deletion'),
-                            'debug',
-                        );
+                        $this->addStatusMessage(_('Updated runtemplate counters after job deletion'), 'debug');
                     }
                 }
             } catch (\Exception $e) {
-                $this->addStatusMessage(
-                    sprintf(_('Failed to update runtemplate counters: %s'), $e->getMessage()),
-                    'warning',
-                );
+                $this->addStatusMessage(sprintf(_('Failed to update runtemplate counters: %s'), $e->getMessage()), 'warning');
                 // Continue with deletion even if counter update fails
             }
         }

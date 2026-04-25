@@ -97,14 +97,14 @@ class Response
                 throw new ZabbixResponseException(sprintf(
                     "can't decode info into values, preg_match error: %d",
                     preg_last_error(),
-                ),);
+                ), );
 
             case $matched === 0:
                 throw new ZabbixResponseException(sprintf(
                     "pattern '%s' didn't satisfy to subject '%s'",
                     $pattern,
                     $response['info'],
-                ),);
+                ), );
 
             default:
                 break;
