@@ -51,7 +51,7 @@ class Github extends \MultiFlexi\CommonAction
      */
     public static function usableForApp(Application $app): bool
     {
-        return (null === strstr($app->getDataValue('homepage'), 'github.com')) === false;
+        return str_contains((string) $app->getDataValue('homepage'), 'github.com');
     }
 
     /**

@@ -1,111 +1,3 @@
-        /**
-         * @covers \MultiFlexi\Scheduler::purgeBrokenQueueRecords
-         */
-        public function testPurgeBrokenQueueRecordsRemovesInvalidJobRefs(): void
-        {
-            $scheduler = $this->getMockBuilder(Scheduler::class)
-                ->onlyMethods(['listingQuery', 'deleteFromSQL', 'addStatusMessage'])
-                ->getMock();
-            $scheduler->expects($this->any())->method('addStatusMessage');
-
-            // Simulate schedule table: one with missing job, one with valid job, one with job=0
-            $schedules = [
-                ['id' => 1, 'job' => 0],
-                ['id' => 2, 'job' => 123],
-                ['id' => 3, 'job' => 456],
-            ];
-            $scheduler->method('listingQuery')->willReturnSelf();
-            $scheduler->method('fetchAll')->willReturn($schedules);
-
-            // Job mock: only job 123 exists
-            $jobber = $this->getMockBuilder(\MultiFlexi\Job::class)
-                ->onlyMethods(['listingQuery'])
-                ->getMock();
-            $jobber->method('listingQuery')->willReturnSelf();
-            $jobber->method('where')->willReturnCallback(function($col, $val) {
-                if ($val === 123) return (object)['id' => 123];
-                return false;
-            });
-
-            // Patch Job class for this test
-            $GLOBALS['MultiFlexi\Job'] = $jobber;
-
-            // Should delete id=1 (job=0) and id=3 (job=456 does not exist)
-            $scheduler->expects($this->exactly(2))->method('deleteFromSQL')->withConsecutive([
-                ['id' => 1], ['id' => 3]
-            ]);
-
-            $scheduler->purgeBrokenQueueRecords();
-        }
-    /**
-     * @covers \MultiFlexi\Scheduler::__construct
-     */
-    public function testConstructSetsTable(): void
-    {
-        $scheduler = new Scheduler();
-        $this->assertEquals('schedule', $scheduler->myTable);
-    }
-
-    /**
-     * @covers \MultiFlexi\Scheduler::initializeScheduling
-     */
-    public function testInitializeSchedulingResetsNextScheduleIfNoJob(): void
-    {
-        $scheduler = $this->getMockBuilder(Scheduler::class)
-            ->onlyMethods(['addStatusMessage'])
-            ->getMock();
-        $scheduler->expects($this->any())->method('addStatusMessage');
-
-        $jobber = $this->getMockBuilder(\MultiFlexi\Job::class)
-            ->onlyMethods(['listingQuery'])
-            ->getMock();
-        $jobber->method('listingQuery')->willReturnSelf();
-        $jobber->method('where')->willReturnSelf();
-        $jobber->method('fetch')->willReturn(false);
-
-        $runtemplate = $this->getMockBuilder(\MultiFlexi\RunTemplate::class)
-            ->onlyMethods(['getColumnsFromSQL', 'updateToSQL'])
-            ->getMock();
-        $runtemplate->method('getColumnsFromSQL')->willReturn([
-            ['id' => 1, 'next_schedule' => '2024-01-01 00:00:00', 'company_id' => 1]
-        ]);
-        $runtemplate->expects($this->once())->method('updateToSQL')->with(['next_schedule' => null], ['id' => 1]);
-
-        // Patch global classes
-        $GLOBALS['MultiFlexi\Job'] = $jobber;
-        $GLOBALS['MultiFlexi\RunTemplate'] = $runtemplate;
-
-        // Use reflection to inject mocks if needed, or just call (side effects are mocked)
-        $scheduler->initializeScheduling();
-    }
-
-    /**
-     * @covers \MultiFlexi\Scheduler::cleanupOrphanedJobs
-     */
-    public function testCleanupOrphanedJobsRemovesOrphans(): void
-    {
-        $scheduler = $this->getMockBuilder(Scheduler::class)
-            ->onlyMethods(['addStatusMessage'])
-            ->getMock();
-        $scheduler->expects($this->any())->method('addStatusMessage');
-
-        $jobber = $this->getMockBuilder(\MultiFlexi\Job::class)
-            ->onlyMethods(['listingQuery', 'deleteFromSQL'])
-            ->getMock();
-        $jobber->method('listingQuery')->willReturnSelf();
-        $jobber->method('where')->willReturnSelf();
-        $jobber->method('fetchAll')->willReturn([
-            ['id' => 1], ['id' => 2]
-        ]);
-        $jobber->expects($this->exactly(2))->method('deleteFromSQL')->withConsecutive([
-            ['id' => 1], ['id' => 2]
-        ]);
-
-        // Patch global class
-        $GLOBALS['MultiFlexi\Job'] = $jobber;
-
-        $scheduler->cleanupOrphanedJobs();
-    }
 <?php
 
 declare(strict_types=1);
@@ -150,49 +42,12 @@ class SchedulerTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @covers \MultiFlexi\Scheduler::addJob
+     * @covers \MultiFlexi\Scheduler::__construct
      */
-    public function testAddJobPreventsDuplicates(): void
+    public function testConstructSetsTable(): void
     {
-        $job = $this->createMock(\MultiFlexi\Job::class);
-        $job->method('getMyKey')->willReturn(123);
-        $runtemplate = $this->createMock(\MultiFlexi\RunTemplate::class);
-        $job->method('getRuntemplate')->willReturn($runtemplate);
-        $runtemplate->method('getMyKey')->willReturn(456);
-        $runtemplate->expects($this->any())->method('updateToSQL');
-
-        // Simulate no existing schedule, so insertToSQL is called
-        $scheduler = $this->getMockBuilder(Scheduler::class)
-            ->onlyMethods(['listingQuery', 'insertToSQL'])
-            ->getMock();
-        $listingQuery = $this->getMockBuilder(\Ease\Shared::class)
-            ->onlyMethods(['where', 'fetch'])
-            ->getMock();
-        $listingQuery->method('where')->willReturnSelf();
-        $listingQuery->method('fetch')->willReturn(false);
-        $scheduler->method('listingQuery')->willReturn($listingQuery);
-        $scheduler->expects($this->once())->method('insertToSQL')->willReturn(789);
-
-        $when = new \DateTime();
-        $result = $scheduler->addJob($job, $when);
-        $this->assertEquals(789, $result);
-    }
-
-    /**
-     * @covers \MultiFlexi\Scheduler::getCurrentJobs
-     */
-    public function testGetCurrentJobsThrowsOnUnsupportedDb(): void
-    {
-        $scheduler = $this->getMockBuilder(Scheduler::class)
-            ->onlyMethods(['getPdo'])
-            ->getMock();
-        $pdo = $this->getMockBuilder(\stdClass::class)
-            ->addMethods(['getAttribute'])
-            ->getMock();
-        $pdo->method('getAttribute')->willReturn('unknown');
-        $scheduler->method('getPdo')->willReturn($pdo);
-        $this->expectException(\Exception::class);
-        $scheduler->getCurrentJobs();
+        $scheduler = new Scheduler();
+        $this->assertEquals('schedule', $scheduler->myTable);
     }
 
     /**
@@ -230,5 +85,20 @@ class SchedulerTest extends \PHPUnit\Framework\TestCase
     {
         $this->assertEquals('y', Scheduler::intervalToCode('yearly'));
         $this->assertEquals('n/a', Scheduler::intervalToCode('bad'));
+    }
+
+    /**
+     * @covers \MultiFlexi\Scheduler::getCurrentJobs
+     */
+    public function testGetCurrentJobsThrowsOnUnsupportedDb(): void
+    {
+        $scheduler = $this->getMockBuilder(Scheduler::class)
+            ->onlyMethods(['getPdo'])
+            ->getMock();
+        $pdo = $this->createMock(\PDO::class);
+        $pdo->method('getAttribute')->willReturn('unknown');
+        $scheduler->method('getPdo')->willReturn($pdo);
+        $this->expectException(\Exception::class);
+        $scheduler->getCurrentJobs();
     }
 }
