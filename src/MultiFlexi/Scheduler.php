@@ -264,21 +264,25 @@ class Scheduler extends Engine
     }
 
     /**
-     * Get Job Interval by Code.
+     * Get Job Interval human-readable name by code.
+     *
+     * Known codes: y, m, w, d, h, i, n (disabled), c (custom cron).
+     * Returns 'n/a' for unknown or null codes (e.g. RunTemplate with no schedule set).
      */
-    public static function codeToInterval(string $code): string
+    public static function codeToInterval(?string $code): string
     {
-        return \array_key_exists($code, self::$intervalCode) ? self::$intervalCode[$code] : 'n/a';
+        return ($code !== null && \array_key_exists($code, self::$intervalCode)) ? self::$intervalCode[$code] : 'n/a';
     }
 
     /**
-     * Get Job Interval by Code.
+     * Get Job Interval length in seconds by code.
      *
-     * @return int Interval length in seconds
+     * Known codes: y, m, w, d, h, i, n (disabled), c (custom cron — returns 0).
+     * Returns 0 for unknown or null codes (e.g. RunTemplate with no schedule set).
      */
-    public static function codeToSeconds(string $code): int
+    public static function codeToSeconds(?string $code): int
     {
-        return \array_key_exists($code, self::$intervalSecond) ? (int) (self::$intervalSecond[$code]) : 0;
+        return ($code !== null && \array_key_exists($code, self::$intervalSecond)) ? (int) (self::$intervalSecond[$code]) : 0;
     }
 
     /**

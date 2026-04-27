@@ -66,7 +66,15 @@ class SchedulerTest extends \PHPUnit\Framework\TestCase
     public function testCodeToInterval(): void
     {
         $this->assertEquals('yearly', Scheduler::codeToInterval('y'));
+        $this->assertEquals('monthly', Scheduler::codeToInterval('m'));
+        $this->assertEquals('weekly', Scheduler::codeToInterval('w'));
+        $this->assertEquals('daily', Scheduler::codeToInterval('d'));
+        $this->assertEquals('hourly', Scheduler::codeToInterval('h'));
+        $this->assertEquals('minutly', Scheduler::codeToInterval('i'));
+        $this->assertEquals('disabled', Scheduler::codeToInterval('n'));
+        $this->assertEquals('custom', Scheduler::codeToInterval('c'));
         $this->assertEquals('n/a', Scheduler::codeToInterval('bad'));
+        $this->assertEquals('n/a', Scheduler::codeToInterval(null));
     }
 
     /**
@@ -74,8 +82,16 @@ class SchedulerTest extends \PHPUnit\Framework\TestCase
      */
     public function testCodeToSeconds(): void
     {
+        $this->assertEquals(31556926, Scheduler::codeToSeconds('y'));
+        $this->assertEquals(2629743, Scheduler::codeToSeconds('m'));
+        $this->assertEquals(604800, Scheduler::codeToSeconds('w'));
+        $this->assertEquals(86400, Scheduler::codeToSeconds('d'));
         $this->assertEquals(3600, Scheduler::codeToSeconds('h'));
+        $this->assertEquals(60, Scheduler::codeToSeconds('i'));
+        $this->assertEquals(0, Scheduler::codeToSeconds('n'));
+        $this->assertEquals(0, Scheduler::codeToSeconds('c'));
         $this->assertEquals(0, Scheduler::codeToSeconds('bad'));
+        $this->assertEquals(0, Scheduler::codeToSeconds(null));
     }
 
     /**
