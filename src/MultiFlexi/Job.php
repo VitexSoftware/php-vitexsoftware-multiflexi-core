@@ -504,7 +504,7 @@ EOD;
         $hostname = $overrideHost ?? $companyHost ?? \Ease\Shared::cfg('ZABBIX_HOST', gethostname());
 
         if ($lldMode) {
-            $zabbixMetric = json_encode(array_change_key_case($this->reporter->getData(), \CASE_UPPER));
+            $zabbixMetric = json_encode([array_change_key_case($this->reporter->getData(), \CASE_UPPER)]);
         } else {
             $zabbixMetric = json_encode($this->reporter->getData());
         }
