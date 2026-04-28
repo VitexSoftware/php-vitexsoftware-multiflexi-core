@@ -240,6 +240,10 @@ class User extends \Ease\User
                     $bruteForceProtection->recordAttempt($login, false);
                 }
 
+                if (isset($GLOBALS['securityAuditLogger'])) {
+                    $GLOBALS['securityAuditLogger']->logLoginFailure($login, 'Account disabled');
+                }
+
                 $this->userID = null;
 
                 return false;
@@ -393,6 +397,21 @@ class User extends \Ease\User
         }
 
         return false;
+    }
+
+    /**
+     * Check whether this account is allowed to sign in.
+     * Reads the `enabled` column stored in the user table.
+     */
+    public function isAccountEnabled(): bool
+    {
+        if (!(bool) $this->getDataValue('enabled')) {
+            $this->addStatusMessage(_('Sign in denied by administrator'), 'warning');
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
