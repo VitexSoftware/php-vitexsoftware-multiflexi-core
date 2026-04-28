@@ -68,7 +68,7 @@ class JobTest extends \PHPUnit\Framework\TestCase
     public function testnewJob(): void
     {
         // newJob uses Ease\Shared::user(), which is now mocked in setUp
-        $result = $this->object->newJob(1, $this->env, new \DateTime());
+        $result = $this->object->newJob(new \MultiFlexi\RunTemplate(), $this->env, new \DateTime());
         $this->assertIsInt($result);
         $this->assertGreaterThanOrEqual(0, $result);
     }
@@ -146,7 +146,12 @@ class JobTest extends \PHPUnit\Framework\TestCase
     public function testreportToZabbix(): void
     {
         // Provide array as required by reportToZabbix
-        $result = $this->object->reportToZabbix(['metric' => 'Test Metric', 'value' => 100]);
+        $this->object->getReporter()->setDataValue('phase', 'created');
+
+        $result = $this->object->reportToZabbix( 'ldd',  null , true);
+        $this->assertIsBool($result);
+        
+        $result = $this->object->reportToZabbix( 'common');
         $this->assertIsBool($result);
     }
 

@@ -2394,8 +2394,8 @@
             "version": "2.2.x-dev",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/693289357f64ad4bba490faffd49ec1c1913ad2d",
-                "reference": "693289357f64ad4bba490faffd49ec1c1913ad2d",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/0e505f4db5d8dd4daa61a201523112858e0045f1",
+                "reference": "0e505f4db5d8dd4daa61a201523112858e0045f1",
                 "shasum": ""
             },
             "require": {
@@ -2452,7 +2452,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-23T13:41:56+00:00"
+            "time": "2026-04-28T17:54:04+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -2898,12 +2898,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "fb569b7d7d2217950ef467e5e7dfa0d4de0b60a2"
+                "reference": "267bbfd0c084873ce06b259751a96ec2834dc2bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/fb569b7d7d2217950ef467e5e7dfa0d4de0b60a2",
-                "reference": "fb569b7d7d2217950ef467e5e7dfa0d4de0b60a2",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/267bbfd0c084873ce06b259751a96ec2834dc2bc",
+                "reference": "267bbfd0c084873ce06b259751a96ec2834dc2bc",
                 "shasum": ""
             },
             "require": {
@@ -2980,7 +2980,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-04-23T12:32:48+00:00"
+            "time": "2026-04-28T13:27:51+00:00"
         },
         {
             "name": "psr/container",
@@ -3673,12 +3673,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "e645b6463c6a88ea5b44b17d3387d35a912c7946"
+                "reference": "0c7953677043cd97fb3eaf03d020bf710e124646"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/e645b6463c6a88ea5b44b17d3387d35a912c7946",
-                "reference": "e645b6463c6a88ea5b44b17d3387d35a912c7946",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/0c7953677043cd97fb3eaf03d020bf710e124646",
+                "reference": "0c7953677043cd97fb3eaf03d020bf710e124646",
                 "shasum": ""
             },
             "require": {
@@ -3718,7 +3718,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.4.2"
+                "source": "https://github.com/rectorphp/rector/tree/main"
             },
             "funding": [
                 {
@@ -3726,7 +3726,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-16T13:07:34+00:00"
+            "time": "2026-04-28T07:34:48+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -5392,12 +5392,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "ad1b7b9092976d6c948b8a187cec9faaea9ec1df"
+                "reference": "4864388bfbd3001ce88e234fab652acd91fdc57e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/ad1b7b9092976d6c948b8a187cec9faaea9ec1df",
-                "reference": "ad1b7b9092976d6c948b8a187cec9faaea9ec1df",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/4864388bfbd3001ce88e234fab652acd91fdc57e",
+                "reference": "4864388bfbd3001ce88e234fab652acd91fdc57e",
                 "shasum": ""
             },
             "require": {
@@ -5467,7 +5467,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T16:19:22+00:00"
+            "time": "2026-04-26T13:13:48+00:00"
         },
         {
             "name": "symfony/polyfill-intl-normalizer",

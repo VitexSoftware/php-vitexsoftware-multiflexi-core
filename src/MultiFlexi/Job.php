@@ -1179,6 +1179,11 @@ EOD;
         return $this->user;
     }
 
+    public function getReporter(): JobReport
+    {
+        return $this->reporter;
+    }
+
     /**
      * Get the localized description for a result file from artifact definitions.
      *
