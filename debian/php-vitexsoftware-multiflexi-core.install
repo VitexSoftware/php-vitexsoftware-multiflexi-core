@@ -26,3 +26,5 @@ schema/report.json			  usr/lib/multiflexi
 debian/tmp/composer.json                  usr/share/php/MultiFlexi/
 
 debian/autoload.php 			  usr/share/php/MultiFlexi/
+php-vitexsoftware-multiflexi-core.svg	usr/share/icons/hicolor/scalable/apps/
+cz.vitexsoftware.php_vitexsoftware_multiflexi_core.metainfo.xml	usr/share/metainfo/
