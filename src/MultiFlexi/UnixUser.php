@@ -54,6 +54,8 @@ class UnixUser extends \MultiFlexi\User
 
     public function getUserLogin(): string
     {
-        return get_current_user();
+        $pwuid = posix_getpwuid(posix_geteuid());
+
+        return $pwuid ? $pwuid['name'] : (getenv('USER') ?: get_current_user());
     }
 }

@@ -148,10 +148,10 @@ class JobTest extends \PHPUnit\Framework\TestCase
         // Provide array as required by reportToZabbix
         $this->object->getReporter()->setDataValue('phase', 'created');
 
-        $result = $this->object->reportToZabbix( 'ldd',  null , true);
+        $result = $this->object->reportToZabbix('ldd', null, true);
         $this->assertIsBool($result);
-        
-        $result = $this->object->reportToZabbix( 'common');
+
+        $result = $this->object->reportToZabbix('common');
         $this->assertIsBool($result);
     }
 
