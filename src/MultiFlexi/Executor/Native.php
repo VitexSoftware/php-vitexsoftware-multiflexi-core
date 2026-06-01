@@ -36,7 +36,9 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
         parent::__construct($job);
 
         foreach (getenv() as $key => $value) {
-            $this->environment->addField(new \MultiFlexi\ConfigField($key, 'string', $key, '', '', $value));
+            if ($this->environment->getField($key) === null) {
+                $this->environment->addField(new \MultiFlexi\ConfigField($key, 'string', $key, '', '', $value));
+            }
         }
     }
 
