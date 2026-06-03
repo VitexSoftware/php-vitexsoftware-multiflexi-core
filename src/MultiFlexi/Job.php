@@ -355,11 +355,11 @@ class Job extends DBEngine
         // Prepare runtemplate updates
         $rtUpdate = [];
 
-        // Only update scheduling timestamps for non-adhoc jobs
-        // Ad-hoc jobs (manually triggered from web/CLI/API) should not affect automatic scheduling
+        // Only update scheduling timestamps for cron-scheduled jobs
+        // Ad-hoc jobs (manually triggered from web/CLI/API) must not affect automatic scheduling
         $scheduleType = $this->getDataValue('schedule_type');
 
-        if ($scheduleType !== 'adhoc') {
+        if ($scheduleType !== 'adhoc' && $scheduleType !== 'CommandLine') {
             $rtUpdate['next_schedule'] = null;
             $rtUpdate['last_schedule'] = $this->getRunTemplate()->getDataValue('next_schedule');
         }

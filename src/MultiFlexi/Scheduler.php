@@ -205,7 +205,12 @@ class Scheduler extends Engine
         }
 
         // Update next_schedule first to prevent race condition
-        $job->getRuntemplate()->updateToSQL(['next_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
+        // Skip for ad-hoc/CommandLine jobs — they must not overwrite the cron scheduler's next_schedule
+        $scheduleType = $job->getDataValue('schedule_type');
+
+        if ($scheduleType !== 'adhoc' && $scheduleType !== 'CommandLine') {
+            $job->getRuntemplate()->updateToSQL(['next_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
+        }
 
         try {
             return $this->insertToSQL([
