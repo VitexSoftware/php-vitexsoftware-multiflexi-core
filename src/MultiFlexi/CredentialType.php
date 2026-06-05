@@ -22,7 +22,7 @@ namespace MultiFlexi;
  */
 class CredentialType extends DBEngine
 {
-    public static string $credTypeSchema = __DIR__.'/../../multiflexi.credential-type.schema.json';
+    public static string $credTypeSchema = __DIR__.'/../../schema/credential-type.json';
 
     /**
      * @var string Name Column

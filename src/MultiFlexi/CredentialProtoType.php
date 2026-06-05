@@ -213,6 +213,13 @@ class CredentialProtoType extends \MultiFlexi\Engine
                 ->fetch();
         }
 
+        // Handle tags (convert array to comma-separated string if needed)
+        $tags = '';
+
+        if (isset($jsonData['tags'])) {
+            $tags = \is_array($jsonData['tags']) ? implode(',', array_filter($jsonData['tags'])) : (string) $jsonData['tags'];
+        }
+
         $protoData = [
             'uuid' => $jsonData['uuid'] ?? '',
             'code' => $jsonData['code'] ?? '',
@@ -221,6 +228,8 @@ class CredentialProtoType extends \MultiFlexi\Engine
             'version' => $jsonData['version'] ?? '1.0',
             'logo' => $jsonData['logo'] ?? '',
             'url' => $jsonData['url'] ?? '',
+            'homepage' => $jsonData['homepage'] ?? '',
+            'tags' => $tags,
         ];
 
         if (isset($jsonData['user'])) {
@@ -388,6 +397,18 @@ class CredentialProtoType extends \MultiFlexi\Engine
 
         if (!empty($url)) {
             $export['url'] = $url;
+        }
+
+        $homepage = $this->getDataValue('homepage');
+
+        if (!empty($homepage)) {
+            $export['homepage'] = $homepage;
+        }
+
+        $tags = $this->getDataValue('tags');
+
+        if (!empty($tags)) {
+            $export['tags'] = array_map('trim', explode(',', $tags));
         }
 
         $logo = $this->getDataValue('logo');
