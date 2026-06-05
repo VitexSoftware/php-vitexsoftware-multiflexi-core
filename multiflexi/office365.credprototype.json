@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json",
+  "uuid": "d510bdee-de98-47e8-96b2-0b301af7d96b",
+  "code": "Office365",
+  "name": "Office 365",
+  "description": "Credential type for integration with Office 365 API",
+  "version": "1.0",
+  "logo": "Office365.svg",
+  "homepage": "https://www.office.com/",
+  "tags": [
+    "Office365",
+    "Microsoft",
+    "email",
+    "cloud"
+  ],
+  "fields": [
+    {
+      "keyword": "OFFICE365_USERNAME",
+      "type": "string",
+      "name": "Office 365 Username",
+      "description": "Username for Office 365",
+      "required": true
+    },
+    {
+      "keyword": "OFFICE365_CLIENT_ID",
+      "type": "string",
+      "name": "Office 365 Client ID",
+      "description": "Client ID for Office 365 API",
+      "required": true
+    },
+    {
+      "keyword": "OFFICE365_SECRET_VALUE",
+      "type": "password",
+      "name": "Office 365 Secret Value",
+      "description": "Secret value for Office 365 API",
+      "required": true
+    },
+    {
+      "keyword": "OFFICE365_TENANT",
+      "type": "string",
+      "name": "Office 365 Tenant",
+      "description": "Tenant ID for Office 365",
+      "required": true
+    }
+  ]
+}

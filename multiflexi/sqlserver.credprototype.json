@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json",
+  "uuid": "84c157ce-57d5-45cd-ae67-75fdfedab57f",
+  "code": "SQLServer",
+  "name": "SQL Server",
+  "description": "Credential type for connecting to Microsoft SQL Server",
+  "version": "1.0",
+  "logo": "SQLServer.svg",
+  "homepage": "https://www.microsoft.com/sql-server",
+  "tags": [
+    "SQL Server",
+    "Microsoft",
+    "database"
+  ],
+  "fields": [
+    {
+      "keyword": "DB_CONNECTION",
+      "type": "string",
+      "name": "Database Connection",
+      "description": "Database connection type (e.g., sqlsrv)",
+      "required": true
+    },
+    {
+      "keyword": "DB_HOST",
+      "type": "string",
+      "name": "Database Host",
+      "description": "Host of the SQL Server",
+      "required": true
+    },
+    {
+      "keyword": "DB_PORT",
+      "type": "integer",
+      "name": "Database Port",
+      "description": "Port of the SQL Server",
+      "required": false
+    },
+    {
+      "keyword": "DB_DATABASE",
+      "type": "string",
+      "name": "Database Name",
+      "description": "Name of the database",
+      "required": true
+    },
+    {
+      "keyword": "DB_USERNAME",
+      "type": "string",
+      "name": "Username",
+      "description": "Username for the database",
+      "required": true
+    },
+    {
+      "keyword": "DB_PASSWORD",
+      "type": "password",
+      "name": "Password",
+      "description": "Password for the database",
+      "required": true
+    },
+    {
+      "keyword": "DB_OPTIONS",
+      "type": "string",
+      "name": "Options",
+      "description": "Additional database settings (e.g., encrypt=false)",
+      "required": false
+    }
+  ]
+}

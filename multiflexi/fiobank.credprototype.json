@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json",
+  "uuid": "f79aaa38-2eaf-453a-beee-3a2afa1221d5",
+  "code": "FioBank",
+  "name": {
+    "en": "Fio Bank",
+    "cs": "Fio Banka"
+  },
+  "description": {
+    "en": "Fio Bank credential type for integration with Fio Bank API",
+    "cs": "Typ přihlašovacích údajů pro integraci s Fio Bank API"
+  },
+  "version": "1.0",
+  "logo": "Fio.svg",
+  "homepage": "https://www.fio.cz/",
+  "tags": [
+    "Fio",
+    "bank",
+    "finance",
+    "API"
+  ],
+  "fields": [
+    {
+      "keyword": "ACCOUNT_NUMBER",
+      "type": "string",
+      "name": {
+        "en": "Fio Bank Account Number",
+        "cs": "Číslo účtu Fio Banky"
+      },
+      "description": {
+        "en": "Number of the Fio Bank account",
+        "cs": "Číslo účtu ve Fio Bance"
+      },
+      "hint": "123456789/2010",
+      "required": false
+    },
+    {
+      "keyword": "FIO_TOKEN",
+      "type": "string",
+      "name": {
+        "en": "Fio Bank Token",
+        "cs": "Token Fio Banky"
+      },
+      "description": {
+        "en": "Token for accessing the Fio Bank API",
+        "cs": "Token pro přístup k Fio Bank API"
+      },
+      "required": true
+    },
+    {
+      "keyword": "FIO_TOKEN_NAME",
+      "type": "string",
+      "name": {
+        "en": "Fio Token Name",
+        "cs": "Název tokenu Fio"
+      },
+      "description": {
+        "en": "Name of the token used for identification",
+        "cs": "Název tokenu pro identifikaci"
+      },
+      "hint": "default-token",
+      "required": false
+    }
+  ]
+}

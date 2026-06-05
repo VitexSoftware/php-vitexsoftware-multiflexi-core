@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json",
+  "uuid": "df5c8ba3-7207-4c9b-a5b0-07e75e8c433a",
+  "code": "EnvFile",
+  "name": ".env file",
+  "description": "Load configuration values from .env file",
+  "version": "1.0",
+  "logo": "env-file.svg",
+  "homepage": "https://github.com/VitexSoftware/php-vitexsoftware-multiflexi-core",
+  "tags": [
+    "MultiFlexi",
+    "configuration",
+    "env"
+  ],
+  "fields": [
+    {
+      "keyword": "ENV_FILE_PATH",
+      "type": "string",
+      "name": ".env",
+      "description": "Path to .env file",
+      "hint": "/path/to/.env",
+      "required": false
+    }
+  ]
+}
