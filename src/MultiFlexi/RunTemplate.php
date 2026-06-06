@@ -475,7 +475,16 @@ class RunTemplate extends \MultiFlexi\DBEngine
         $runTemplateCredTypeFields = new ConfigFields(_('RunTemplate CredentialType Values'));
 
         foreach ($this->getCredentialsAssigned() as $requirement => $credentialData) {
+            if (empty($credentialData['credentials_id'])) {
+                continue;
+            }
+
             $credentor = new Credential($credentialData['credentials_id']);
+
+            if (!$credentor->getMyKey()) {
+                continue;
+            }
+
             $runTemplateCredTypeFields->addFields($credentor->query()->setSources(\Ease\Euri::fromObject($credentor)));
         }
 
