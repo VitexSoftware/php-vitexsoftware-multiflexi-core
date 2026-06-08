@@ -50,14 +50,20 @@ class CompanyUser extends Engine
         $existing = $this->listingQuery()->where(['company_id' => $companyId, 'user_id' => $userId])->fetch();
 
         if ($existing) {
-            return null !== $this->updateToSQL(['role' => $role], ['id' => $existing['id']]);
+            $success = null !== $this->updateToSQL(['role' => $role], ['id' => $existing['id']]);
+        } else {
+            $success = null !== $this->insertToSQL([
+                'company_id' => $companyId,
+                'user_id' => $userId,
+                'role' => $role,
+            ]);
         }
 
-        return null !== $this->insertToSQL([
-            'company_id' => $companyId,
-            'user_id' => $userId,
-            'role' => $role,
-        ]);
+        if ($success) {
+            $this->logAssignmentEvent('company_user_assigned', "User {$userId} assigned to company {$companyId} as {$role}", $userId, $companyId, $role);
+        }
+
+        return $success;
     }
 
     public function removeUser(int $userId): bool
@@ -68,14 +74,58 @@ class CompanyUser extends Engine
             return false;
         }
 
-        return null !== $this->deleteFromSQL([
+        $success = null !== $this->deleteFromSQL([
             'company_id' => $companyId,
             'user_id' => $userId,
         ]);
+
+        if ($success) {
+            $this->logAssignmentEvent('company_user_removed', "User {$userId} removed from company {$companyId}", $userId, $companyId);
+        }
+
+        return $success;
     }
 
     public function getCompaniesForUser(int $userId)
     {
         return $this->listingQuery()->where('user_id', $userId)->orderBy('company_id');
+    }
+
+    /**
+     * Record a company-user assignment change in the security audit log.
+     *
+     * Uses the loosely-coupled $GLOBALS['securityAuditLogger'] so the core has no
+     * hard dependency on the web application's logger. Never throws.
+     *
+     * @param string      $eventType   Audit event type
+     * @param string      $description Human-readable description
+     * @param int         $userId      Affected (assigned/removed) user ID
+     * @param int         $companyId   Company ID
+     * @param null|string $role        Role granted (assignment only)
+     */
+    private function logAssignmentEvent(string $eventType, string $description, int $userId, int $companyId, ?string $role = null): void
+    {
+        if (!isset($GLOBALS['securityAuditLogger'])) {
+            return;
+        }
+
+        $actor = null;
+
+        if (class_exists('\\Ease\\Shared') && method_exists('\\Ease\\Shared', 'user')) {
+            $actorKey = \Ease\Shared::user()->getMyKey();
+            $actor = $actorKey ? (int) $actorKey : null;
+        }
+
+        $data = ['user_id' => $userId, 'company_id' => $companyId, 'assigned_by' => $actor];
+
+        if (null !== $role) {
+            $data['role'] = $role;
+        }
+
+        try {
+            $GLOBALS['securityAuditLogger']->logEvent($eventType, $description, 'medium', $actor, $data);
+        } catch (\Throwable $e) {
+            error_log('CompanyUser audit logging failed: '.$e->getMessage());
+        }
     }
 }
