@@ -30,6 +30,7 @@ class ConfigField
     private string $note = '';
     private ?string $value;
     private string $type;
+    private string $category = '';
     private ?string $defaultValue = null;
     private bool $required = false;
     private bool $isSecret = false; // New property to mark sensitive content
@@ -175,6 +176,26 @@ class ConfigField
         return $this->type;
     }
 
+    /**
+     * Configuration option category as defined by the application schema.
+     *
+     * @param string $category one of 'API', 'Database', 'Behavior', 'Security', 'Other' (empty = unset)
+     */
+    public function setCategory(string $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * Group/category this option belongs to (empty string when not set).
+     */
+    public function getCategory(): string
+    {
+        return $this->category;
+    }
+
     public function setDefaultValue(?string $defaultValue): self
     {
         $this->defaultValue = $defaultValue;
@@ -306,6 +327,7 @@ class ConfigField
             'hint' => $this->getHint(),
             'value' => $this->getValue(),
             'type' => $this->getType(),
+            'category' => $this->getCategory(),
             'defval' => $this->getDefaultValue(),
             'required' => $this->isRequired(),
             'source' => $this->getSource(),

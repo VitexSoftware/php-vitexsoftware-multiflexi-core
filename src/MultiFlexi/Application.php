@@ -307,6 +307,11 @@ class Application extends DBEngine
                     'defval' => $field->getDefaultValue() ?? '',
                     'required' => $field->isRequired(),
                 ];
+
+                if ($field->getCategory() !== '') {
+                    $envEntry['category'] = $field->getCategory();
+                }
+
                 $environment[$field->getCode()] = $envEntry;
             }
 
@@ -1030,6 +1035,7 @@ class Application extends DBEngine
                 'app_id' => $appId,
                 'keyname' => $key,
                 'type' => $config['type'] ?? 'string',
+                'category' => self::normalizeCategory($config['category'] ?? ''),
                 'defval' => $this->convertDefval($config['defval'] ?? '', $config['type'] ?? 'string'),
                 'required' => isset($config['required']) ? (int) $config['required'] : 0,
             ];
@@ -1055,6 +1061,20 @@ class Application extends DBEngine
             // TODO: Save localized descriptions when conffield_translations table is created
             // For now, we're using the default language description in the main table
         }
+    }
+
+    /**
+     * Normalize a configuration option category against the schema enum.
+     *
+     * @param string $category Raw category from the application definition
+     *
+     * @return string One of API|Database|Behavior|Security|Other, or '' when unset/invalid
+     */
+    protected static function normalizeCategory(string $category): string
+    {
+        $allowed = ['API', 'Database', 'Behavior', 'Security', 'Other'];
+
+        return \in_array($category, $allowed, true) ? $category : '';
     }
 
     /**

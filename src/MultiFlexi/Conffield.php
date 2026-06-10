@@ -123,6 +123,7 @@ class Conffield extends Engine
                 ->setDefaultValue($appConfig['defval'])
                 ->setSource(\Ease\Euri::fromObject($app))
                 ->setNote($appConfig['note'] ?? '')
+                ->setCategory($appConfig['category'] ?? '')
                 ->setSecret(!empty($appConfig['secret']))
                 ->setMultiLine(!empty($appConfig['multiline']))
                 ->setExpiring(!empty($appConfig['expiring']));
