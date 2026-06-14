@@ -1,3 +1,19 @@
+php-vitexsoftware-multiflexi-core (2.9.4) UNRELEASED; urgency=medium
+
+  * Add Task class with state machine (open/running/fulfilled/fulfilled_late/failed/missed)
+  * Add Task::materialize(), fulfill(), markFailed(), markMissed(), canRetry(), getNextRetryTime()
+  * Job: carry task_id in newJob() INSERT; drive task state transitions in runEnd()
+  * RunTemplate: add getters/setters for deadline_offset, max_attempts, retry_backoff,
+    retry_min_gap, allow_late
+  * Application: persist produces/consumes from app.json import
+  * Application: getProduces(), getConsumes(), getAppJson() includes produces/consumes
+  * Job: collectProducedData() resolves produced output by format
+  * EventRule: generalize buildEnvOverrides() to accept any source array
+  * EventRule: add resolveSelector() with dot-path, JSONPath, @file: support
+  * EventRule: add getRulesForRunTemplate() for job-completed chain triggers
+
+ -- vitex <info@vitexsoftware.cz>  Sat, 14 Jun 2026 10:00:00 +0200
+
 php-vitexsoftware-multiflexi-core (2.9.3) UNRELEASED; urgency=medium
 
   * Add CompanyUser model for company/user assignment handling

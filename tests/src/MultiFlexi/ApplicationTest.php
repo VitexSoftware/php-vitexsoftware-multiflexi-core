@@ -159,4 +159,68 @@ EOD, $this->object->getAppJson());
             }
         }
     }
+
+    /**
+     * @covers \MultiFlexi\Application::getProduces
+     */
+    public function testGetProducesReturnsArrayForNewApp(): void
+    {
+        // A fresh Application with no key returns an empty array (no DB query).
+        $app = new \MultiFlexi\Application();
+        $result = $app->getProduces();
+        $this->assertIsArray($result);
+        $this->assertEmpty($result, 'getProduces() must return [] when app has no ID');
+    }
+
+    /**
+     * @covers \MultiFlexi\Application::getConsumes
+     */
+    public function testGetConsumesReturnsArrayForNewApp(): void
+    {
+        $app = new \MultiFlexi\Application();
+        $result = $app->getConsumes();
+        $this->assertIsArray($result);
+        $this->assertEmpty($result, 'getConsumes() must return [] when app has no ID');
+    }
+
+    /**
+     * @covers \MultiFlexi\Application::importProduces
+     * @covers \MultiFlexi\Application::importConsumes
+     */
+    public function testImportProducesAndConsumesRequireDB(): void
+    {
+        // importProduces / importConsumes are protected and require a live DB.
+        // We verify they exist via reflection and are callable from a subclass context.
+        $ref = new \ReflectionClass(\MultiFlexi\Application::class);
+
+        $this->assertTrue(
+            $ref->hasMethod('importProduces'),
+            'Application must declare importProduces()',
+        );
+        $this->assertTrue(
+            $ref->hasMethod('importConsumes'),
+            'Application must declare importConsumes()',
+        );
+
+        $importProduces = $ref->getMethod('importProduces');
+        $importConsumes = $ref->getMethod('importConsumes');
+
+        $this->assertTrue($importProduces->isProtected());
+        $this->assertTrue($importConsumes->isProtected());
+    }
+
+    /**
+     * @covers \MultiFlexi\Application::getAppJson
+     */
+    public function testGetAppJsonDoesNotIncludeProducesConsumesForNewApp(): void
+    {
+        // A new Application (no ID, no DB) should export only environment and multiflexi.
+        $json = $this->object->getAppJson();
+        $decoded = json_decode($json, true);
+
+        $this->assertIsArray($decoded);
+        // produces and consumes are only injected when the app has an ID.
+        $this->assertArrayNotHasKey('produces', $decoded);
+        $this->assertArrayNotHasKey('consumes', $decoded);
+    }
 }
