@@ -106,46 +106,105 @@ class EventRule extends DBEngine
     }
 
     /**
-     * Build environment variable overrides from change data using env_mapping.
+     * Build environment variable overrides from source data using env_mapping.
      *
-     * The env_mapping is a JSON object where keys are target env var names
-     * and values are source field names from the change record.
+     * Accepts any associative array as $source — a changes_cache record, a
+     * decoded produces JSON, or any other flat/nested map. Selector syntax:
+     *   - plain key or dot-path / JSONPath  → extract scalar
+     *   - "@file:<producesName>"            → materialise to temp file, value = path
      *
-     * Example env_mapping: {"RECORD_ID": "recordid", "EVIDENCE": "evidence", "OPERATION": "operation"}
-     *
-     * @param array<string, mixed> $change Change record from changes_cache
+     * @param array<string, mixed> $source       Source data (changes_cache row OR job produces payload)
+     * @param array<string, mixed> $producedFiles Map of producesName => content to materialise for @file: selectors
      *
      * @return array<string, string> Key-value pairs of environment variables
      */
-    public function buildEnvOverrides(array $change): array
+    public function buildEnvOverrides(array $source, array $producedFiles = []): array
     {
         $envOverrides = [];
         $mapping = $this->getEnvMapping();
 
-        foreach ($mapping as $envKey => $sourceField) {
-            if (\array_key_exists($sourceField, $change)) {
-                $envOverrides[$envKey] = (string) $change[$sourceField];
+        foreach ($mapping as $envKey => $selector) {
+            $resolved = $this->resolveSelector($selector, $source, $producedFiles);
+
+            if ($resolved !== null) {
+                $envOverrides[$envKey] = $resolved;
             }
         }
 
-        // Always provide standard event metadata
+        // Provide standard event metadata when the source looks like a changes_cache record
         if (!isset($envOverrides['EVENT_INVERSION'])) {
-            $envOverrides['EVENT_INVERSION'] = (string) ($change['inversion'] ?? '');
+            $envOverrides['EVENT_INVERSION'] = (string) ($source['inversion'] ?? '');
         }
 
         if (!isset($envOverrides['EVENT_EVIDENCE'])) {
-            $envOverrides['EVENT_EVIDENCE'] = (string) ($change['evidence'] ?? '');
+            $envOverrides['EVENT_EVIDENCE'] = (string) ($source['evidence'] ?? '');
         }
 
         if (!isset($envOverrides['EVENT_OPERATION'])) {
-            $envOverrides['EVENT_OPERATION'] = (string) ($change['operation'] ?? '');
+            $envOverrides['EVENT_OPERATION'] = (string) ($source['operation'] ?? '');
         }
 
         if (!isset($envOverrides['EVENT_RECORD_ID'])) {
-            $envOverrides['EVENT_RECORD_ID'] = (string) ($change['recordid'] ?? '');
+            $envOverrides['EVENT_RECORD_ID'] = (string) ($source['recordid'] ?? '');
         }
 
         return $envOverrides;
+    }
+
+    /**
+     * Resolve a single selector against source data.
+     *
+     * Selector forms:
+     *   "@file:<producesName>"  — write $producedFiles[<producesName>] to a temp
+     *                             file and return the file PATH as the value.
+     *   "$.foo.bar" or "foo.bar" — dot-path into $source; supports nested arrays.
+     *
+     * @param array<string, mixed> $source
+     * @param array<string, mixed> $producedFiles producesName => content (string or array)
+     */
+    private function resolveSelector(string $selector, array $source, array $producedFiles = []): ?string
+    {
+        // @file:<producesName> — materialise produced content to a temp file
+        if (str_starts_with($selector, '@file:')) {
+            $producesName = substr($selector, 6);
+
+            if (!\array_key_exists($producesName, $producedFiles)) {
+                return null;
+            }
+
+            $content = $producedFiles[$producesName];
+
+            if (\is_array($content)) {
+                $content = json_encode($content);
+            }
+
+            $tmpPath = tempnam(sys_get_temp_dir(), 'mf_chain_');
+
+            if ($tmpPath === false) {
+                return null;
+            }
+
+            file_put_contents($tmpPath, (string) $content);
+
+            return $tmpPath;
+        }
+
+        // Dot-path / JSONPath — strip leading "$." for JSONPath compatibility
+        $path = ltrim($selector, '$.');
+
+        // Split on dots to walk nested arrays
+        $segments = explode('.', $path);
+        $current = $source;
+
+        foreach ($segments as $segment) {
+            if (!\is_array($current) || !\array_key_exists($segment, $current)) {
+                return null;
+            }
+
+            $current = $current[$segment];
+        }
+
+        return \is_scalar($current) ? (string) $current : null;
     }
 
     /**
@@ -187,6 +246,24 @@ class EventRule extends DBEngine
     {
         return $this->listingQuery()
             ->where('event_source_id', $eventSourceId)
+            ->where('enabled', true)
+            ->orderBy('priority DESC')
+            ->fetchAll();
+    }
+
+    /**
+     * Get all enabled rules that fire when a job belonging to $runtemplateId completes.
+     *
+     * @param int $runtemplateId Source RunTemplate ID
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function getRulesForRunTemplate(int $runtemplateId): array
+    {
+        $instance = new self();
+
+        return $instance->listingQuery()
+            ->where('runtemplate_source_id', $runtemplateId)
             ->where('enabled', true)
             ->orderBy('priority DESC')
             ->fetchAll();

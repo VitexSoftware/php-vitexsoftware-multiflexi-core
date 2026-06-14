@@ -137,6 +137,7 @@ class Job extends DBEngine
             'schedule_type' => $scheduleType,
             'executor' => $executor,
             'launched_by' => $launchedByUserId,
+            'task_id' => $this->getDataValue('task_id'),
         ], true);
 
         if (null === $this->getDataValue('company_id')) {
@@ -380,7 +381,7 @@ class Job extends DBEngine
         //            unlink($resultfile);
         //        }
 
-        return $this->updateToSQL([
+        $result = $this->updateToSQL([
             'pid' => $this->executor->getPid(),
             'end' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
             'stdout' => addslashes($stdout),
@@ -389,6 +390,49 @@ class Job extends DBEngine
             // 'command' => $this->commandline,
             'exitcode' => $statusCode,
         ], ['id' => $this->getMyKey()]);
+
+        $this->updateTaskState($statusCode);
+
+        return $result;
+    }
+
+    /**
+     * Update the parent Task state after job completion.
+     * Schedules a retry job when the budget allows.
+     */
+    private function updateTaskState(int $statusCode): void
+    {
+        $taskId = (int) $this->getDataValue('task_id');
+
+        if ($taskId === 0) {
+            return;
+        }
+
+        $task = new Task($taskId);
+
+        if ($statusCode === 0) {
+            $task->fulfill($this);
+
+            return;
+        }
+
+        $task->incrementAttempts();
+
+        $nextRetry = $task->getNextRetryTime();
+
+        if ($nextRetry !== null) {
+            $retryJob = new self();
+            $retryJob->setDataValue('task_id', $taskId);
+            $retryJob->prepareJob(
+                $this->getRunTemplate(),
+                $this->environment,
+                $nextRetry,
+                $this->getDataValue('executor') ?? 'Native',
+                $this->getDataValue('schedule_type') ?? 'cron',
+            );
+        } else {
+            $task->markFailed();
+        }
     }
 
     /**
@@ -1146,6 +1190,147 @@ EOD;
         return $this->application;
     }
 
+
+    /**
+     * Collect output data produced by this job, keyed by produces-name.
+     *
+     * Resolution by format:
+     *   json  → decode RESULT_FILE or first matching artifact → return array
+     *   text|url → return stdout string value (first 64 KB)
+     *   file  → return the artifact content reference (content string)
+     *
+     * @return array<string, mixed>
+     */
+    public function collectProducedData(): array
+    {
+        $appId = $this->getApplication()->getMyKey();
+
+        if (!$appId) {
+            return [];
+        }
+
+        $producesRows = $this->getApplication()->getFluentPDO()
+            ->from('app_produces')
+            ->where('app_id', $appId)
+            ->fetchAll();
+
+        if (empty($producesRows)) {
+            return [];
+        }
+
+        $result = [];
+
+        $artifactor = new Artifact();
+
+        foreach ($producesRows as $row) {
+            $name = $row['name'];
+            $format = $row['format'];
+            $patterns = !empty($row['patterns_json']) ? json_decode($row['patterns_json'], true) : [];
+
+            switch ($format) {
+                case 'json':
+                    $data = $this->resolveProducedJson($patterns, $artifactor);
+
+                    if ($data !== null) {
+                        $result[$name] = $data;
+                    }
+
+                    break;
+
+                case 'text':
+                case 'url':
+                    $stdout = $this->getDataValue('stdout');
+
+                    if (!empty($stdout)) {
+                        $result[$name] = substr(stripcslashes((string) $stdout), 0, 65536);
+                    }
+
+                    break;
+
+                case 'file':
+                    $artifact = $this->findArtifactByPatterns($patterns, $artifactor);
+
+                    if ($artifact !== null) {
+                        $result[$name] = $artifact['artifact'];
+                    }
+
+                    break;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Decode the first artifact whose filename matches any of $patterns as JSON.
+     * Falls back to RESULT_FILE if no artifact matches.
+     *
+     * @param array<string> $patterns
+     *
+     * @return null|array<mixed>
+     */
+    private function resolveProducedJson(array $patterns, Artifact $artifactor): ?array
+    {
+        if (!empty($patterns)) {
+            $artifact = $this->findArtifactByPatterns($patterns, $artifactor);
+
+            if ($artifact !== null) {
+                $decoded = json_decode($artifact['artifact'], true);
+
+                if (json_last_error() === \JSON_ERROR_NONE) {
+                    return $decoded;
+                }
+            }
+        }
+
+        // Fallback: RESULT_FILE stored as artifact with filename matching resultfile
+        $resultfileField = $this->environment->getFieldByCode('RESULT_FILE');
+
+        if ($resultfileField && !empty($resultfileField->getValue())) {
+            $artifacts = $artifactor->getFluentPDO()
+                ->from('artifacts')
+                ->where('job_id', $this->getMyKey())
+                ->where('filename', basename($resultfileField->getValue()))
+                ->fetch();
+
+            if ($artifacts && !empty($artifacts['artifact'])) {
+                $decoded = json_decode($artifacts['artifact'], true);
+
+                if (json_last_error() === \JSON_ERROR_NONE) {
+                    return $decoded;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find the first artifact for this job whose filename matches any of $patterns.
+     *
+     * @param array<string> $patterns
+     *
+     * @return null|array<string, mixed>
+     */
+    private function findArtifactByPatterns(array $patterns, Artifact $artifactor): ?array
+    {
+        $jobArtifacts = $artifactor->getFluentPDO()
+            ->from('artifacts')
+            ->where('job_id', $this->getMyKey())
+            ->fetchAll();
+
+        foreach ($jobArtifacts as $artifact) {
+            $filename = $artifact['filename'] ?? '';
+
+            foreach ($patterns as $pattern) {
+                if (!empty($pattern) && @preg_match('/'.$pattern.'/', $filename) === 1) {
+                    return $artifact;
+                }
+            }
+        }
+
+        return null;
+    }
     public function getRuntemplate(): ?RunTemplate
     {
         if (null === $this->runTemplate) {

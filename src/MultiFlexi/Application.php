@@ -56,7 +56,7 @@ class Application extends DBEngine
     #[\Override]
     public function takeData(array $data): int
     {
-        unset($data['$schema'], $data['produces'], $data['csrf_token']);
+        unset($data['$schema'], $data['produces'], $data['consumes'], $data['csrf_token']);
         // TODO: Process somehow in future
         $data['enabled'] = \array_key_exists('enabled', $data) ? (($data['enabled'] === 'on') || ($data['enabled'] === 1)) : 0;
 
@@ -377,6 +377,20 @@ class Application extends DBEngine
             ];
         }
 
+        if ($appId) {
+            $produces = $this->getProduces();
+
+            if (!empty($produces)) {
+                $export['produces'] = $produces;
+            }
+
+            $consumes = $this->getConsumes();
+
+            if (!empty($consumes)) {
+                $export['consumes'] = $consumes;
+            }
+        }
+
         return json_encode($export, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
     }
 
@@ -609,7 +623,7 @@ class Application extends DBEngine
             }
 
             // Also remove any other known non-database keys
-            unset($appSpec['produces']);
+            // produces and consumes are imported separately below
 
             if (json_last_error() !== \JSON_ERROR_NONE) {
                 throw new \RuntimeException(_('Invalid JSON: ').json_last_error_msg());
@@ -781,6 +795,14 @@ class Application extends DBEngine
             // Import exit codes if present
             if (isset($appSpec['exitCodes']) && \is_array($appSpec['exitCodes'])) {
                 $this->importExitCodes($appId, $appSpec['exitCodes']);
+            }
+
+            if (isset($appSpec['produces']) && \is_array($appSpec['produces'])) {
+                $this->importProduces($appId, $appSpec['produces']);
+            }
+
+            if (isset($appSpec['consumes']) && \is_array($appSpec['consumes'])) {
+                $this->importConsumes($appId, $appSpec['consumes']);
             }
         }
 
@@ -1128,6 +1150,140 @@ class Application extends DBEngine
         }
     }
 
+
+    /**
+     * Import produces definitions from app JSON.
+     */
+    protected function importProduces(int $appId, array $producesDefs): void
+    {
+        $this->getFluentPDO()
+            ->deleteFrom('app_produces')
+            ->where('app_id', $appId)
+            ->execute();
+
+        foreach ($producesDefs as $name => $def) {
+            $this->getFluentPDO()
+                ->insertInto('app_produces', [
+                    'app_id' => $appId,
+                    'name' => $name,
+                    'format' => $def['format'] ?? 'json',
+                    'description_json' => isset($def['description']) ? json_encode($def['description']) : null,
+                    'patterns_json' => isset($def['patterns']) ? json_encode($def['patterns']) : null,
+                    'fields_json' => isset($def['fields']) ? json_encode($def['fields']) : null,
+                ])
+                ->execute();
+        }
+    }
+
+    /**
+     * Import consumes definitions from app JSON.
+     */
+    protected function importConsumes(int $appId, array $consumesDefs): void
+    {
+        $this->getFluentPDO()
+            ->deleteFrom('app_consumes')
+            ->where('app_id', $appId)
+            ->execute();
+
+        foreach ($consumesDefs as $name => $def) {
+            $this->getFluentPDO()
+                ->insertInto('app_consumes', [
+                    'app_id' => $appId,
+                    'name' => $name,
+                    'format' => $def['format'] ?? 'json',
+                    'description_json' => isset($def['description']) ? json_encode($def['description']) : null,
+                    'required' => isset($def['required']) ? (int) $def['required'] : 1,
+                    'target_env_key' => $def['target'] ?? null,
+                    'fields_json' => isset($def['fields']) ? json_encode($def['fields']) : null,
+                ])
+                ->execute();
+        }
+    }
+
+    /**
+     * Return the app's produces definitions as an array suitable for JSON export.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function getProduces(): array
+    {
+        $appId = $this->getMyKey();
+
+        if (!$appId) {
+            return [];
+        }
+
+        $rows = $this->getFluentPDO()
+            ->from('app_produces')
+            ->where('app_id', $appId)
+            ->fetchAll();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $entry = ['format' => $row['format']];
+
+            if (!empty($row['description_json'])) {
+                $entry['description'] = json_decode($row['description_json'], true);
+            }
+
+            if (!empty($row['patterns_json'])) {
+                $entry['patterns'] = json_decode($row['patterns_json'], true);
+            }
+
+            if (!empty($row['fields_json'])) {
+                $entry['fields'] = json_decode($row['fields_json'], true);
+            }
+
+            $result[$row['name']] = $entry;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Return the app's consumes definitions as an array suitable for JSON export.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function getConsumes(): array
+    {
+        $appId = $this->getMyKey();
+
+        if (!$appId) {
+            return [];
+        }
+
+        $rows = $this->getFluentPDO()
+            ->from('app_consumes')
+            ->where('app_id', $appId)
+            ->fetchAll();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $entry = [
+                'format' => $row['format'],
+                'required' => (bool) $row['required'],
+            ];
+
+            if (!empty($row['description_json'])) {
+                $entry['description'] = json_decode($row['description_json'], true);
+            }
+
+            if (!empty($row['target_env_key'])) {
+                $entry['target'] = $row['target_env_key'];
+            }
+
+            if (!empty($row['fields_json'])) {
+                $entry['fields'] = json_decode($row['fields_json'], true);
+            }
+
+            $result[$row['name']] = $entry;
+        }
+
+        return $result;
+    }
     /**
      * Convert default value based on type.
      *

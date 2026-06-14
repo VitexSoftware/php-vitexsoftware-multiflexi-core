@@ -93,6 +93,56 @@ class RunTemplate extends \MultiFlexi\DBEngine
         //        $app->runInit();
     }
 
+    public function getDeadlineOffset(): ?string
+    {
+        return $this->getDataValue('deadline_offset');
+    }
+
+    public function setDeadlineOffset(?string $offset): void
+    {
+        $this->setDataValue('deadline_offset', $offset);
+    }
+
+    public function getMaxAttempts(): int
+    {
+        return max(1, (int) ($this->getDataValue('max_attempts') ?? 1));
+    }
+
+    public function setMaxAttempts(int $max): void
+    {
+        $this->setDataValue('max_attempts', max(1, $max));
+    }
+
+    public function getRetryBackoff(): string
+    {
+        return (string) ($this->getDataValue('retry_backoff') ?? 'none');
+    }
+
+    public function setRetryBackoff(string $strategy): void
+    {
+        $this->setDataValue('retry_backoff', $strategy);
+    }
+
+    public function getRetryMinGap(): int
+    {
+        return max(0, (int) ($this->getDataValue('retry_min_gap') ?? 0));
+    }
+
+    public function setRetryMinGap(int $seconds): void
+    {
+        $this->setDataValue('retry_min_gap', max(0, $seconds));
+    }
+
+    public function getAllowLate(): bool
+    {
+        return (bool) ($this->getDataValue('allow_late') ?? false);
+    }
+
+    public function setAllowLate(bool $allow): void
+    {
+        $this->setDataValue('allow_late', $allow);
+    }
+
     /**
      * Delete record ignoring interval.
      *
