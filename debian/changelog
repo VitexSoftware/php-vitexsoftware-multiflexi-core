@@ -1,5 +1,14 @@
-php-vitexsoftware-multiflexi-core (2.9.4) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.10.0) UNRELEASED; urgency=medium
 
+  * Add CredentialState enum (Available/Degraded/Unavailable/Misconfigured/Unknown)
+  * Add CredentialCheckResult final class with isSatisfied() gate logic
+  * Add checkableCredentialInterface marker interface
+  * CredentialProtoType: implement checkableCredentialInterface with no-op default
+    returning Unknown (backward compatible — existing prototypes never block)
+  * FioBank: add checkAvailability() — validates token, probes fioapi.fio.cz reachability
+    without token-scoped call (avoids 30 s rate limit and cursor side effect)
+  * Job: add reportCredentialBlocked() — emits availability failure to SQL log,
+    Zabbix (when ZABBIX_SERVER configured), and OpenTelemetry (when OTEL_ENABLED)
   * Add Task class with state machine (open/running/fulfilled/fulfilled_late/failed/missed)
   * Add Task::materialize(), fulfill(), markFailed(), markMissed(), canRetry(), getNextRetryTime()
   * Job: carry task_id in newJob() INSERT; drive task state transitions in runEnd()

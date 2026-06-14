@@ -22,7 +22,7 @@ namespace MultiFlexi\CredentialProtoType;
  *
  * @no-named-arguments
  */
-class FioBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\credentialTypeInterface
+class FioBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\credentialTypeInterface, \MultiFlexi\checkableCredentialInterface
 {
     public static string $logo = 'Fio.svg';
 
@@ -83,5 +83,34 @@ class FioBank extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cre
     public function logo(): string
     {
         return self::$logo;
+    }
+
+    #[\Override]
+    public function checkAvailability(): \MultiFlexi\CredentialCheckResult
+    {
+        $token = (string) ($this->configFieldsInternal->getFieldByCode('FIO_TOKEN')?->getValue() ?? '');
+
+        if ($token === '') {
+            return new \MultiFlexi\CredentialCheckResult(
+                \MultiFlexi\CredentialState::Misconfigured,
+                _('Fio API token is not set'),
+                time(),
+            );
+        }
+
+        // Host reachability only — no token-scoped endpoint (30 s rate limit + cursor side effect).
+        $ch = curl_init('https://fioapi.fio.cz/');
+        curl_setopt_array($ch, [\CURLOPT_NOBODY => true, \CURLOPT_CONNECTTIMEOUT => 5, \CURLOPT_TIMEOUT => 5]);
+        curl_exec($ch);
+        $errno = curl_errno($ch);
+
+        return $errno === 0
+            ? new \MultiFlexi\CredentialCheckResult(\MultiFlexi\CredentialState::Available, '', time(), 300)
+            : new \MultiFlexi\CredentialCheckResult(
+                \MultiFlexi\CredentialState::Unavailable,
+                sprintf(_('Fio API host unreachable: %s'), curl_strerror($errno)),
+                time(),
+                60,
+            );
     }
 }

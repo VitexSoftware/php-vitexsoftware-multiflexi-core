@@ -20,7 +20,7 @@ namespace MultiFlexi;
  *
  * @author Vitex <info@vitexsoftware.cz>
  */
-class CredentialProtoType extends \MultiFlexi\Engine
+class CredentialProtoType extends \MultiFlexi\Engine implements \MultiFlexi\checkableCredentialInterface
 {
     use \Ease\recordkey;
 
@@ -42,7 +42,7 @@ class CredentialProtoType extends \MultiFlexi\Engine
     protected \MultiFlexi\ConfigFields $configFieldsInternal;
 
     /**
-     * Credential protype helper class.
+     * Credential prototype helper class.
      *
      * @param int|string $init
      */
@@ -496,5 +496,15 @@ class CredentialProtoType extends \MultiFlexi\Engine
     public function validateUuidFormat(string $uuid): bool
     {
         return preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $uuid) === 1;
+    }
+
+    public function checkAvailability(): \MultiFlexi\CredentialCheckResult
+    {
+        return new \MultiFlexi\CredentialCheckResult(
+            \MultiFlexi\CredentialState::Unknown,
+            _('Availability check not implemented for this credential type'),
+            time(),
+            0,
+        );
     }
 }

@@ -533,6 +533,69 @@ EOD;
     }
 
     /**
+     * Report a credential availability failure to all configured observability channels
+     * (SQL log, Zabbix, OpenTelemetry) without actually running the job.
+     *
+     * Called from the executor when a Phase 2 check blocks or defers a job.
+     */
+    public function reportCredentialBlocked(\MultiFlexi\CredentialCheckResult $result, string $credentialName): void
+    {
+        $now = (new \DateTime())->format('Y-m-d H:i:s');
+
+        $this->reporter->setDataValue('phase', 'credentialBlocked');
+        $this->reporter->setDataValue('job_id', $this->getMyKey());
+        $this->reporter->setDataValue('begin', $now);
+        $this->reporter->setDataValue('end', $now);
+        $this->reporter->setDataValue('exitcode', 75); // EX_TEMPFAIL
+        $this->reporter->setDataValue('exitcode_description', sprintf(
+            _('Credential %s not available (%s): %s'),
+            $credentialName,
+            $result->state->value,
+            $result->message,
+        ));
+
+        $runTemplate = $this->getRuntemplate();
+
+        if ($runTemplate !== null) {
+            $this->reporter->setDataValue('runtemplate_id', $runTemplate->getMyKey());
+            $this->reporter->setDataValue('runtemplate_name', $runTemplate->getRecordName());
+        }
+
+        $app     = $this->getApplication();
+        $company = $this->getCompany();
+
+        if ($app) {
+            $this->reporter->setDataValue('app_id', $app->getMyKey());
+            $this->reporter->setDataValue('app_name', $app->getRecordName());
+        }
+
+        if ($company) {
+            $this->reporter->setDataValue('company_id', $company->getMyKey());
+            $this->reporter->setDataValue('company_name', $company->getDataValue('name'));
+            $this->reporter->setDataValue('company_code', $company->getDataValue('slug'));
+        }
+
+        $this->addStatusMessage(
+            sprintf(_('Job #%d blocked by credential %s (%s): %s'), $this->getMyKey(), $credentialName, $result->state->value, $result->message),
+            'warning',
+        );
+
+        if (\Ease\Shared::cfg('ZABBIX_SERVER') && $app && $company && $runTemplate) {
+            $this->reportToZabbix('job-['.$company->getDataValue('slug').'-'.$app->getDataValue('code').'-'.$runTemplate->getMyKey().']');
+        }
+
+        if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
+            try {
+                $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
+                $otelExporter->recordJobEnd(75, 0.0, $this->reporter);
+                $otelExporter->flush();
+            } catch (\Exception $e) {
+                $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
+            }
+        }
+    }
+
+    /**
      * Send Job phase Message to Zabbix.
      *
      * @param string $itemKey destination zabbix item name
