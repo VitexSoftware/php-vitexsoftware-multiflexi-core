@@ -1015,6 +1015,11 @@ class DBEngine extends Engine
     public function feedSelectize($options = [])
     {
         $result = [];
+
+        if ($this->getNameColumn() === '' || $this->getKeyColumn() === '') {
+            return $result;
+        }
+
         $candidates = $this->listingQuery();
 
         foreach (self::fixIterator($candidates) as $candidat) {
