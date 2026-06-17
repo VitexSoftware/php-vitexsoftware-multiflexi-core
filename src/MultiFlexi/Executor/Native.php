@@ -97,34 +97,12 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
                 $logger = new \Ease\Sand();
                 $logger->setObjectName(\Ease\Logger\Message::getCallerName($this));
 
-                $liveOutputSocket = \Ease\Shared::cfg('LIVE_OUTPUT_SOCKET');
-
-                if ($liveOutputSocket) {
-                    $wsClient = new \WebSocket\Client($liveOutputSocket);
-                }
-
                 if (\Symfony\Component\Process\Process::ERR === $type) {
                     $logger->addStatusMessage($buffer, 'error');
-                    $this->addOutput($buffer, 'error');
-
-                    if ($liveOutputSocket) {
-                        try {
-                            $wsClient->send(json_encode(['type' => 'error', 'message' => $buffer]), 'binary');
-                        } catch (\Exception $exc) {
-                            echo $exc->getTraceAsString();
-                        }
-                    }
+                    $this->addOutput($buffer, 'stderr');
                 } else {
                     $logger->addStatusMessage($buffer, 'success');
-                    $this->addOutput($buffer, 'success');
-
-                    if ($liveOutputSocket) {
-                        try {
-                            $wsClient->send(json_encode(['type' => 'success', 'message' => $buffer]), 'binary');
-                        } catch (Exception $exc) {
-                            echo $exc->getTraceAsString();
-                        }
-                    }
+                    $this->addOutput($buffer, 'stdout');
                 }
             });
         } catch (\Symfony\Component\Process\Exception\ProcessTimedOutException $exc) {

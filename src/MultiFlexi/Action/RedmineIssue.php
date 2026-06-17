@@ -69,8 +69,8 @@ class RedmineIssue extends \MultiFlexi\CommonAction
         $body = 'JOB ID: '.$job->getMyKey()."\n\n";
         $body .= 'Command: '.$job->getDataValue('command')."\n\n";
         $body .= 'ExitCode: '.$job->getDataValue('exitcode')."\n\n";
-        $body .= "\nStdout:\n```\n".stripslashes($job->getDataValue('stdout'))."\n```";
-        $body .= "\nSterr:\n```\n".stripslashes($job->getDataValue('stderr'))."\n```\n\n";
+        $body .= "\nStdout:\n```\n".$job->getOutput()."\n```";
+        $body .= "\nSterr:\n```\n".$job->getErrorOutput()."\n```\n\n";
         $body .= 'MultiFlexi: '.\Ease\Shared::appName().' '.\Ease\Shared::appVersion()."\n\n";
 
         $data = [

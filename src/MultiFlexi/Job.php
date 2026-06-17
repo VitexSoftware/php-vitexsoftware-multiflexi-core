@@ -131,8 +131,6 @@ class Job extends DBEngine
             'app_id' => $this->getRunTemplate()->getDataValue('app_id'),
             'env' => \serialize($environment),
             'exitcode' => null,
-            'stdout' => '',
-            'stderr' => '',
             'schedule' => $scheduled->format('Y-m-d H:i:s'),
             'schedule_type' => $scheduleType,
             'executor' => $executor,
@@ -329,10 +327,8 @@ class Job extends DBEngine
         }
 
         $this->setData([
-            'pid' => $this->executor->getPid(),
-            'stdout' => addslashes($stdout),
-            'stderr' => addslashes($stderr),
-            'command' => $this->executor->commandline(),
+            'pid'      => $this->executor->getPid(),
+            'command'  => $this->executor->commandline(),
             'exitcode' => $statusCode,
         ]);
 
@@ -382,13 +378,10 @@ class Job extends DBEngine
         //        }
 
         $result = $this->updateToSQL([
-            'pid' => $this->executor->getPid(),
-            'end' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
-            'stdout' => addslashes($stdout),
-            'stderr' => addslashes($stderr),
+            'pid'         => $this->executor->getPid(),
+            'end'         => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
             'app_version' => $this->getApplication()->getDataValue('version'),
-            // 'command' => $this->commandline,
-            'exitcode' => $statusCode,
+            'exitcode'    => $statusCode,
         ], ['id' => $this->getMyKey()]);
 
         $this->updateTaskState($statusCode);
@@ -683,9 +676,9 @@ EOD;
      *
      * @return string job output
      */
-    public function getOutput()
+    public function getOutput(): string
     {
-        return $this->getDataValue('stdout');
+        return (new JobOutputLine())->getOutputString((int) $this->getMyKey(), 'stdout');
     }
 
     /**
@@ -693,9 +686,17 @@ EOD;
      *
      * @return string job StdErr
      */
-    public function getErrorOutput()
+    public function getErrorOutput(): string
     {
-        return $this->getDataValue('stderr');
+        return (new JobOutputLine())->getOutputString((int) $this->getMyKey(), 'stderr');
+    }
+
+    /**
+     * Obtain Job output lines of any type (stdout, stderr, info, warning, …).
+     */
+    public function getOutputByType(string $type): string
+    {
+        return (new JobOutputLine())->getOutputString((int) $this->getMyKey(), $type);
     }
 
     public function cleanUp(): void
@@ -1302,10 +1303,10 @@ EOD;
 
                 case 'text':
                 case 'url':
-                    $stdout = $this->getDataValue('stdout');
+                    $stdout = $this->getOutput();
 
                     if (!empty($stdout)) {
-                        $result[$name] = substr(stripcslashes((string) $stdout), 0, 65536);
+                        $result[$name] = substr($stdout, 0, 65536);
                     }
 
                     break;

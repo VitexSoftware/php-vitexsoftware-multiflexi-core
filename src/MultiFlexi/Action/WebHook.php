@@ -52,7 +52,7 @@ class WebHook extends \MultiFlexi\CommonAction
         $uri = $this->getDataValue('uri');
 
         if ($uri) {
-            $payload = stripslashes($this->runtemplate->getDataValue('stdout'));
+            $payload = $job->getOutput();
 
             $this->addStatusMessage(_('Perform begin'));
             // $exitCode = $this->job->executor->launch($command);

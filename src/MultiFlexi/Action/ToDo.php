@@ -351,23 +351,23 @@ class ToDo extends \MultiFlexi\CommonAction
         $description[] = '';
 
         // Add stdout if present
-        $stdout = $job->getDataValue('stdout');
+        $stdout = $job->getOutput();
 
         if (!empty($stdout)) {
             $description[] = '## Output (stdout)';
             $description[] = '```';
-            $description[] = stripslashes($stdout);
+            $description[] = $stdout;
             $description[] = '```';
             $description[] = '';
         }
 
         // Add stderr if present
-        $stderr = $job->getDataValue('stderr');
+        $stderr = $job->getErrorOutput();
 
         if (!empty($stderr)) {
             $description[] = '## Error Output (stderr)';
             $description[] = '```';
-            $description[] = stripslashes($stderr);
+            $description[] = $stderr;
             $description[] = '```';
             $description[] = '';
         }

@@ -54,14 +54,24 @@ abstract class CommonExecutor extends \Ease\Sand
     }
 
     /**
-     * Add Output line into cache.
+     * Add Output line into cache and persist to job_output_lines table.
      *
      * @param mixed $line
-     * @param mixed $type
+     * @param mixed $type Line type: 'stdout' | 'stderr' | 'success' | 'error' | 'info' | 'warning' | 'debug' | …
      */
     public function addOutput($line, $type): void
     {
         $this->outputCache[microtime()] = ['line' => $line, 'type' => $type];
+
+        $jobId = $this->job->getMyKey();
+
+        if ($jobId) {
+            try {
+                (new JobOutputLine())->addLine($jobId, \count($this->outputCache), $type, (string) $line);
+            } catch (\Throwable $e) {
+                // Never let a DB write failure abort the running job
+            }
+        }
     }
 
     /**
