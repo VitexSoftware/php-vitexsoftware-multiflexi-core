@@ -54,11 +54,7 @@ class Company extends DBEngine
     #[\Override]
     public function takeData(array $data): int
     {
-        if (isset($data['enabled'])) {
-            $data['enabled'] = true;
-        } else {
-            $data['enabled'] = false;
-        }
+        $data['enabled'] = !empty($data['enabled'] ?? false);
 
         if (\array_key_exists('slug', $data) && empty($data['slug'])) {
             unset($data['slug']);
