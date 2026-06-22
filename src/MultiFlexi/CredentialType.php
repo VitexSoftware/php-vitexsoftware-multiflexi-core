@@ -244,7 +244,7 @@ class CredentialType extends DBEngine
         }
 
         // Prepare data for database insertion - adapt to current schema
-        // Current schema has: id, name, url, logo, uuid, class, company_id
+        // Current schema has: id, name, url, logo, uuid, prototype, company_id
         $insertData = [
             'uuid' => $data['uuid'],
         ];
@@ -259,12 +259,12 @@ class CredentialType extends DBEngine
         // Note: description field doesn't exist in current schema
         // It will need to be stored in translations table
         // Add optional fields if present in current schema
-        if (isset($data['class'])) {
-            $insertData['class'] = $data['class'];
+        if (isset($data['prototype']) || isset($data['class'])) {
+            $insertData['prototype'] = $data['prototype'] ?? $data['class'];
         }
 
         if (isset($data['version'])) {
-            $insertData['version'] = $data['version'];
+            $insertData['version'] = (int) $data['version'];
         }
 
         if (isset($data['logo'])) {
