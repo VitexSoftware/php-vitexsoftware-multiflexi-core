@@ -62,11 +62,29 @@ class BitwardenServiceDelegate implements \Jalismrs\Bitwarden\BitwardenServiceDe
     #[\Override]
     public function restoreSession(): ?string
     {
-        return '';
+        $file = $this->sessionFile();
+
+        if (!is_readable($file)) {
+            return null;
+        }
+
+        $data = file_get_contents($file);
+
+        return ($data !== false && $data !== '') ? trim($data) : null;
     }
 
     #[\Override]
     public function storeSession(string $session): void
     {
+        $file = $this->sessionFile();
+        file_put_contents($file, $session, \LOCK_EX);
+        chmod($file, 0600);
+    }
+
+    private function sessionFile(): string
+    {
+        $key = md5($this->email.($this->url ?? ''));
+
+        return sys_get_temp_dir().'/multiflexi-bw-session-'.$key.'.key';
     }
 }

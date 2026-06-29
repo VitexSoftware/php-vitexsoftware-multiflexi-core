@@ -22,10 +22,10 @@
       "required": true
     },
     {
-      "keyword": "VAULTWARDEN_USERNAME",
+      "keyword": "VAULTWARDEN_EMAIL",
       "type": "string",
       "name": "VaultWarden User login",
-      "description": "VaultWarden login username",
+      "description": "User email address for VaultWarden login",
       "required": true
     },
     {
