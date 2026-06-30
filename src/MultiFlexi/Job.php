@@ -846,6 +846,11 @@ EOD;
      */
     public static function tmpfilepath(string $tmpfile): string
     {
+        // Stream wrappers (php://stdout, file://, etc.) are valid PHP I/O targets; leave them as-is.
+        if (str_contains($tmpfile, '://')) {
+            return $tmpfile;
+        }
+
         if ($tmpfile[0] !== \DIRECTORY_SEPARATOR) {
             $tmpfile = Defaults::$MULTIFLEXI_TMP.\DIRECTORY_SEPARATOR.$tmpfile;
         }
