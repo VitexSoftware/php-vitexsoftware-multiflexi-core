@@ -154,6 +154,13 @@ class RunTemplate extends \MultiFlexi\DBEngine
             $data = $this->getData();
         }
 
+        if (empty($data)) {
+            // Record was never loaded (e.g. non-existent id) — nothing to delete.
+            // Without this guard, an empty $data array reaches parent::deleteFromSQL()
+            // with no WHERE clause, which FluentPDO rejects with an uncaught exception.
+            return 0;
+        }
+
         $arnold = new \MultiFlexi\ActionConfig();
         $arnold->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
 
