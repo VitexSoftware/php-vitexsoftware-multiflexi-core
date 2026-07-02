@@ -476,7 +476,7 @@ EOD;
         $this->application = $this->getRunTemplate()->getApplication();
         LogToSQL::singleton()->setApplication($appId);
 
-        $this->company = $this->getCompany();
+        $this->company = $this->getRunTemplate()->getCompany();
         $this->setDataValue('executor', $executor);
 
         $this->setupEnvironment($envOverride);
