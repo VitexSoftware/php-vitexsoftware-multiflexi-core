@@ -67,7 +67,6 @@ of the namespaces lazy-loaded.
 #### Built-in Credential Types
 
 - **AbraFlexi**: Czech ERP system integration
-- **Office365**: Microsoft Office 365 services
 - **VaultWarden**: Bitwarden/VaultWarden password manager
 - **SQLServer**: Microsoft SQL Server database
 - **FioBank**: Fio Bank API integration

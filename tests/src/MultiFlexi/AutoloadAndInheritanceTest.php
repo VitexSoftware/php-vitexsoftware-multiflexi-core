@@ -120,7 +120,6 @@ final class AutoloadAndInheritanceTest extends TestCase
             'CredentialProtoType\\Csas' => ['class' => \MultiFlexi\CredentialProtoType\Csas::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\EnvFile' => ['class' => \MultiFlexi\CredentialProtoType\EnvFile::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\FioBank' => ['class' => \MultiFlexi\CredentialProtoType\FioBank::class, 'expected' => 'extends_credential_common'],
-            'CredentialProtoType\\Office365' => ['class' => \MultiFlexi\CredentialProtoType\Office365::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\RaiffeisenBank' => ['class' => \MultiFlexi\CredentialProtoType\RaiffeisenBank::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\SQLServer' => ['class' => \MultiFlexi\CredentialProtoType\SQLServer::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\VaultWarden' => ['class' => \MultiFlexi\CredentialProtoType\VaultWarden::class, 'expected' => 'extends_credential_common'],
