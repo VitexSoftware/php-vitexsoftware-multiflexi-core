@@ -46,6 +46,9 @@ class RunTplCreds extends Engine
         $this->unbindAll($runtemplate_id, $reqType);
         $this->insertToSQL(['runtemplate_id' => $runtemplate_id, 'credentials_id' => $credentials_id]);
 
+        // Drop stored RunTemplate config fields shadowed by the assigned credential.
+        (new RunTemplate($runtemplate_id))->dropStoredConfigProvidedByCredential(new Credential($credentials_id));
+
         return true;
     }
 
