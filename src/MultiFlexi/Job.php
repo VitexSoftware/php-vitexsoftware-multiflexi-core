@@ -342,7 +342,7 @@ class Job extends DBEngine
                 $duration = $end->getTimestamp() - $begin->getTimestamp();
 
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
-                $otelExporter->recordJobEnd($statusCode, (float) $duration, $this->reporter);
+                $otelExporter->recordJobEnd($statusCode, (float) $duration, $this->reporter->getData());
                 $otelExporter->flush();
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
@@ -580,7 +580,7 @@ EOD;
         if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
             try {
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
-                $otelExporter->recordJobEnd(75, 0.0, $this->reporter);
+                $otelExporter->recordJobEnd(75, 0.0, $this->reporter->getData());
                 $otelExporter->flush();
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
