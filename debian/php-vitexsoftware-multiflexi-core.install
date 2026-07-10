@@ -3,6 +3,7 @@ src/MultiFlexi/Env/*.php                  usr/share/php/MultiFlexi/Env/
 src/MultiFlexi/Zabbix/*.php               usr/share/php/MultiFlexi/Zabbix/
 src/MultiFlexi/Executor/*.php             usr/share/php/MultiFlexi/Executor/
 src/MultiFlexi/Reporting/*.php            usr/share/php/MultiFlexi/Reporting/
+src/MultiFlexi/Telemetry/*.php            usr/share/php/MultiFlexi/Telemetry/
 src/MultiFlexi/CredentialProtoType/*.php  usr/share/php/MultiFlexi/CredentialProtoType/
 src/MultiFlexi/Zabbix/Request/*.php       usr/share/php/MultiFlexi/Zabbix/Request/
 src/MultiFlexi/Zabbix/Exception/*.php     usr/share/php/MultiFlexi/Zabbix/Exception/

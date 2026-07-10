@@ -10,6 +10,27 @@ require_once '/usr/share/php/JsonSchema/autoload.php';
 require_once '/usr/share/php/Symfony/Component/Process/autoload.php';
 require_once '/usr/share/php/Cron/autoload.php';
 
+// Optional: OpenTelemetry SDK (php-open-telemetry-sdk / -exporter-otlp,
+// Suggests only). Load if installed; MultiFlexi\Telemetry\OtelMetricsExporter
+// degrades gracefully via class_exists() when absent.
+foreach ([
+    '/usr/share/php/Symfony/Polyfill/Php82/autoload.php',
+    '/usr/share/php/Symfony/Polyfill/Mbstring/autoload.php',
+    '/usr/share/php/Nevay/SPI/autoload.php',
+    '/usr/share/php/Http/Discovery/autoload.php',
+    '/usr/share/php/Nyholm/Psr7Server/autoload.php',
+    '/usr/share/php/OpenTelemetry/SemConv/autoload.php',
+    '/usr/share/php/OpenTelemetry/Context/autoload.php',
+    '/usr/share/php/OpenTelemetry/API/autoload.php',
+    '/usr/share/php/Opentelemetry/autoload.php',
+    '/usr/share/php/OpenTelemetry/SDK/autoload.php',
+    '/usr/share/php/OpenTelemetry/Contrib/Otlp/autoload.php',
+] as $otelAutoload) {
+    if (file_exists($otelAutoload)) {
+        require_once $otelAutoload;
+    }
+}
+
 // PSR-4 autoloader for MultiFlexi classes
 spl_autoload_register(function (string $class): void {
     $here = __DIR__;
