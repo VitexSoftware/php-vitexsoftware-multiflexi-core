@@ -22,7 +22,7 @@ foreach ([
     '/usr/share/php/OpenTelemetry/SemConv/autoload.php',
     '/usr/share/php/OpenTelemetry/Context/autoload.php',
     '/usr/share/php/OpenTelemetry/API/autoload.php',
-    '/usr/share/php/Opentelemetry/autoload.php',
+    '/usr/share/php/open-telemetry-gen-otlp-protobuf-autoload.php',
     '/usr/share/php/OpenTelemetry/SDK/autoload.php',
     '/usr/share/php/OpenTelemetry/Contrib/Otlp/autoload.php',
 ] as $otelAutoload) {
@@ -32,15 +32,23 @@ foreach ([
 }
 
 // php-google-protobuf (Debian) ships no autoloader of its own; the OTLP
-// exporter hard-requires \Google\Protobuf\Api via class_exists().
+// exporter hard-requires \Google\Protobuf\Api via class_exists(), and its
+// generated messages need the sibling GPBMetadata\* descriptor classes.
 spl_autoload_register(function (string $class): void {
-    $prefix = 'Google\\Protobuf\\';
+    $prefixes = [
+        'Google\\Protobuf\\' => '/usr/share/php/Google/Protobuf/',
+        'GPBMetadata\\' => '/usr/share/php/GPBMetadata/',
+    ];
 
-    if (str_starts_with($class, $prefix)) {
-        $file = '/usr/share/php/Google/Protobuf/'.str_replace('\\', '/', substr($class, \strlen($prefix))).'.php';
+    foreach ($prefixes as $prefix => $baseDir) {
+        if (str_starts_with($class, $prefix)) {
+            $file = $baseDir.str_replace('\\', '/', substr($class, \strlen($prefix))).'.php';
 
-        if (file_exists($file)) {
-            require $file;
+            if (file_exists($file)) {
+                require $file;
+            }
+
+            return;
         }
     }
 });
