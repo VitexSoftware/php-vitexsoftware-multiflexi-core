@@ -31,6 +31,27 @@ foreach ([
     }
 }
 
+// php-google-protobuf (Debian) ships no autoloader of its own; the OTLP
+// exporter hard-requires \Google\Protobuf\Api via class_exists().
+spl_autoload_register(function (string $class): void {
+    $prefix = 'Google\\Protobuf\\';
+
+    if (str_starts_with($class, $prefix)) {
+        $file = '/usr/share/php/Google/Protobuf/'.str_replace('\\', '/', substr($class, \strlen($prefix))).'.php';
+
+        if (file_exists($file)) {
+            require $file;
+        }
+    }
+});
+
+// php-http-discovery needs a PSR-18 client implementation on the system;
+// php-guzzlehttp-guzzle (Depends of php-guzzlehttp-psr7, already present
+// for other MultiFlexi HTTP needs) provides one.
+if (file_exists('/usr/share/php/GuzzleHttp/autoload.php')) {
+    require_once '/usr/share/php/GuzzleHttp/autoload.php';
+}
+
 // PSR-4 autoloader for MultiFlexi classes
 spl_autoload_register(function (string $class): void {
     $here = __DIR__;
