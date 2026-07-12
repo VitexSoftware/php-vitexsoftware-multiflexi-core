@@ -1,5 +1,15 @@
 php-vitexsoftware-multiflexi-core (2.10.0) UNRELEASED; urgency=medium
 
+  * fix(packaging): remove stale duplicate VaultWarden CredentialProtoType, its
+    credprototype.json and test — this credential type is owned by the standalone
+    multiflexi-vaultwarden package; the copy here was outdated and collided at
+    /usr/share/php/MultiFlexi/CredentialProtoType/VaultWarden.php during install
+  * test: drop AutoloadAndInheritanceTest.php entries and leftover
+    CredentialProtoType{AbraFlexi,Csas,RaiffeisenBank,mServer}Test.php files for
+    credential types that were already split into their own add-on packages
+    (multiflexi-abraflexi, multiflexi-csas, multiflexi-raiffeisenbank,
+    multiflexi-mserver) — these classes no longer exist in core and made the
+    test suite fatal when run without those packages installed
   * fix: Company::takeData() always set enabled=true when key present; use !empty() to respect actual value
   * Add CredentialState enum (Available/Degraded/Unavailable/Misconfigured/Unknown)
   * Add CredentialCheckResult final class with isSatisfied() gate logic

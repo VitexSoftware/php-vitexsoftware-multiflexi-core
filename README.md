@@ -66,13 +66,20 @@ of the namespaces lazy-loaded.
 
 #### Built-in Credential Types
 
-- **AbraFlexi**: Czech ERP system integration
-- **VaultWarden**: Bitwarden/VaultWarden password manager
 - **SQLServer**: Microsoft SQL Server database
 - **FioBank**: Fio Bank API integration
-- **RaiffeisenBank**: Raiffeisen Bank services
-- **Csas**: Česká spořitelna bank integration
 - **EnvFile**: Environment file credential provider
+
+Other credential types ship as separate add-on packages, each with its own
+`CredentialProtoType` class and test suite:
+
+- **AbraFlexi** — `multiflexi-abraflexi`
+- **RaiffeisenBank** — `multiflexi-raiffeisenbank`
+- **Csas** — `multiflexi-csas`
+- **VaultWarden**/Bitwarden — `multiflexi-vaultwarden`
+- **mServer** — `multiflexi-mserver`
+- **Office365**/Microsoft 365 — `multiflexi-microsoft365`
+- **DatabaseConnection** — `multiflexi-database-connection`
 
 ### Execution Environments
 
