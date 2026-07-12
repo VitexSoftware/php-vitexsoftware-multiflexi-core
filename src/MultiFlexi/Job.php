@@ -260,6 +260,8 @@ class Job extends DBEngine
         }
 
         /* Preserve used Envirnoment */
+        $beginNow = (new \DateTime())->format('Y-m-d H:i:s');
+
         $this->updateToSQL([
             'id' => $this->getMyKey(),
             'env' => serialize($this->environment),
@@ -267,6 +269,11 @@ class Job extends DBEngine
             'runtemplate_id' => $this->getRuntemplate()->getMyKey(),
             'begin' => new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()'),
         ]);
+
+        // updateToSQL() writes 'begin' straight to the DB via a raw SQL literal,
+        // it never touches $this->data, so getDataValue('begin') stayed null for
+        // the rest of the process (crashing the OTel export in runEnd()).
+        $this->setDataValue('begin', $beginNow);
 
         // OpenTelemetry metrics export
         if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
@@ -281,7 +288,7 @@ class Job extends DBEngine
                     $this->getRuntemplate()->getMyKey(),
                     $this->getRuntemplate()->getRecordName(),
                 );
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
             }
         }
@@ -337,14 +344,15 @@ class Job extends DBEngine
         // OpenTelemetry metrics export
         if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
             try {
-                $begin = new \DateTime($this->getDataValue('begin'));
+                $beginValue = $this->getDataValue('begin');
+                $begin = $beginValue ? new \DateTime($beginValue) : new \DateTime();
                 $end = new \DateTime();
                 $duration = $end->getTimestamp() - $begin->getTimestamp();
 
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
                 $otelExporter->recordJobEnd($statusCode, (float) $duration, $this->reporter->getData());
                 $otelExporter->flush();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
             }
         }
@@ -582,7 +590,7 @@ EOD;
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
                 $otelExporter->recordJobEnd(75, 0.0, $this->reporter->getData());
                 $otelExporter->flush();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
             }
         }
