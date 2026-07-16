@@ -543,16 +543,16 @@ EOD;
             if ($createdJobId !== null && !$transactionStarted) {
                 try {
                     $this->deleteFromSQL(['id' => $createdJobId]);
-                } catch (\Throwable $cleanupException) {
-                    $this->addStatusMessage(sprintf(_('Failed to clean up orphaned job #%d: %s'), $createdJobId, $cleanupException->getMessage()), 'error');
+                } catch (\Throwable) {
+                    $this->addStatusMessage(sprintf(_('Failed to clean up orphaned job #%d'), $createdJobId), 'error');
                 }
             }
 
             if ($restoreNextSchedule) {
                 try {
                     $runTemplate->updateToSQL(['next_schedule' => $previousNextSchedule], ['id' => $runTemplate->getMyKey()]);
-                } catch (\Throwable $cleanupException) {
-                    $this->addStatusMessage(sprintf(_('Failed to restore next_schedule for runtemplate #%d: %s'), $runTemplate->getMyKey(), $cleanupException->getMessage()), 'error');
+                } catch (\Throwable) {
+                    $this->addStatusMessage(sprintf(_('Failed to restore next_schedule for runtemplate #%d'), $runTemplate->getMyKey()), 'error');
                 }
             }
 
