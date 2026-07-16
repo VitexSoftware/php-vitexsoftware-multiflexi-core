@@ -540,7 +540,7 @@ EOD;
                 $pdo->rollBack();
             }
 
-            if ($createdJobId !== null) {
+            if ($createdJobId !== null && !$transactionStarted) {
                 try {
                     $this->deleteFromSQL(['id' => $createdJobId]);
                 } catch (\Throwable $cleanupException) {
