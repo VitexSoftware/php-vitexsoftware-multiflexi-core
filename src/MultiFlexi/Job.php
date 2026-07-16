@@ -27,6 +27,9 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
  */
 class Job extends DBEngine
 {
+    public const string SCHEDULE_TYPE_ADHOC = 'adhoc';
+    public const string SCHEDULE_TYPE_COMMAND_LINE = 'CommandLine';
+
     public executor $executor;
     public static array $intervalCode = [
         'y' => 'yearly',
@@ -364,7 +367,7 @@ class Job extends DBEngine
         // Ad-hoc jobs (manually triggered from web/CLI/API) must not affect automatic scheduling
         $scheduleType = $this->getDataValue('schedule_type');
 
-        if ($scheduleType !== 'adhoc' && $scheduleType !== 'CommandLine') {
+        if ($scheduleType !== self::SCHEDULE_TYPE_ADHOC && $scheduleType !== self::SCHEDULE_TYPE_COMMAND_LINE) {
             $rtUpdate['next_schedule'] = null;
             $rtUpdate['last_schedule'] = $this->getRunTemplate()->getDataValue('next_schedule');
         }
@@ -488,34 +491,73 @@ EOD;
         $this->setDataValue('executor', $executor);
 
         $this->setupEnvironment($envOverride);
+        $createdJobId = null;
+        $restoreNextSchedule = $scheduleType !== self::SCHEDULE_TYPE_ADHOC && $scheduleType !== self::SCHEDULE_TYPE_COMMAND_LINE;
+        $previousNextSchedule = $restoreNextSchedule ? $runTemplate->getDataValue('next_schedule') : null;
+        $pdo = $this->getPdo();
+        $transactionStarted = false;
 
-        $this->loadFromSQL($this->newJob($runTemplate, $this->environment, $scheduled, $executor, $scheduleType));
-
-        $this->reporter->setDataValue('phase', 'prepared');
-        $this->reporter->setDataValue('job_id', $this->getMyKey());
-        $this->reporter->setDataValue('app_id', $appId);
-        $this->reporter->setDataValue('app_name', $this->getApplication()->getDataValue('name'));
-        $this->reporter->setDataValue('begin', null);
-        $this->reporter->setDataValue('end', null);
-        $this->reporter->setDataValue('scheduled', $scheduled->format('Y-m-d H:i:s'));
-        $this->reporter->setDataValue('schedule_type', $scheduleType);
-        $this->reporter->setDataValue('company_id', $companyId);
-        $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
-        $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('code'));
-        $this->reporter->setDataValue('runtemplate_id', $runTemplate->getMyKey());
-        $this->reporter->setDataValue('exitcode', null);
-        $this->reporter->setDataValue('executor', $executor);
-        $this->reporter->setDataValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
-        $this->reporter->setDataValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
-        $this->reporter->setDataValue('interval', $runTemplate->getDataValue('interv'));
-        $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv')));
-
-        if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
-            // TODO $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');
+        if (!$pdo->inTransaction()) {
+            $pdo->beginTransaction();
+            $transactionStarted = true;
         }
 
-        // Automatically schedule the job for execution
-        $this->scheduleJobRun($scheduled);
+        try {
+            $createdJobId = $this->newJob($runTemplate, $this->environment, $scheduled, $executor, $scheduleType);
+            $this->loadFromSQL($createdJobId);
+
+            $this->reporter->setDataValue('phase', 'prepared');
+            $this->reporter->setDataValue('job_id', $this->getMyKey());
+            $this->reporter->setDataValue('app_id', $appId);
+            $this->reporter->setDataValue('app_name', $this->getApplication()->getDataValue('name'));
+            $this->reporter->setDataValue('begin', null);
+            $this->reporter->setDataValue('end', null);
+            $this->reporter->setDataValue('scheduled', $scheduled->format('Y-m-d H:i:s'));
+            $this->reporter->setDataValue('schedule_type', $scheduleType);
+            $this->reporter->setDataValue('company_id', $companyId);
+            $this->reporter->setDataValue('company_name', $this->getCompany()->getDataValue('name'));
+            $this->reporter->setDataValue('company_code', $this->getCompany()->getDataValue('code'));
+            $this->reporter->setDataValue('runtemplate_id', $runTemplate->getMyKey());
+            $this->reporter->setDataValue('exitcode', null);
+            $this->reporter->setDataValue('executor', $executor);
+            $this->reporter->setDataValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
+            $this->reporter->setDataValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
+            $this->reporter->setDataValue('interval', $runTemplate->getDataValue('interv'));
+            $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv')));
+
+            if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
+                // TODO $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');
+            }
+
+            // Automatically schedule the job for execution
+            $this->scheduleJobRun($scheduled);
+
+            if ($transactionStarted && $pdo->inTransaction()) {
+                $pdo->commit();
+            }
+        } catch (\Throwable $exception) {
+            if ($transactionStarted && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            if ($createdJobId !== null && !$transactionStarted) {
+                try {
+                    $this->deleteFromSQL(['id' => $createdJobId]);
+                } catch (\Throwable) {
+                    $this->addStatusMessage(sprintf(_('Failed to clean up orphaned job #%d'), $createdJobId), 'error');
+                }
+            }
+
+            if ($restoreNextSchedule) {
+                try {
+                    $runTemplate->updateToSQL(['next_schedule' => $previousNextSchedule], ['id' => $runTemplate->getMyKey()]);
+                } catch (\Throwable) {
+                    $this->addStatusMessage(sprintf(_('Failed to restore next_schedule for runtemplate #%d'), $runTemplate->getMyKey()), 'error');
+                }
+            }
+
+            throw $exception;
+        }
 
         return $outline;
     }
