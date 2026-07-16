@@ -27,8 +27,8 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
  */
 class Job extends DBEngine
 {
-    public const string SCHEDULE_TYPE_ADHOC = 'adhoc';
-    public const string SCHEDULE_TYPE_COMMAND_LINE = 'CommandLine';
+    public const SCHEDULE_TYPE_ADHOC = 'adhoc';
+    public const SCHEDULE_TYPE_COMMAND_LINE = 'CommandLine';
 
     public executor $executor;
     public static array $intervalCode = [
