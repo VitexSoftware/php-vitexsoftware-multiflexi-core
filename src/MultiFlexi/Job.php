@@ -27,6 +27,9 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
  */
 class Job extends DBEngine
 {
+    public const string SCHEDULE_TYPE_ADHOC = 'adhoc';
+    public const string SCHEDULE_TYPE_COMMAND_LINE = 'CommandLine';
+
     public executor $executor;
     public static array $intervalCode = [
         'y' => 'yearly',
@@ -364,7 +367,7 @@ class Job extends DBEngine
         // Ad-hoc jobs (manually triggered from web/CLI/API) must not affect automatic scheduling
         $scheduleType = $this->getDataValue('schedule_type');
 
-        if ($scheduleType !== 'adhoc' && $scheduleType !== 'CommandLine') {
+        if ($scheduleType !== self::SCHEDULE_TYPE_ADHOC && $scheduleType !== self::SCHEDULE_TYPE_COMMAND_LINE) {
             $rtUpdate['next_schedule'] = null;
             $rtUpdate['last_schedule'] = $this->getRunTemplate()->getDataValue('next_schedule');
         }
@@ -489,7 +492,7 @@ EOD;
 
         $this->setupEnvironment($envOverride);
         $createdJobId = null;
-        $restoreNextSchedule = $scheduleType !== 'adhoc' && $scheduleType !== 'CommandLine';
+        $restoreNextSchedule = $scheduleType !== self::SCHEDULE_TYPE_ADHOC && $scheduleType !== self::SCHEDULE_TYPE_COMMAND_LINE;
         $previousNextSchedule = $restoreNextSchedule ? $runTemplate->getDataValue('next_schedule') : null;
         $pdo = $this->getPdo();
         $transactionStarted = false;
