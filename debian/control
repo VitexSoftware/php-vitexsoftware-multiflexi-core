@@ -13,6 +13,7 @@ Package: php-vitexsoftware-multiflexi-core
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, php-vitexsoftware-ease-core, php-vitexsoftware-ease-fluentpdo, php-json-schema, php-symfony-process, php-dragonmantank-cron-expression
+Suggests: php-open-telemetry-sdk, php-open-telemetry-exporter-otlp, php-google-protobuf, php-guzzlehttp-guzzle
 Description: VitexSoftware Multiflexi Core Library
  This package contains the core library for the VitexSoftware Multiflexi
 

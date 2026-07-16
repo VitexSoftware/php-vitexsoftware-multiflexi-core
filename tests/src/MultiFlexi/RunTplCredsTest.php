@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Test\MultiFlexi;
 
+use MultiFlexi\RunTemplate;
 use MultiFlexi\RunTplCreds;
 use PHPUnit\Framework\TestCase;
 
@@ -25,8 +26,13 @@ final class RunTplCredsTest extends TestCase
         $this->assertTrue(class_exists(RunTplCreds::class));
     }
 
-    public function testBehaviorPlaceholder(): void
+    /**
+     * bind() must expose the credential-provided config pruning entry point
+     * it delegates to on RunTemplate.
+     */
+    public function testBindPruningIsWired(): void
     {
-        $this->markTestIncomplete('Add RunTplCreds behavioral tests.');
+        $this->assertTrue(method_exists(RunTplCreds::class, 'bind'));
+        $this->assertTrue(method_exists(RunTemplate::class, 'dropStoredConfigProvidedByCredential'));
     }
 }

@@ -18,7 +18,6 @@ namespace MultiFlexi\Telemetry;
 use MultiFlexi\Application;
 use MultiFlexi\Company;
 use MultiFlexi\Job;
-use MultiFlexi\Reporting\JobReport;
 use MultiFlexi\Reporting\MetricSinkInterface;
 use MultiFlexi\RunTemplate;
 use OpenTelemetry\API\Metrics\ObserverInterface;
@@ -142,17 +141,15 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
     /**
      * Record job end event with exit code and duration.
      *
-     * @param int       $exitCode Job exit code
-     * @param float     $duration Execution duration in seconds
-     * @param JobReport $report   Additional attributes (app_id, company_id, etc.)
+     * @param int   $exitCode   Job exit code
+     * @param float $duration   Execution duration in seconds
+     * @param array $attributes Additional attributes (app_id, company_id, etc.)
      */
-    public function recordJobEnd(int $exitCode, float $duration, JobReport $report): void
+    public function recordJobEnd(int $exitCode, float $duration, array $attributes): void
     {
         if (!$this->enabled) {
             return;
         }
-
-        $attributes = $report->getData();
 
         // Add exitcode to attributes
         $attributes['exitcode'] = $exitCode;
@@ -227,7 +224,7 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
         // Append metrics path for HTTP/JSON protocol
         if ($protocol === 'http/json' || $protocol === 'http/protobuf') {
             if (!str_ends_with($endpoint, '/v1/metrics')) {
-                $endpoint = rtrim($endpoint, '/').'}/v1/metrics';
+                $endpoint = rtrim($endpoint, '/').'/v1/metrics';
             }
         }
 

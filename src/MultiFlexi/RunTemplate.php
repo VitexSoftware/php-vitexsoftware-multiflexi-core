@@ -555,6 +555,66 @@ class RunTemplate extends \MultiFlexi\DBEngine
         return $credentor->listingQuery()->select(['credentials.name AS credential_name', 'credential_type.name AS credential_type_name', 'credential_type.prototype AS credential_prototype', 'credential_type.uuid AS credential_type_uuid', 'credential_type.logo AS credential_type_logo'])->where('runtemplate_id', $this->getMyKey())->leftJoin('credentials ON credentials.id = runtplcreds.credentials_id')->leftJoin('credential_type ON credential_type.id = credentials.credential_type_id')->fetchAll('credential_prototype');
     }
 
+    /**
+     * Remove stored RunTemplate config fields shadowed by an assigned credential.
+     *
+     * When a credential is assigned to a RunTemplate, the credential provides its
+     * own configuration fields. Any RunTemplate config value stored under the same
+     * name would be silently overwritten while building the job environment (see
+     * getEnvironment()), leading to inconsistent configuration handed to jobs.
+     * Such stored values are therefore removed here and every removal is logged.
+     *
+     * @param Credential $credential recently assigned credential
+     *
+     * @return array<string, string> removed name => value pairs
+     */
+    public function dropStoredConfigProvidedByCredential(Credential $credential): array
+    {
+        if (!$this->getMyKey() || !$credential->getMyKey()) {
+            return [];
+        }
+
+        $storedValues = $this->getRuntemplateEnvironment()->getEnvArray();
+        $providedNames = $credential->query()->getFieldNames();
+        $conflicting = self::intersectConfigNames($storedValues, $providedNames);
+
+        if ($conflicting === []) {
+            return [];
+        }
+
+        $configurator = new Configuration();
+
+        foreach ($conflicting as $name => $value) {
+            $configurator->deleteFromSQL([
+                'runtemplate_id' => $this->getMyKey(),
+                'name' => $name,
+            ]);
+            $this->addStatusMessage(sprintf(
+                _('Removed RunTemplate #%1$d config field "%2$s" (value: %3$s) provided by assigned credential #%4$d "%5$s"'),
+                $this->getMyKey(),
+                $name,
+                (string) $value,
+                $credential->getMyKey(),
+                $credential->getRecordName(),
+            ), 'warning');
+        }
+
+        return $conflicting;
+    }
+
+    /**
+     * Stored config values whose name is provided by a credential.
+     *
+     * @param array<string, string> $storedNameValue stored name => value pairs
+     * @param array<string>         $providedNames   field names provided by a credential
+     *
+     * @return array<string, string> subset of $storedNameValue whose name is provided
+     */
+    public static function intersectConfigNames(array $storedNameValue, array $providedNames): array
+    {
+        return array_intersect_key($storedNameValue, array_flip($providedNames));
+    }
+
     public function isScheduled(\DateTime $startTime): bool
     {
         $scheduler = new Scheduler();

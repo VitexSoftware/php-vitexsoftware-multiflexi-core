@@ -114,17 +114,14 @@ final class AutoloadAndInheritanceTest extends TestCase
             'Executor\\Native' => ['class' => \MultiFlexi\Executor\Native::class, 'expected' => 'extends_common_executor'],
             'Executor\\Podman' => ['class' => \MultiFlexi\Executor\Podman::class, 'expected' => 'extends_common_executor'],
 
-            // Credential types (should extend CredentialProtoType\Common or implement interface)
-            'CredentialProtoType\\AbraFlexi' => ['class' => \MultiFlexi\CredentialProtoType\AbraFlexi::class, 'expected' => 'extends_credential_common'],
+            // Credential types built into core (add-on packages like multiflexi-abraflexi,
+            // multiflexi-csas, multiflexi-raiffeisenbank, multiflexi-vaultwarden,
+            // multiflexi-mserver, multiflexi-microsoft365 and multiflexi-database-connection
+            // ship their own CredentialProtoType classes and are covered by their own test suites)
             'CredentialProtoType\\Common' => ['class' => \MultiFlexi\CredentialProtoType\Common::class, 'expected' => 'extends_credential_common'],
-            'CredentialProtoType\\Csas' => ['class' => \MultiFlexi\CredentialProtoType\Csas::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\EnvFile' => ['class' => \MultiFlexi\CredentialProtoType\EnvFile::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\FioBank' => ['class' => \MultiFlexi\CredentialProtoType\FioBank::class, 'expected' => 'extends_credential_common'],
-            'CredentialProtoType\\Office365' => ['class' => \MultiFlexi\CredentialProtoType\Office365::class, 'expected' => 'extends_credential_common'],
-            'CredentialProtoType\\RaiffeisenBank' => ['class' => \MultiFlexi\CredentialProtoType\RaiffeisenBank::class, 'expected' => 'extends_credential_common'],
             'CredentialProtoType\\SQLServer' => ['class' => \MultiFlexi\CredentialProtoType\SQLServer::class, 'expected' => 'extends_credential_common'],
-            'CredentialProtoType\\VaultWarden' => ['class' => \MultiFlexi\CredentialProtoType\VaultWarden::class, 'expected' => 'extends_credential_common'],
-            'CredentialProtoType\\mServer' => ['class' => \MultiFlexi\CredentialProtoType\mServer::class, 'expected' => 'extends_credential_common'],
 
             // Zabbix subcomponents
             'Zabbix\\Request\\Metric' => ['class' => \MultiFlexi\Zabbix\Request\Metric::class, 'expected' => 'exists'],

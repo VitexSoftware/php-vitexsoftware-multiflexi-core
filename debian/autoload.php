@@ -10,6 +10,56 @@ require_once '/usr/share/php/JsonSchema/autoload.php';
 require_once '/usr/share/php/Symfony/Component/Process/autoload.php';
 require_once '/usr/share/php/Cron/autoload.php';
 
+// Optional: OpenTelemetry SDK (php-open-telemetry-sdk / -exporter-otlp,
+// Suggests only). Load if installed; MultiFlexi\Telemetry\OtelMetricsExporter
+// degrades gracefully via class_exists() when absent.
+foreach ([
+    '/usr/share/php/Symfony/Polyfill/Php82/autoload.php',
+    '/usr/share/php/Symfony/Polyfill/Mbstring/autoload.php',
+    '/usr/share/php/Nevay/SPI/autoload.php',
+    '/usr/share/php/Http/Discovery/autoload.php',
+    '/usr/share/php/Nyholm/Psr7Server/autoload.php',
+    '/usr/share/php/OpenTelemetry/SemConv/autoload.php',
+    '/usr/share/php/OpenTelemetry/Context/autoload.php',
+    '/usr/share/php/OpenTelemetry/API/autoload.php',
+    '/usr/share/php/open-telemetry-gen-otlp-protobuf-autoload.php',
+    '/usr/share/php/OpenTelemetry/SDK/autoload.php',
+    '/usr/share/php/OpenTelemetry/Contrib/Otlp/autoload.php',
+] as $otelAutoload) {
+    if (file_exists($otelAutoload)) {
+        require_once $otelAutoload;
+    }
+}
+
+// php-google-protobuf (Debian) ships no autoloader of its own; the OTLP
+// exporter hard-requires \Google\Protobuf\Api via class_exists(), and its
+// generated messages need the sibling GPBMetadata\* descriptor classes.
+spl_autoload_register(function (string $class): void {
+    $prefixes = [
+        'Google\\Protobuf\\' => '/usr/share/php/Google/Protobuf/',
+        'GPBMetadata\\' => '/usr/share/php/GPBMetadata/',
+    ];
+
+    foreach ($prefixes as $prefix => $baseDir) {
+        if (str_starts_with($class, $prefix)) {
+            $file = $baseDir.str_replace('\\', '/', substr($class, \strlen($prefix))).'.php';
+
+            if (file_exists($file)) {
+                require $file;
+            }
+
+            return;
+        }
+    }
+});
+
+// php-http-discovery needs a PSR-18 client implementation on the system;
+// php-guzzlehttp-guzzle (Depends of php-guzzlehttp-psr7, already present
+// for other MultiFlexi HTTP needs) provides one.
+if (file_exists('/usr/share/php/GuzzleHttp/autoload.php')) {
+    require_once '/usr/share/php/GuzzleHttp/autoload.php';
+}
+
 // PSR-4 autoloader for MultiFlexi classes
 spl_autoload_register(function (string $class): void {
     $here = __DIR__;
