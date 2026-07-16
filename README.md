@@ -73,13 +73,13 @@ of the namespaces lazy-loaded.
 Other credential types ship as separate add-on packages, each with its own
 `CredentialProtoType` class and test suite:
 
-- **AbraFlexi** — `multiflexi-abraflexi`
-- **RaiffeisenBank** — `multiflexi-raiffeisenbank`
-- **Csas** — `multiflexi-csas`
-- **VaultWarden**/Bitwarden — `multiflexi-vaultwarden`
+- **AbraFlexi** — [`multiflexi-abraflexi`](https://github.com/VitexSoftware/multiflexi-abraflexi)
+- **RaiffeisenBank** — [`multiflexi-raiffeisenbank`](https://github.com/VitexSoftware/multiflexi-raiffeisenbank)
+- **Csas** — [`multiflexi-csas`](https://github.com/VitexSoftware/multiflexi-csas)
+- **VaultWarden**/Bitwarden — [`multiflexi-vaultwarden`](https://github.com/VitexSoftware/multiflexi-vaultwarden)
 - **mServer** — `multiflexi-mserver`
-- **Office365**/Microsoft 365 — `multiflexi-microsoft365`
-- **DatabaseConnection** — `multiflexi-database-connection`
+- **Office365**/Microsoft 365 — [`multiflexi-microsoft365`](https://github.com/VitexSoftware/multiflexi-microsoft365)
+- **DatabaseConnection** — [`multiflexi-database-connection`](https://github.com/VitexSoftware/multiflexi-database-connection)
 
 ### Execution Environments
 

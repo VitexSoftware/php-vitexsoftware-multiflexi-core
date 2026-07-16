@@ -1,4 +1,4 @@
-php-vitexsoftware-multiflexi-core (2.10.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.10.1) UNRELEASED; urgency=medium
 
   * fix(packaging): remove stale duplicate VaultWarden CredentialProtoType, its
     credprototype.json and test — this credential type is owned by the standalone
@@ -31,8 +31,10 @@ php-vitexsoftware-multiflexi-core (2.10.0) UNRELEASED; urgency=medium
   * EventRule: generalize buildEnvOverrides() to accept any source array
   * EventRule: add resolveSelector() with dot-path, JSONPath, @file: support
   * EventRule: add getRulesForRunTemplate() for job-completed chain triggers
+  * docs: link CredentialProtoType add-on packages to their GitHub repos
+    in README
 
- -- vitex <info@vitexsoftware.cz>  Sat, 14 Jun 2026 10:00:00 +0200
+ -- vitex <info@vitexsoftware.cz>  Thu, 16 Jul 2026 18:18:28 +0200
 
 php-vitexsoftware-multiflexi-core (2.9.3) UNRELEASED; urgency=medium
 
