@@ -353,7 +353,7 @@ class Job extends DBEngine
                 $duration = $end->getTimestamp() - $begin->getTimestamp();
 
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
-                $otelExporter->recordJobEnd($statusCode, (float) $duration, $this->reporter->getData());
+                $otelExporter->recordJobEnd($statusCode, (float) $duration, $this->otelJobAttributes());
                 $otelExporter->flush();
             } catch (\Throwable $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
@@ -398,6 +398,31 @@ class Job extends DBEngine
         $this->updateTaskState($statusCode);
 
         return $result;
+    }
+
+    /**
+     * Low-cardinality attribute set for OpenTelemetry job counters/histogram.
+     *
+     * Deliberately excludes job-instance-unique reporter fields (job_id, pid,
+     * begin/end/scheduled timestamps, raw result data, result file paths, ...):
+     * each distinct attribute combination becomes its own permanent metric
+     * series, so unique-per-job values would turn every counter into an
+     * ever-growing set of one-sample series that rate()/increase() can never
+     * aggregate over.
+     *
+     * @return array<string, mixed>
+     */
+    private function otelJobAttributes(): array
+    {
+        return array_intersect_key($this->reporter->getData(), array_flip([
+            'app_id',
+            'app_name',
+            'company_id',
+            'company_name',
+            'runtemplate_id',
+            'runtemplate_name',
+            'exitcode',
+        ]));
     }
 
     /**
@@ -630,7 +655,7 @@ EOD;
         if (\Ease\Shared::cfg('OTEL_ENABLED') && class_exists('\\MultiFlexi\\Telemetry\\OtelMetricsExporter')) {
             try {
                 $otelExporter = new \MultiFlexi\Telemetry\OtelMetricsExporter();
-                $otelExporter->recordJobEnd(75, 0.0, $this->reporter->getData());
+                $otelExporter->recordJobEnd(75, 0.0, $this->otelJobAttributes());
                 $otelExporter->flush();
             } catch (\Throwable $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');

@@ -37,6 +37,25 @@ use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
 {
     /**
+     * Allow-listed metric attribute keys.
+     *
+     * Job-instance-unique fields (job_id, pid, begin/end/scheduled timestamps, raw
+     * result data, result file paths, ...) must never end up here: each distinct
+     * attribute combination becomes its own permanent Prometheus/OTel series, so
+     * per-job-unique values turn every counter into an ever-growing set of
+     * one-sample series that rate()/increase() can never aggregate over.
+     */
+    private const ALLOWED_ATTRIBUTE_KEYS = [
+        'app_id',
+        'app_name',
+        'company_id',
+        'company_name',
+        'runtemplate_id',
+        'runtemplate_name',
+        'exitcode',
+    ];
+
+    /**
      * MeterProvider instance.
      */
     private ?MeterProvider $meterProvider = null;
@@ -125,15 +144,14 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
             return;
         }
 
-        $this->jobsTotal->add(1, [
-            'job_id' => $jobId,
+        $this->jobsTotal->add(1, $this->filterAttributes([
             'app_id' => $appId,
             'app_name' => $appName,
             'company_id' => $companyId,
             'company_name' => $companyName,
             'runtemplate_id' => $runtemplateId,
             'runtemplate_name' => $runtemplateName,
-        ]);
+        ]));
 
         $this->addStatusMessage(sprintf(_('OTel: Recorded job start #%d'), $jobId), 'debug');
     }
@@ -153,6 +171,8 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
 
         // Add exitcode to attributes
         $attributes['exitcode'] = $exitCode;
+
+        $attributes = $this->filterAttributes($attributes);
 
         // Record success or failure
         if ($exitCode === 0) {
@@ -211,6 +231,23 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
     public function isEnabled(): bool
     {
         return $this->enabled;
+    }
+
+    /**
+     * Strip any attribute not on the low-cardinality allow-list.
+     *
+     * Guards against job-instance-unique values (job_id, pid, timestamps, raw
+     * result payloads, file paths, ...) being attached as metric labels, which
+     * would otherwise turn every job execution into its own permanent,
+     * never-repeating Prometheus series.
+     *
+     * @param array<string, mixed> $attributes
+     *
+     * @return array<string, mixed>
+     */
+    private function filterAttributes(array $attributes): array
+    {
+        return array_intersect_key($attributes, array_flip(self::ALLOWED_ATTRIBUTE_KEYS));
     }
 
     /**
