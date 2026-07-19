@@ -79,6 +79,18 @@ distributions.each { distro ->
                     }
                 }
 
+                stage('PHP Syntax Check ' + distroName) {
+                    buildImage.inside {
+                        // Lint every source file with this distro's own php binary so a
+                        // construct that's only valid on a newer/older PHP (e.g. the PHP
+                        // 8.3-only typed class constant that crash-looped multiflexi-scheduler
+                        // in production, issue #46) fails CI on the exact distro it would break,
+                        // instead of only being caught by "does the .deb install ok".
+                        sh 'php -v'
+                        sh 'find src -name "*.php" -print0 | xargs -0 -n1 php -l'
+                    }
+                }
+
                 stage('Test ' + distroName) {
                     buildImage.inside {
                         def debconf_debug = 0 //Set to "5" or "developer" to debug debconf

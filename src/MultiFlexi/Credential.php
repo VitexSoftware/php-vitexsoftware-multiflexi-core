@@ -249,4 +249,24 @@ class Credential extends DBEngine
     {
         return $this->fields;
     }
+
+    /**
+     * Data safe to expose to UI/API/CLI: identical to getData() except any
+     * key that corresponds to a redactable (secret/password) field is
+     * replaced by a masked placeholder instead of the real value.
+     *
+     * @return array<string, mixed>
+     */
+    public function getRedactedData(): array
+    {
+        $data = $this->getData();
+
+        foreach ($this->getFields()->getFields() as $code => $field) {
+            if (\array_key_exists($code, $data) && $field->isRedactable()) {
+                $data[$code] = ConfigField::maskValue(\is_string($data[$code]) ? $data[$code] : (string) $data[$code]);
+            }
+        }
+
+        return $data;
+    }
 }

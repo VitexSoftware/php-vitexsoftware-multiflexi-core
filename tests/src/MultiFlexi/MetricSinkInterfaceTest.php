@@ -125,4 +125,58 @@ final class MetricSinkInterfaceTest extends TestCase
 
         $reporter->recordJobEnd(0, 1.0, []);
     }
+
+    /**
+     * Regression guard: OtelMetricsExporter must never turn job-instance-unique
+     * fields (job_id, pid, begin/end/scheduled timestamps, raw result data,
+     * result file paths, ...) into metric attributes. Each distinct attribute
+     * combination becomes its own permanent Prometheus series, so per-job-unique
+     * values silently turn every counter into an ever-growing set of one-sample
+     * series that rate()/increase() can never aggregate over (this is exactly
+     * what broke the "Total Jobs" / "Success Rate %" Grafana panels).
+     */
+    public function testOtelMetricsExporterFiltersHighCardinalityAttributes(): void
+    {
+        // Bypass the constructor: it reaches out to OTEL_ENABLED config / DB-backed
+        // logging, none of which matters for testing the pure attribute filter.
+        $exporter = (new \ReflectionClass(OtelMetricsExporter::class))->newInstanceWithoutConstructor();
+
+        $method = new \ReflectionMethod(OtelMetricsExporter::class, 'filterAttributes');
+
+        $rawJobReporterPayload = [
+            'job_id' => 245171,
+            'pid' => 1815291,
+            'begin' => '2026-07-19 11:00:01',
+            'end' => '2026-07-19 11:00:02',
+            'scheduled' => '2026-07-19 11:00:00',
+            'data' => '{"producer":"AbraFlexi","status":"success"}',
+            'result_file' => '/var/lib/multiflexi/tmp/report.json',
+            'exitcode_description' => 'OK Success',
+            'version' => '1.4.0.170',
+            'interval' => '0 * * * *',
+            'interval_seconds' => 3600,
+            'schedule_type' => 'custom',
+            'launched_by' => 'multiflexi',
+            'launched_by_id' => 5,
+            'app_id' => 12,
+            'app_name' => 'Email Sender',
+            'company_id' => 1,
+            'company_name' => 'VitexSoftware',
+            'runtemplate_id' => 115,
+            'runtemplate_name' => 'Email Sender',
+            'exitcode' => 0,
+        ];
+
+        $filtered = $method->invoke($exporter, $rawJobReporterPayload);
+
+        $this->assertSame([
+            'app_id' => 12,
+            'app_name' => 'Email Sender',
+            'company_id' => 1,
+            'company_name' => 'VitexSoftware',
+            'runtemplate_id' => 115,
+            'runtemplate_name' => 'Email Sender',
+            'exitcode' => 0,
+        ], $filtered);
+    }
 }
