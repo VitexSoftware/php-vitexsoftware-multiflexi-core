@@ -49,8 +49,8 @@ EOD;
     public function columns($columns = [])
     {
         return parent::columns([
-            ['name' => 'id', 'type' => 'text', 'label' => _('ID')],
             ['name' => 'after', 'type' => 'text', 'label' => _('After')],
+            ['name' => 'schedule_type', 'type' => 'text', 'label' => _('Trigger')],
             ['name' => 'job', 'type' => 'text', 'label' => _('Job')],
             ['name' => 'app_name', 'type' => 'text', 'label' => _('App')],
             ['name' => 'runtemplate_name', 'type' => 'text', 'label' => _('Runtemplate')],
@@ -59,9 +59,9 @@ EOD;
     }
     public function completeDataRow(array $dataRowRaw): array
     {
-        $dataRow['id'] = $dataRowRaw['id'];
         $dataRow['after'] = $dataRowRaw['after'];
-        $dataRow['job'] = (string) new \Ease\Html\ATag('job.php?id='.$dataRowRaw['job'], '🏁&nbsp;'.$dataRowRaw['job']);
+        $dataRow['schedule_type'] = ucfirst((string) ($dataRowRaw['schedule_type'] ?? ''));
+        $dataRow['job'] = (string) new \Ease\Html\ATag('job.php?id='.$dataRowRaw['job'], '🏁&nbsp;'._('Detail'));
         $dataRow['app_name'] = (string) new \Ease\Html\ATag('app.php?id='.$dataRowRaw['app_id'], '🧩&nbsp;'.$dataRowRaw['app_name']);
         $dataRow['runtemplate_name'] = (string) new \Ease\Html\ATag('runtemplate.php?id='.$dataRowRaw['runtemplate_id'], '⚗️&nbsp;'.$dataRowRaw['runtemplate_name']);
         $dataRow['company_name'] = (string) new \Ease\Html\ATag('company.php?id='.$dataRowRaw['company_id'], '🏭&nbsp;'.$dataRowRaw['company_name']);
