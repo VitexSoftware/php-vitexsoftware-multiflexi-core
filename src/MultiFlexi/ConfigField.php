@@ -161,13 +161,17 @@ class ConfigField
      */
     public function setType(string $type): self
     {
-        $allowedTypes = ['string', 'file-path', 'email', 'url', 'integer', 'float', 'bool', 'password', 'set', 'text'];
+        $allowedTypes = ['string', 'file-path', 'email', 'url', 'integer', 'float', 'bool', 'password', 'secret', 'set', 'text'];
 
         if (!\in_array($type, $allowedTypes, true)) {
             throw new \InvalidArgumentException("Invalid type: {$type}. Allowed types are: ".implode(', ', $allowedTypes));
         }
 
         $this->type = $type;
+
+        if ($type === 'password' || $type === 'secret') {
+            $this->setSecret(true);
+        }
 
         return $this->setMultiLine($type === 'text');
     }
@@ -239,6 +243,44 @@ class ConfigField
     public function isSecret(): bool
     {
         return $this->isSecret;
+    }
+
+    /**
+     * Fixed-length placeholder shown instead of a set secret value.
+     *
+     * Fixed length is deliberate: a mask derived from the real value's
+     * length would itself leak information about the secret.
+     */
+    public const MASKED_SET = '••••••••';
+
+    /**
+     * Placeholder shown instead of an empty/unset secret value.
+     */
+    public const MASKED_EMPTY = '(not set)';
+
+    /**
+     * Whether this field's value must never be shown in plaintext to
+     * external consumers (UI, API, CLI output).
+     */
+    public function isRedactable(): bool
+    {
+        return $this->isSecret() || \in_array($this->getType(), ['password', 'secret'], true);
+    }
+
+    /**
+     * Turn a raw value into its display-safe masked form.
+     */
+    public static function maskValue(?string $value): string
+    {
+        return ($value === null || $value === '') ? self::MASKED_EMPTY : self::MASKED_SET;
+    }
+
+    /**
+     * Value safe to expose to UI/API/CLI: masked when isRedactable(), raw otherwise.
+     */
+    public function getDisplayValue(): string
+    {
+        return $this->isRedactable() ? self::maskValue($this->getValue()) : (string) $this->getValue();
     }
 
     /**

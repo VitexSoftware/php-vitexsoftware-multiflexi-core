@@ -112,6 +112,32 @@ class ConfigFields extends \Ease\Molecule implements \Countable, \Iterator
         return $fields;
     }
 
+    /**
+     * Explicit raw (unredacted) equivalent of getEnvArray(), for legitimate
+     * internal callers that need real secret values (e.g. job execution).
+     *
+     * @return array<string, string>
+     */
+    public function getRawEnvArray(): array
+    {
+        return $this->getEnvArray();
+    }
+
+    /**
+     * @return array<string, string> field code => display-safe (masked when
+     *                                redactable) value, for UI/API/CLI output
+     */
+    public function getRedactedArray(): array
+    {
+        $fields = [];
+
+        foreach ($this->fields as $field) {
+            $fields[$field->getCode()] = $field->getDisplayValue();
+        }
+
+        return $fields;
+    }
+
     // \Iterator interface implementation
 
     public function current(): mixed
