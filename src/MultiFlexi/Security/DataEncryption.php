@@ -141,18 +141,19 @@ class DataEncryption
         $nextVersionStmt->execute([$keyName]);
         $nextVersion = (int) $nextVersionStmt->fetchColumn();
 
+        $now = date('Y-m-d H:i:s');
         $this->pdo->beginTransaction();
 
         try {
             $deactivateStmt = $this->pdo->prepare(
-                "UPDATE `{$this->keysTableName}` SET is_active = FALSE, rotated_at = NOW() WHERE key_name = ? AND is_active = TRUE",
+                "UPDATE `{$this->keysTableName}` SET is_active = FALSE, rotated_at = ? WHERE key_name = ? AND is_active = TRUE",
             );
-            $deactivateStmt->execute([$keyName]);
+            $deactivateStmt->execute([$now, $keyName]);
 
             $insertStmt = $this->pdo->prepare(
-                "INSERT INTO `{$this->keysTableName}` (key_name, version, key_data, algorithm, created_at, is_active) VALUES (?, ?, ?, ?, NOW(), TRUE)",
+                "INSERT INTO `{$this->keysTableName}` (key_name, version, key_data, algorithm, created_at, is_active) VALUES (?, ?, ?, ?, ?, TRUE)",
             );
-            $success = $insertStmt->execute([$keyName, $nextVersion, $encryptedKey, $algorithm]);
+            $success = $insertStmt->execute([$keyName, $nextVersion, $encryptedKey, $algorithm, $now]);
 
             $this->pdo->commit();
         } catch (\Throwable $e) {
