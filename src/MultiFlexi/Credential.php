@@ -61,7 +61,12 @@ class Credential extends DBEngine
      */
     private function getEncryptor(): ?\MultiFlexi\Security\DataEncryption
     {
-        if (!\Ease\Shared::cfg('DATA_ENCRYPTION_ENABLED', true)) {
+        // \Ease\Shared::cfg() returns the raw .env string ("false"), not a
+        // cast bool — plain truthiness would treat "false" as true (any
+        // non-empty, non-"0" string is truthy in PHP), silently defeating
+        // DATA_ENCRYPTION_ENABLED=false (e.g. multiflexi-common's postinst
+        // "disable encryption" debconf choice for dev deployments).
+        if (!filter_var(\Ease\Shared::cfg('DATA_ENCRYPTION_ENABLED', true), \FILTER_VALIDATE_BOOLEAN)) {
             return null;
         }
 
