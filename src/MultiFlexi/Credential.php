@@ -30,8 +30,6 @@ class Credential extends DBEngine
      * Named key used to encrypt/decrypt credential field values at rest.
      */
     private const ENCRYPTION_KEY_NAME = 'credentials';
-    private ?\MultiFlexi\Security\DataEncryption $encryptor = null;
-    private bool $encryptorResolved = false;
 
     public function __construct($identifier = null, $options = [])
     {
@@ -44,23 +42,25 @@ class Credential extends DBEngine
     }
 
     /**
-     * Lazily obtain the DataEncryption instance used for encrypting/
-     * decrypting redactable field values, or null when encryption at rest
-     * is disabled via DATA_ENCRYPTION_ENABLED=false.
+     * Obtain a DataEncryption instance bound to credator's CURRENT PDO
+     * connection, or null when encryption at rest is disabled via
+     * DATA_ENCRYPTION_ENABLED=false.
+     *
+     * Deliberately not cached: when DB_PERSISTENT is off (as on SQLite
+     * installs), Ease\SQL\Orm::getPdo() opens a fresh connection on every
+     * call rather than reusing one. Caching a DataEncryption instance
+     * (and the PDO handle it captured) would keep an old connection alive
+     * alongside credator's newer one, and two live connections against
+     * the same SQLite file deadlock with "database is locked" the moment
+     * one of them writes.
      */
     private function getEncryptor(): ?\MultiFlexi\Security\DataEncryption
     {
-        if ($this->encryptorResolved) {
-            return $this->encryptor;
+        if (!\Ease\Shared::cfg('DATA_ENCRYPTION_ENABLED', true)) {
+            return null;
         }
 
-        $this->encryptorResolved = true;
-
-        if (\Ease\Shared::cfg('DATA_ENCRYPTION_ENABLED', true)) {
-            $this->encryptor = new \MultiFlexi\Security\DataEncryption($this->credator->getPdo());
-        }
-
-        return $this->encryptor;
+        return new \MultiFlexi\Security\DataEncryption($this->credator->getPdo());
     }
 
     /**
