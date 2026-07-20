@@ -69,6 +69,37 @@ class Credential extends DBEngine
     }
 
     /**
+     * Retry a SQL write a few times on SQLite's "database is locked".
+     *
+     * Ease\SQL\Orm opens a fresh connection per getPdo() call whenever
+     * DB_PERSISTENT is off (SQLite installs), and none of those
+     * connections have a busy_timeout configured — so any write that
+     * overlaps another connection's write (e.g. this class's own
+     * encryption-key lookup, or the framework's SQL-backed logger)
+     * fails immediately with SQLSTATE[HY000] error 5 instead of
+     * waiting. A short randomized-backoff retry absorbs that instead
+     * of surfacing a spurious failure to the caller.
+     */
+    private function retryOnLock(callable $write): mixed
+    {
+        $attempts = 0;
+
+        while (true) {
+            try {
+                return $write();
+            } catch (\PDOException $e) {
+                ++$attempts;
+
+                if ($attempts >= 5 || !str_contains($e->getMessage(), 'database is locked')) {
+                    throw $e;
+                }
+
+                usleep(random_int(20000, 80000) * $attempts);
+            }
+        }
+    }
+
+    /**
      * Encrypt a redactable field value for storage in credata.value.
      *
      * Fails closed: when encryption is required (DATA_ENCRYPTION_ENABLED,
@@ -188,7 +219,7 @@ class Credential extends DBEngine
             }
         }
 
-        $recordId = parent::insertToSQL($data);
+        $recordId = $this->retryOnLock(fn () => parent::insertToSQL($data));
 
         if ($fieldData) {
             foreach ($fieldData as $filedName => $fieldValue) {
@@ -199,14 +230,14 @@ class Credential extends DBEngine
                     $storage = $this->encryptFieldValue($filedName, (string) $fieldValue);
                 }
 
-                $this->credator->insertToSQL([
+                $this->retryOnLock(fn () => $this->credator->insertToSQL([
                     'credential_id' => $recordId,
                     'name' => $filedName,
                     'value' => $storage['value'],
                     'type' => $field->getType(),
                     'is_encrypted' => $storage['is_encrypted'],
                     'encryption_key_version' => $storage['encryption_key_version'],
-                ], );
+                ]));
             }
         }
 
@@ -256,7 +287,7 @@ class Credential extends DBEngine
             }
 
             if ($isRecordable) {
-                $this->credator->updateToSQL(
+                $this->retryOnLock(fn () => $this->credator->updateToSQL(
                     [
                         'value' => $storage['value'],
                         'is_encrypted' => $storage['is_encrypted'],
@@ -266,16 +297,16 @@ class Credential extends DBEngine
                         'credential_id' => $this->getMyKey(),
                         'name' => $field,
                     ],
-                );
+                ));
             } else {
-                $this->credator->insertToSQL([
+                $this->retryOnLock(fn () => $this->credator->insertToSQL([
                     'value' => $storage['value'],
                     'credential_id' => $this->getMyKey(),
                     'name' => $field,
                     'type' => $fieldDef->getType(),
                     'is_encrypted' => $storage['is_encrypted'],
                     'encryption_key_version' => $storage['encryption_key_version'],
-                ], );
+                ]));
             }
 
             unset($originalData[$field]); // Processed field data
@@ -283,7 +314,7 @@ class Credential extends DBEngine
 
         $this->takeData($originalData);
 
-        return parent::updateToSQL($data, $conditons);
+        return $this->retryOnLock(fn () => parent::updateToSQL($data, $conditons));
     }
 
     public function loadFromSQL($itemID = null)
