@@ -118,6 +118,16 @@ class Credential extends DBEngine
 
         $envelope = $encryptor->encrypt($plaintext, self::ENCRYPTION_KEY_NAME);
 
+        // Force the throwaway Credata/DataEncryption instance's SQLite
+        // connection to close now rather than whenever PHP's cycle
+        // collector next happens to run: confirmed live on 10.11.182.73
+        // that without this, the connection can still be open when this
+        // object's OWN write (e.g. the parent::updateToSQL() at the end of
+        // updateToSQL()) runs moments later, failing with "database is
+        // locked" even though nothing still needs that connection.
+        unset($encryptor);
+        gc_collect_cycles();
+
         return [
             'value' => json_encode($envelope, \JSON_THROW_ON_ERROR),
             'is_encrypted' => 1,
@@ -153,6 +163,14 @@ class Credential extends DBEngine
             $this->addStatusMessage(sprintf(_('Failed to decrypt field %s: %s'), $fieldName, $e->getMessage()), 'error');
 
             return $storedValue;
+        } finally {
+            // See encryptFieldValue(): the throwaway Credata/DataEncryption
+            // instance's SQLite connection can otherwise survive past this
+            // method's return (PHP's cycle collector isn't guaranteed to run
+            // immediately), lingering long enough to make a subsequent write
+            // on this object's own connection fail with "database is locked".
+            unset($encryptor);
+            gc_collect_cycles();
         }
     }
 
