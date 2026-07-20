@@ -42,17 +42,22 @@ class Credential extends DBEngine
     }
 
     /**
-     * Obtain a DataEncryption instance bound to credator's CURRENT PDO
-     * connection, or null when encryption at rest is disabled via
-     * DATA_ENCRYPTION_ENABLED=false.
+     * Obtain a DataEncryption instance, or null when encryption at rest is
+     * disabled via DATA_ENCRYPTION_ENABLED=false.
      *
-     * Deliberately not cached: when DB_PERSISTENT is off (as on SQLite
-     * installs), Ease\SQL\Orm::getPdo() opens a fresh connection on every
-     * call rather than reusing one. Caching a DataEncryption instance
-     * (and the PDO handle it captured) would keep an old connection alive
-     * alongside credator's newer one, and two live connections against
-     * the same SQLite file deadlock with "database is locked" the moment
-     * one of them writes.
+     * Deliberately uses a throwaway Credata instance for its PDO connection
+     * rather than $this->credator or $this: Ease\SQL\Orm::getFluentPDO()
+     * caches its FluentPDO\Query (and the connection captured inside it)
+     * the first time it's called on an object, but a direct getPdo() call
+     * on that same object always opens ANOTHER fresh connection when
+     * DB_PERSISTENT is off (the case on SQLite installs) — leaving that
+     * extra connection permanently parked in the object's $pdo property,
+     * alongside the different connection $fluent actually uses for
+     * inserts/updates. Two simultaneously open connections to one SQLite
+     * file then deadlock with "database is locked" as soon as one writes.
+     * A fresh, local Credata() has no cached $fluent yet and isn't kept
+     * anywhere after this method returns, so its connection is opened and
+     * closed cleanly within this call, never overlapping with credator's.
      */
     private function getEncryptor(): ?\MultiFlexi\Security\DataEncryption
     {
@@ -60,7 +65,7 @@ class Credential extends DBEngine
             return null;
         }
 
-        return new \MultiFlexi\Security\DataEncryption($this->credator->getPdo());
+        return new \MultiFlexi\Security\DataEncryption((new Credata())->getPdo());
     }
 
     /**
