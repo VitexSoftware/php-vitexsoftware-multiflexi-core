@@ -59,7 +59,7 @@ EOD;
     }
     public function completeDataRow(array $dataRowRaw): array
     {
-        $dataRow['after'] = $dataRowRaw['after'];
+        $dataRow['after'] = $dataRowRaw['after'].'<br>'.(string) new \Ease\Html\SmallTag(new \Ease\Html\Widgets\LiveAge(new \DateTime($dataRowRaw['after'])));
         $dataRow['schedule_type'] = ucfirst((string) ($dataRowRaw['schedule_type'] ?? ''));
         $dataRow['job'] = (string) new \Ease\Html\ATag('job.php?id='.$dataRowRaw['job'], '🏁&nbsp;'._('Detail'));
         $dataRow['app_name'] = (string) new \Ease\Html\ATag('app.php?id='.$dataRowRaw['app_id'], '🧩&nbsp;'.$dataRowRaw['app_name']);
