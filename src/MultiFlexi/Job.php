@@ -291,6 +291,7 @@ class Job extends DBEngine
                     $this->getRuntemplate()->getMyKey(),
                     $this->getRuntemplate()->getRecordName(),
                 );
+                $otelExporter->flush();
             } catch (\Throwable $e) {
                 $this->addStatusMessage(sprintf(_('OTel export failed: %s'), $e->getMessage()), 'debug');
             }
