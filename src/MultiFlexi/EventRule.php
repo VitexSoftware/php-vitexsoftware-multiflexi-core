@@ -148,6 +148,10 @@ class EventRule extends DBEngine
             $envOverrides['EVENT_RECORD_ID'] = (string) ($source['recordid'] ?? '');
         }
 
+        if (!isset($envOverrides['EVENT_DOCUMENT_URI']) && !empty($source['document_uri'])) {
+            $envOverrides['EVENT_DOCUMENT_URI'] = (string) $source['document_uri'];
+        }
+
         return $envOverrides;
     }
 

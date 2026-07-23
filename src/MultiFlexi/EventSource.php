@@ -111,6 +111,12 @@ class EventSource extends DBEngine
     /**
      * Fetch unprocessed changes from the adapter's changes_cache table.
      *
+     * If the adapter writes a `context` column containing a JSON object, its
+     * keys are merged into the top level of each returned row so that
+     * EventRule env_mapping selectors can reference them directly. This is
+     * the only adapter-specific contract: an optional JSON blob; its content
+     * is entirely the adapter's concern — MultiFlexi does not interpret it.
+     *
      * @return array<int, array<string, mixed>> Array of change records
      */
     public function getUnprocessedChanges(): array
@@ -120,8 +126,22 @@ class EventSource extends DBEngine
 
         $stmt = $pdo->prepare('SELECT * FROM changes_cache WHERE inversion > :last_id ORDER BY inversion ASC');
         $stmt->execute([':last_id' => $lastProcessedId]);
+        $rows = $stmt->fetchAll();
 
-        return $stmt->fetchAll();
+        return array_map(static function (array $row): array {
+            $context = $row['context'] ?? null;
+            unset($row['context']);
+
+            if ($context !== null) {
+                $decoded = json_decode((string) $context, true);
+
+                if (\is_array($decoded)) {
+                    $row = array_merge($decoded, $row);
+                }
+            }
+
+            return $row;
+        }, $rows);
     }
 
     /**
