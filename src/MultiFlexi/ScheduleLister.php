@@ -60,13 +60,38 @@ EOD;
     public function completeDataRow(array $dataRowRaw): array
     {
         $dataRow['after'] = $dataRowRaw['after'].'<br>'.(string) new \Ease\Html\SmallTag(new \Ease\Html\Widgets\LiveAge(new \DateTime($dataRowRaw['after'])));
-        $dataRow['schedule_type'] = ucfirst((string) ($dataRowRaw['schedule_type'] ?? ''));
+        $dataRow['schedule_type'] = self::scheduleTypeLabel($dataRowRaw['schedule_type'] ?? null);
         $dataRow['job'] = (string) new \Ease\Html\ATag('job.php?id='.$dataRowRaw['job'], '🏁&nbsp;'._('Detail'));
         $dataRow['app_name'] = (string) new \Ease\Html\ATag('app.php?id='.$dataRowRaw['app_id'], '🧩&nbsp;'.$dataRowRaw['app_name']);
         $dataRow['runtemplate_name'] = (string) new \Ease\Html\ATag('runtemplate.php?id='.$dataRowRaw['runtemplate_id'], '⚗️&nbsp;'.$dataRowRaw['runtemplate_name']);
         $dataRow['company_name'] = (string) new \Ease\Html\ATag('company.php?id='.$dataRowRaw['company_id'], '🏭&nbsp;'.$dataRowRaw['company_name']);
 
         return $dataRow;
+    }
+
+    /**
+     * Render job.schedule_type for the "Trigger" column.
+     *
+     * For cron-scheduler-spawned jobs, schedule_type holds the RunTemplate's
+     * interval name (hourly, daily, ...) via Scheduler::codeToInterval().
+     * For manually/explicitly triggered jobs it holds one of the
+     * Job::SCHEDULE_TYPE_* constants, which get a friendlier label here.
+     */
+    private static function scheduleTypeLabel(?string $scheduleType): string
+    {
+        $labels = [
+            Job::SCHEDULE_TYPE_ADHOC => _('Ad-hoc'),
+            Job::SCHEDULE_TYPE_ADHOC_WEB => _('Ad-hoc (Web)'),
+            Job::SCHEDULE_TYPE_ADHOC_CLI => _('Ad-hoc (CLI)'),
+            Job::SCHEDULE_TYPE_ADHOC_API => _('Ad-hoc (API)'),
+            Job::SCHEDULE_TYPE_COMMAND_LINE => _('Scheduled (CLI/API)'),
+        ];
+
+        if ($scheduleType !== null && isset($labels[$scheduleType])) {
+            return $labels[$scheduleType];
+        }
+
+        return $scheduleType !== null && $scheduleType !== '' ? ucfirst($scheduleType) : _('Unknown');
     }
 
     public function listingQuery(): \Envms\FluentPDO\Queries\Select

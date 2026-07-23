@@ -28,7 +28,23 @@ use MultiFlexi\Zabbix\Request\Packet as ZabbixPacket;
 class Job extends DBEngine
 {
     public const SCHEDULE_TYPE_ADHOC = 'adhoc';
+    public const SCHEDULE_TYPE_ADHOC_WEB = 'adhoc-web';
+    public const SCHEDULE_TYPE_ADHOC_CLI = 'adhoc-cli';
+    public const SCHEDULE_TYPE_ADHOC_API = 'adhoc-api';
     public const SCHEDULE_TYPE_COMMAND_LINE = 'CommandLine';
+
+    /**
+     * Schedule types that represent a manually/explicitly triggered job (as opposed
+     * to a job spawned by the cron scheduler for a RunTemplate's interval), and
+     * therefore must not affect RunTemplate::next_schedule/last_schedule bookkeeping.
+     */
+    private const ADHOC_SCHEDULE_TYPES = [
+        self::SCHEDULE_TYPE_ADHOC,
+        self::SCHEDULE_TYPE_ADHOC_WEB,
+        self::SCHEDULE_TYPE_ADHOC_CLI,
+        self::SCHEDULE_TYPE_ADHOC_API,
+        self::SCHEDULE_TYPE_COMMAND_LINE,
+    ];
 
     public executor $executor;
     public static array $intervalCode = [
@@ -368,7 +384,7 @@ class Job extends DBEngine
         // Ad-hoc jobs (manually triggered from web/CLI/API) must not affect automatic scheduling
         $scheduleType = $this->getDataValue('schedule_type');
 
-        if ($scheduleType !== self::SCHEDULE_TYPE_ADHOC && $scheduleType !== self::SCHEDULE_TYPE_COMMAND_LINE) {
+        if (!self::isAdhocScheduleType($scheduleType)) {
             $rtUpdate['next_schedule'] = null;
             $rtUpdate['last_schedule'] = $this->getRunTemplate()->getDataValue('next_schedule');
         }
@@ -503,6 +519,16 @@ EOD;
      *
      * @return string ????
      */
+    /**
+     * True for any schedule_type that represents a manual/explicit trigger
+     * (web, CLI, API, or an explicit future CommandLine schedule) rather than
+     * a cron-scheduler-spawned job for a RunTemplate's interval.
+     */
+    public static function isAdhocScheduleType(?string $scheduleType): bool
+    {
+        return \in_array($scheduleType, self::ADHOC_SCHEDULE_TYPES, true);
+    }
+
     public function prepareJob(RunTemplate $runTemplate, ConfigFields $envOverride, \DateTime $scheduled, string $executor = 'Native', string $scheduleType = 'adhoc'): string
     {
         $outline = '';
@@ -518,7 +544,7 @@ EOD;
 
         $this->setupEnvironment($envOverride);
         $createdJobId = null;
-        $restoreNextSchedule = $scheduleType !== self::SCHEDULE_TYPE_ADHOC && $scheduleType !== self::SCHEDULE_TYPE_COMMAND_LINE;
+        $restoreNextSchedule = !self::isAdhocScheduleType($scheduleType);
         $previousNextSchedule = $restoreNextSchedule ? $runTemplate->getDataValue('next_schedule') : null;
         $pdo = $this->getPdo();
         $transactionStarted = false;
