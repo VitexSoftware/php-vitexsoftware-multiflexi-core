@@ -23,6 +23,7 @@ use MultiFlexi\RunTemplate;
 use OpenTelemetry\API\Metrics\ObserverInterface;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\SDK\Common\Export\Http\PsrTransportFactory;
+use OpenTelemetry\SDK\Metrics\Data\Temporality;
 use OpenTelemetry\SDK\Metrics\MeterProvider;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 
@@ -270,7 +271,14 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
             'application/json',
         );
 
-        $exporter = new MetricExporter($transport);
+        // Delta temporality: each PHP process (job/CLI invocation) is short-lived and
+        // starts its own Counter/Histogram at zero, so a Cumulative export would report
+        // "total since this process started" (always 1) instead of an ever-growing total.
+        // Requires a deltatocumulative processor in the OTel Collector's metrics
+        // pipeline (see VSAnsible roles/services/otel_collector) to turn these
+        // per-process deltas into one true monotonic counter per series identity -
+        // the Prometheus exporter itself does not accumulate Delta input.
+        $exporter = new MetricExporter($transport, Temporality::DELTA);
         $reader = new ExportingReader($exporter);
 
         $this->meterProvider = MeterProvider::builder()
