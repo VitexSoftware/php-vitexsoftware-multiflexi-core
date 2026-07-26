@@ -738,8 +738,19 @@ EOD;
     public function performJob(): void
     {
         $this->runBegin();
-        $this->executor->launchJob();
-        $this->runEnd($this->executor->getExitCode(), $this->executor->getOutput(), $this->executor->getErrorOutput());
+
+        try {
+            $this->executor->launchJob();
+            $exitCode = $this->executor->getExitCode();
+            $stdout = $this->executor->getOutput();
+            $stderr = $this->executor->getErrorOutput();
+        } catch (\Throwable $e) {
+            $exitCode = 255;
+            $stdout = '';
+            $stderr = $e->getMessage();
+        }
+
+        $this->runEnd($exitCode, $stdout, $stderr);
     }
 
     /**

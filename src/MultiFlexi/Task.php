@@ -54,10 +54,17 @@ class Task extends DBEngine
     public static function materialize(RunTemplate $rt, \DateTime $windowStart): self
     {
         $interv = $rt->getDataValue('interv');
-        $intervalSeconds = (int) Scheduler::codeToSeconds($interv);
 
-        $windowEnd = clone $windowStart;
-        $windowEnd->modify('+'.$intervalSeconds.' seconds');
+        if ($interv === 'c') {
+            // Custom cron has no fixed period; the window ends at the next
+            // occurrence of the expression itself, not a static offset.
+            $cronExpr = new \Cron\CronExpression((string) $rt->getDataValue('cron'));
+            $windowEnd = $cronExpr->getNextRunDate($windowStart, 0, false);
+        } else {
+            $intervalSeconds = (int) Scheduler::codeToSeconds($interv);
+            $windowEnd = clone $windowStart;
+            $windowEnd->modify('+'.$intervalSeconds.' seconds');
+        }
 
         $deadlineOffset = $rt->getDataValue('deadline_offset');
         $deadline = self::computeDeadline($windowStart, $windowEnd, $deadlineOffset);
