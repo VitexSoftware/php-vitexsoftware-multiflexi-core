@@ -15,6 +15,8 @@ declare(strict_types=1);
 
 namespace MultiFlexi;
 
+use Cron\CronExpression;
+
 /**
  * Description of Scheduler.
  *
@@ -176,6 +178,86 @@ class Scheduler extends Engine
             if (!$jobExists) {
                 $this->deleteFromSQL(['id' => $schedule['id']]);
                 $this->addStatusMessage('Purged schedule id='.$schedule['id'].' referencing missing job id='.$schedule['job'], 'info');
+            }
+        }
+    }
+
+    /**
+     * Detect and purge pending jobs whose scheduled 'after' time lies
+     * implausibly far in the future for their runtemplate's interval
+     * (e.g. a daily runtemplate with a job scheduled 4 days out). This can
+     * happen when a runtemplate's next_schedule/last_schedule state gets
+     * lost (e.g. queue:truncate) and the scheduler computes a wrong
+     * anchor. Purging the record and resetting next_schedule lets the
+     * running scheduler daemon recompute a correct schedule on its next
+     * tick.
+     */
+    public function purgeImplausibleSchedules(): void
+    {
+        $jobber = new Job();
+        $runtemplateQuery = new \MultiFlexi\RunTemplate();
+
+        $pendingJobs = $jobber->listingQuery()
+            ->where('job.exitcode IS NULL AND job.begin IS NULL')
+            ->where('job.runtemplate_id IS NOT NULL')
+            ->select(['job.id', 'job.runtemplate_id', 'job.schedule'])
+            ->fetchAll();
+
+        foreach ($pendingJobs as $pendingJob) {
+            $scheduleEntry = $this->listingQuery()->where('job', $pendingJob['id'])->fetch();
+
+            if (!$scheduleEntry || empty($scheduleEntry['after'])) {
+                continue;
+            }
+
+            $runtemplateData = $runtemplateQuery->getColumnsFromSQL(
+                ['id', 'interv', 'cron', 'delay'],
+                ['id' => $pendingJob['runtemplate_id']],
+            );
+            $runtemplateData = $runtemplateData[0] ?? null;
+
+            if (!$runtemplateData || $runtemplateData['interv'] === 'n' || empty($runtemplateData['interv'])) {
+                continue;
+            }
+
+            $after = new \DateTime($scheduleEntry['after']);
+            $now = new \DateTime();
+
+            if ($runtemplateData['interv'] === 'c') {
+                if (empty($runtemplateData['cron'])) {
+                    continue;
+                }
+
+                $sanityBoundary = (new CronExpression($runtemplateData['cron']))->getNextRunDate($now, 1);
+            } else {
+                $periodSeconds = self::codeToSeconds($runtemplateData['interv']);
+
+                if ($periodSeconds <= 0) {
+                    continue;
+                }
+
+                $sanityBoundary = (clone $now)->modify('+'.$periodSeconds.' seconds');
+            }
+
+            if (!empty($runtemplateData['delay'])) {
+                $sanityBoundary->modify('+'.$runtemplateData['delay'].' seconds');
+            }
+
+            if ($after > $sanityBoundary) {
+                $this->deleteFromSQL(['id' => $scheduleEntry['id']]);
+                $jobber->deleteFromSQL(['id' => $pendingJob['id']]);
+                $runtemplateQuery->updateToSQL(['next_schedule' => null], ['id' => $runtemplateData['id']]);
+
+                $this->addStatusMessage(
+                    sprintf(
+                        'Purged implausible schedule for runtemplate #%d: job #%d scheduled at %s, sanity boundary %s',
+                        $runtemplateData['id'],
+                        $pendingJob['id'],
+                        $after->format('Y-m-d H:i:s'),
+                        $sanityBoundary->format('Y-m-d H:i:s'),
+                    ),
+                    'warning',
+                );
             }
         }
     }
