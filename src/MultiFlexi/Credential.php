@@ -413,7 +413,7 @@ class Credential extends DBEngine
                     $fieldProvidedByCredType->setSource(\Ease\Euri::fromObject($this));
                 }
             } else {
-                $field = new ConfigField($credential['name'], $credential['type'], $credential['name'], '', '', $value);
+                $field = new ConfigField($credential['name'], \MultiFlexi\Conffield::fixType($credential['type']), $credential['name'], '', '', $value);
                 $field->setSource(\Ease\Euri::fromObject($this));
                 $credentialEnv->addField($field);
             }

@@ -31,7 +31,7 @@ class Common extends \MultiFlexi\CredentialProtoType implements \MultiFlexi\cred
         $imported = 0;
 
         foreach ($fields as $code => $fieldData) {
-            $field = new \MultiFlexi\ConfigField($code, $fieldData['type'], $fieldData['name'], $fieldData['description'], $fieldData['hint']);
+            $field = new \MultiFlexi\ConfigField($code, \MultiFlexi\Conffield::fixType($fieldData['type']), $fieldData['name'], $fieldData['description'], $fieldData['hint']);
             $field->setDefaultValue($fieldData['default_value'])->setRequired((bool) $fieldData['required']);
             $this->fieldsProvided()->addField($field);
             ++$imported;
