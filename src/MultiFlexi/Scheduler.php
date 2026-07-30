@@ -267,9 +267,6 @@ class Scheduler extends Engine
      */
     public function addJob(Job $job, \DateTime $when)
     {
-        // Purge broken queue records before adding new jobs
-        $this->purgeBrokenQueueRecords();
-
         $jobId = $job->getMyKey();
 
         // Check if this job is already scheduled to prevent duplicates
@@ -286,20 +283,41 @@ class Scheduler extends Engine
             return (int) $existingSchedule['id'];
         }
 
-        // Update next_schedule first to prevent race condition
         // Skip for ad-hoc/CommandLine jobs — they must not overwrite the cron scheduler's next_schedule
         $scheduleType = $job->getDataValue('schedule_type');
+        $runtemplate = Job::isAdhocScheduleType($scheduleType) ? null : $job->getRuntemplate();
 
-        if (!Job::isAdhocScheduleType($scheduleType)) {
-            $job->getRuntemplate()->updateToSQL(['next_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $job->getRuntemplate()->getMyKey()]);
+        // next_schedule and the schedule/queue row must become visible together:
+        // a reader (e.g. purgeBrokenQueueRecords()/initializeScheduling() running
+        // concurrently in the daemon loop) must never observe next_schedule already
+        // set while the corresponding schedule row is still missing, or vice versa.
+        $pdo = $this->getPdo();
+        $ownsTransaction = !$pdo->inTransaction();
+
+        if ($ownsTransaction) {
+            $pdo->beginTransaction();
         }
 
         try {
-            return $this->insertToSQL([
+            if ($runtemplate !== null) {
+                $runtemplate->updateToSQL(['next_schedule' => $when->format('Y-m-d H:i:s')], ['id' => $runtemplate->getMyKey()]);
+            }
+
+            $scheduleId = $this->insertToSQL([
                 'after' => $when->format('Y-m-d H:i:s'),
                 'job' => $jobId,
             ]);
+
+            if ($ownsTransaction) {
+                $pdo->commit();
+            }
+
+            return $scheduleId;
         } catch (\PDOException $e) {
+            if ($ownsTransaction && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
             // Handle duplicate key error gracefully (SQLSTATE 23000)
             if (str_contains($e->getMessage(), 'Duplicate entry') || $e->getCode() === '23000') {
                 $this->addStatusMessage(
@@ -315,6 +333,12 @@ class Scheduler extends Engine
 
             // Re-throw if it's a different error
             throw $e;
+        } catch (\Throwable $t) {
+            if ($ownsTransaction && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            throw $t;
         }
     }
 
