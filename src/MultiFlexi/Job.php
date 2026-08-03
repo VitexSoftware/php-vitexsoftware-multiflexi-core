@@ -637,17 +637,30 @@ EOD;
     {
         $now = (new \DateTime())->format('Y-m-d H:i:s');
 
+        $blockReason = sprintf(
+            _('Credential %s not available (%s): %s'),
+            $credentialName,
+            $result->state->value,
+            $result->message,
+        );
+
+        // Persist on the job row itself so the web UI and API can show *why*
+        // a job never ran, not just that it's still pending. Previously this
+        // reason only lived in the transient $reporter object below and in
+        // Zabbix/OTel — invisible from the job list/detail pages.
+        if ($this->getMyKey()) {
+            $this->updateToSQL([
+                'block_reason' => $blockReason,
+                'blocked_at' => $now,
+            ], ['id' => $this->getMyKey()]);
+        }
+
         $this->reporter->setDataValue('phase', 'credentialBlocked');
         $this->reporter->setDataValue('job_id', $this->getMyKey());
         $this->reporter->setDataValue('begin', $now);
         $this->reporter->setDataValue('end', $now);
         $this->reporter->setDataValue('exitcode', 75); // EX_TEMPFAIL
-        $this->reporter->setDataValue('exitcode_description', sprintf(
-            _('Credential %s not available (%s): %s'),
-            $credentialName,
-            $result->state->value,
-            $result->message,
-        ));
+        $this->reporter->setDataValue('exitcode_description', $blockReason);
 
         $runTemplate = $this->getRuntemplate();
 
