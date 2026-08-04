@@ -62,11 +62,41 @@ EOD;
         $dataRow['after'] = $dataRowRaw['after'].'<br>'.(string) new \Ease\Html\SmallTag(new \Ease\Html\Widgets\LiveAge(new \DateTime($dataRowRaw['after'])));
         $dataRow['schedule_type'] = self::scheduleTypeLabel($dataRowRaw['schedule_type'] ?? null);
         $dataRow['job'] = (string) new \Ease\Html\ATag('job.php?id='.$dataRowRaw['job'], '🏁&nbsp;'._('Detail'));
-        $dataRow['app_name'] = (string) new \Ease\Html\ATag('app.php?id='.$dataRowRaw['app_id'], '🧩&nbsp;'.$dataRowRaw['app_name']);
+        $dataRow['app_name'] = (string) new \Ease\Html\ATag(
+            'app.php?id='.$dataRowRaw['app_id'],
+            [self::appIcon($dataRowRaw['app_uuid'] ?? null, $dataRowRaw['app_name']), '&nbsp;'.$dataRowRaw['app_name']],
+        );
         $dataRow['runtemplate_name'] = (string) new \Ease\Html\ATag('runtemplate.php?id='.$dataRowRaw['runtemplate_id'], '⚗️&nbsp;'.$dataRowRaw['runtemplate_name']);
-        $dataRow['company_name'] = (string) new \Ease\Html\ATag('company.php?id='.$dataRowRaw['company_id'], '🏭&nbsp;'.$dataRowRaw['company_name']);
+        $dataRow['company_name'] = (string) new \Ease\Html\ATag(
+            'company.php?id='.$dataRowRaw['company_id'],
+            [self::companyIcon($dataRowRaw['company_logo'] ?? null, $dataRowRaw['company_name']), '&nbsp;'.$dataRowRaw['company_name']],
+        );
 
         return $dataRow;
+    }
+
+    /**
+     * Small App icon for the listing table, same source as \MultiFlexi\Ui\AppLogo.
+     */
+    private static function appIcon(?string $appUuid, string $appName): \Ease\Html\ImgTag
+    {
+        return new \Ease\Html\ImgTag(
+            empty($appUuid) ? 'images/apps.svg' : 'appimage.php?uuid='.$appUuid,
+            $appName,
+            ['style' => 'height: 20px; width: 20px; object-fit: contain;'],
+        );
+    }
+
+    /**
+     * Small Company icon for the listing table, same source as \MultiFlexi\Ui\CompanyLogo.
+     */
+    private static function companyIcon(?string $companyLogo, string $companyName): \Ease\Html\ImgTag
+    {
+        return new \Ease\Html\ImgTag(
+            empty($companyLogo) ? 'images/company.svg' : $companyLogo,
+            $companyName,
+            ['style' => 'height: 20px; width: 20px; object-fit: contain; border-radius: 50%;'],
+        );
     }
 
     /**
@@ -91,7 +121,13 @@ EOD;
             return $labels[$scheduleType];
         }
 
-        return $scheduleType !== null && $scheduleType !== '' ? ucfirst($scheduleType) : _('Unknown');
+        if ($scheduleType === null || $scheduleType === '') {
+            return _('Unknown');
+        }
+
+        $emoji = Scheduler::getIntervalEmoji(Scheduler::intervalToCode($scheduleType));
+
+        return ($emoji === '' ? '' : $emoji.'&nbsp;').ucfirst($scheduleType);
     }
 
     public function listingQuery(): \Envms\FluentPDO\Queries\Select
@@ -100,7 +136,7 @@ EOD;
             ->leftJoin('job ON job.id = schedule.job')->select(['job.schedule_type'])
             ->leftJoin('user ON user.id = job.launched_by')
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id'])
-            ->leftJoin('apps ON apps.id = runtemplate.app_id')->select(['apps.name AS app_name', 'apps.id AS app_id'])
-            ->leftJoin('company ON company.id = runtemplate.company_id')->select(['company.name AS company_name', 'company.id AS company_id']);
+            ->leftJoin('apps ON apps.id = runtemplate.app_id')->select(['apps.name AS app_name', 'apps.id AS app_id', 'apps.uuid AS app_uuid'])
+            ->leftJoin('company ON company.id = runtemplate.company_id')->select(['company.name AS company_name', 'company.id AS company_id', 'company.logo AS company_logo']);
     }
 }
