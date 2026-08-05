@@ -441,7 +441,13 @@ EOD;
             return [null, 0];
         }
 
-        $result = [self::decryptStoredKey($row['key_data']), (int) $row['version']];
+        try {
+            $keyMaterial = self::decryptStoredKey($row['key_data'], $keyName, (int) $row['version']);
+        } catch (\RuntimeException $e) {
+            throw new EncryptionUnavailableException($e);
+        }
+
+        $result = [$keyMaterial, (int) $row['version']];
         $this->encryptionKeys[$cacheKey] = $result;
 
         return $result;
@@ -472,7 +478,12 @@ EOD;
             return null;
         }
 
-        $key = self::decryptStoredKey($keyData);
+        try {
+            $key = self::decryptStoredKey($keyData, $keyName, $version);
+        } catch (\RuntimeException $e) {
+            throw new EncryptionUnavailableException($e);
+        }
+
         $this->encryptionKeys[$cacheKey] = $key;
 
         return $key;
@@ -526,14 +537,17 @@ EOD;
 
     /**
      * Decrypt stored key.
+     *
+     * @param string      $keyName Name of the encryption key this ciphertext belongs to (for diagnostics only)
+     * @param null|int    $version Version of the encryption key this ciphertext belongs to (for diagnostics only)
      */
-    private static function decryptStoredKey(string $encryptedKey): string
+    private static function decryptStoredKey(string $encryptedKey, string $keyName = 'unknown', ?int $version = null): string
     {
         $masterKey = self::getMasterKey();
         $data = base64_decode($encryptedKey, true);
 
         if ($data === false || \strlen($data) < 16) {
-            throw new \RuntimeException('Invalid encrypted key data');
+            throw new \RuntimeException(\sprintf("Invalid encrypted key data for encryption key '%s'%s.", $keyName, $version !== null ? " (version {$version})" : ''));
         }
 
         $iv = substr($data, 0, 16);
@@ -542,7 +556,19 @@ EOD;
         $key = openssl_decrypt($encrypted, 'aes-256-cbc', $masterKey, \OPENSSL_RAW_DATA, $iv);
 
         if ($key === false) {
-            throw new \RuntimeException('Failed to decrypt storage key');
+            throw new \RuntimeException(\sprintf(
+                "Failed to decrypt stored encryption key '%s'%s: the configured ENCRYPTION_MASTER_KEY does not match the key it was encrypted with. ".
+                'This typically happens when ENCRYPTION_MASTER_KEY in multiflexi.env was changed, regenerated, or lost after the `encryption_keys` '.
+                "table row was created (e.g. a package upgrade's postinst wrote a fresh key because none was found in the .env file). To fix, either: ".
+                '(a) restore the original ENCRYPTION_MASTER_KEY value if it can be recovered/re-derived; or '.
+                "(b) if no real data has actually been encrypted under this key yet (check: SELECT * FROM credata WHERE is_encrypted = 1), delete the row(s) ".
+                "for key_name = '%s'%s from the `encryption_keys` table so a fresh key gets generated under the current master key on next use; or ".
+                '(c) set DATA_ENCRYPTION_ENABLED=false in multiflexi.env to disable encryption at rest until this is resolved.',
+                $keyName,
+                $version !== null ? " (version {$version})" : '',
+                $keyName,
+                $version !== null ? " AND version = {$version}" : '',
+            ));
         }
 
         return $key;
