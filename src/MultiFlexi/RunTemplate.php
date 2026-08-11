@@ -146,6 +146,14 @@ class RunTemplate extends \MultiFlexi\DBEngine
     /**
      * Delete record ignoring interval.
      *
+     * Cascades removal of every record that would otherwise block deletion via a
+     * database FK constraint (job, actionconfig, runtemplate_topics) plus records
+     * that are logically dependent but not FK-enforced (configuration, runtplcreds,
+     * event_rule bindings on either side of a job-chain). Resolves the affected
+     * RunTemplate id(s) from $data instead of trusting $this->getMyKey(), so it
+     * also works when called with a condition array on an object that was never
+     * loaded with a specific id (e.g. CompanyApp::assignApps() unassign path).
+     *
      * @param mixed $data
      */
     public function deleteFromSQL($data = null): int
@@ -161,24 +169,96 @@ class RunTemplate extends \MultiFlexi\DBEngine
             return 0;
         }
 
-        $arnold = new \MultiFlexi\ActionConfig();
-        $arnold->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
+        $keyColumn = $this->getKeyColumn();
 
-        $configurator = new \MultiFlexi\Configuration();
-        $configurator->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
-
-        $rtpl = new \MultiFlexi\RunTplCreds();
-        $rtpl->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
-        $rtpl->setmyTable('runtemplate_topics');
-        $rtpl->deleteFromSQL(['runtemplate_id' => $this->getMyKey()]);
-
-        $jobber = new Job();
-
-        foreach ($jobber->listingQuery()->where(['runtemplate_id' => $this->getMyKey()]) as $jobData) {
-            $jobber->deleteFromSQL($jobData['id']);
+        if (\is_int($data)) {
+            $ids = [$data];
+        } elseif (\is_array($data) && \array_key_exists($keyColumn, $data)) {
+            $ids = [(int) $data[$keyColumn]];
+        } elseif (\is_array($data)) {
+            $ids = array_column(
+                $this->listingQuery()->where($data)->select([$keyColumn], true)->fetchAll(),
+                $keyColumn,
+            );
+        } else {
+            $ids = [(int) $data];
         }
 
-        return (int) parent::deleteFromSQL($data);
+        if (empty($ids)) {
+            return 0;
+        }
+
+        $pdo = $this->getPdo();
+        $transactionStarted = false;
+
+        if (!$pdo->inTransaction()) {
+            $pdo->beginTransaction();
+            $transactionStarted = true;
+        }
+
+        try {
+            $deleted = 0;
+
+            foreach ($ids as $runtemplateId) {
+                // Deactivate first so the scheduler daemon stops considering this
+                // RunTemplate for new jobs while the cascade below is in flight —
+                // narrows (does not by itself fully close) the race against a live
+                // scheduler tick that already started preparing a job.
+                $this->updateToSQL(['active' => 0], [$keyColumn => $runtemplateId]);
+
+                $jobber = new Job();
+
+                // Bounded retry: a scheduler daemon can insert a new job for this
+                // RunTemplate between our SELECT and the final DELETE below (observed
+                // in practice against a live scheduler). Re-sweep so any such job is
+                // still caught before the FK check on the RunTemplate delete would
+                // otherwise fail. Also covers Job::deleteFromSQL's per-job counter
+                // update (it constructs a fresh RunTemplate() per completed job)
+                // occasionally dropping this method's outer transaction on very large
+                // job counts — a re-swept pass simply re-deletes whatever is still
+                // there, whatever the cause.
+                for ($sweep = 0; $sweep < 10; ++$sweep) {
+                    $pending = $jobber->listingQuery()->where(['runtemplate_id' => $runtemplateId])->fetchAll();
+
+                    if (empty($pending)) {
+                        break;
+                    }
+
+                    foreach ($pending as $jobData) {
+                        $jobber->deleteFromSQL($jobData['id']);
+                    }
+                }
+
+                (new \MultiFlexi\ActionConfig())->deleteFromSQL(['runtemplate_id' => $runtemplateId]);
+
+                $rtpl = new \MultiFlexi\RunTplCreds();
+                $rtpl->deleteFromSQL(['runtemplate_id' => $runtemplateId]);
+                $rtpl->setmyTable('runtemplate_topics');
+                $rtpl->deleteFromSQL(['runtemplate_id' => $runtemplateId]);
+
+                (new \MultiFlexi\Configuration())->deleteFromSQL(['runtemplate_id' => $runtemplateId]);
+
+                // event_rule has no FK to runtemplate, but leaving these behind
+                // orphans job-chain bindings on either end of the chain.
+                $eventRule = new \MultiFlexi\EventRule();
+                $eventRule->deleteFromSQL(['runtemplate_id' => $runtemplateId]);
+                $eventRule->deleteFromSQL(['runtemplate_source_id' => $runtemplateId]);
+
+                $deleted += (int) parent::deleteFromSQL([$keyColumn => $runtemplateId]);
+            }
+
+            if ($transactionStarted && $pdo->inTransaction()) {
+                $pdo->commit();
+            }
+
+            return $deleted;
+        } catch (\Throwable $e) {
+            if ($transactionStarted && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            throw $e;
+        }
     }
 
     public function getCompanyEnvironment()
