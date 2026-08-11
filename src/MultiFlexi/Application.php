@@ -519,9 +519,16 @@ class Application extends DBEngine
     /**
      * Delete application record from SQL including all related data.
      *
+     * Refuses to delete while any RunTemplate still references this app — the
+     * caller must remove those RunTemplates first (each carries its own job
+     * history, action config, credential bindings and other cascaded data via
+     * RunTemplate::deleteFromSQL(), which this method must not bypass).
+     *
      * @param array|int $data
      *
      * @return null|int Number of deleted records or null on error
+     *
+     * @throws \RuntimeException if any RunTemplate is still assigned to this app
      */
     public function deleteFromSQL($data = null)
     {
@@ -531,30 +538,20 @@ class Application extends DBEngine
 
         $appId = $this->getMyKey($data);
 
+        $runtemplateCount = \count($this->getFluentPDO()->from('runtemplate')->where('app_id', $appId)->fetchAll());
+
+        if ($runtemplateCount > 0) {
+            throw new \RuntimeException(sprintf(
+                _('Cannot delete application: %d RunTemplate(s) are still assigned. Remove them first.'),
+                $runtemplateCount,
+            ));
+        }
+
         // Delete company-app associations
         $a2c = $this->getFluentPDO()->deleteFrom('companyapp')->where('app_id', $appId)->execute();
 
         if ($a2c !== 0) {
             $this->addStatusMessage(sprintf(_('Unassigned from %d companies'), $a2c), null === $a2c ? 'error' : 'success');
-        }
-
-        // Get all runtemplates for this app
-        $runtemplates = $this->getFluentPDO()->from('runtemplate')->where('app_id', $appId)->fetchAll();
-
-        // Delete action configs for each runtemplate
-        foreach ($runtemplates as $runtemplate) {
-            $rt2ac = $this->getFluentPDO()->deleteFrom('actionconfig')->where('runtemplate_id', $runtemplate['id'])->execute();
-
-            if ($rt2ac !== 0) {
-                $this->addStatusMessage(sprintf(_('%s Action Config removal'), $runtemplate['name']), null === $rt2ac ? 'error' : 'success');
-            }
-        }
-
-        // Delete all runtemplates for this app
-        $runtemplater = new RunTemplate();
-
-        foreach ($runtemplater->listingQuery()->where('app_id', $appId) as $runtemplateData) {
-            $this->addStatusMessage(sprintf(_('#%d %s RunTemplate removal'), $runtemplateData['id'], $runtemplateData['name']), $runtemplater->deleteFromSQL($runtemplateData['id']) ? 'error' : 'success');
         }
 
         // Delete config fields

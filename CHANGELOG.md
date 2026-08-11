@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `Application::deleteFromSQL()` now refuses to delete (throws `\RuntimeException`)
+  while any RunTemplate is still assigned to the app, instead of silently
+  cascading to delete those RunTemplates itself. Callers must remove the
+  RunTemplates first via `RunTemplate::deleteFromSQL()`, which already
+  cascades their jobs/config/credential bindings safely.
+
 ### Fixed
 - Fixed `RunTemplate::deleteFromSQL()` to correctly cascade-delete jobs (and their
   queue entries, output logs, and artifacts), action config, credential
