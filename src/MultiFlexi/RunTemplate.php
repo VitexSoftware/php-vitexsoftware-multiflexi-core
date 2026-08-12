@@ -81,6 +81,58 @@ class RunTemplate extends \MultiFlexi\DBEngine
         return $changed;
     }
 
+    /**
+     * Clone this run template as a new, always-disabled run template.
+     *
+     * The clone is created with active=false regardless of this template's
+     * state, so a copied (and not-yet-reviewed) config can never be picked
+     * up by the scheduler.
+     */
+    public function cloneAs(string $newName): int
+    {
+        $newTemplate = new self();
+
+        $templateData = $this->getData();
+        unset(
+            $templateData[$this->getKeyColumn()],
+            $templateData['last_schedule'],
+            $templateData['next_schedule'],
+            $templateData['failed_jobs_count'],
+            $templateData['successfull_jobs_count'],
+        );
+        $templateData['name'] = $newName;
+        $templateData['active'] = false;
+
+        $newId = $newTemplate->insertToSQL($templateData);
+
+        if ($newId) {
+            $configFields = $this->getRuntemplateEnvironment()->getFields();
+            $newConfigurator = new Configuration([], ['autoload' => false]);
+
+            foreach ($configFields as $field) {
+                $newConfigurator->insertToSQL([
+                    'runtemplate_id' => $newId,
+                    'app_id' => $templateData['app_id'],
+                    'company_id' => $templateData['company_id'],
+                    'name' => $field->getName(),
+                    'value' => $field->getValue(),
+                    'config_type' => $field->getType(),
+                ]);
+            }
+
+            $credHelper = new RunTplCreds();
+
+            foreach ($credHelper->getCredentialsForRuntemplate((int) $this->getMyKey())->fetchAll() as $cred) {
+                $credHelper->insertToSQL([
+                    'runtemplate_id' => $newId,
+                    'credentials_id' => $cred['credentials_id'],
+                ]);
+            }
+        }
+
+        return (int) $newId;
+    }
+
     public function performInit(): void
     {
         $app = new Application((int) $this->getDataValue('app_id'));
