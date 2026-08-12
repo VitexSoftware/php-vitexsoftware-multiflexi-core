@@ -52,6 +52,22 @@ class RunTemplateTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @covers \MultiFlexi\RunTemplate::cloneAs
+     */
+    public function testcloneAs(): void
+    {
+        // ensure source is active, so we can prove the clone is not
+        $this->object->setDataValue('active', true);
+        $this->object->dbsync();
+
+        $newId = $this->object->cloneAs('Clone Test '.uniqid());
+        $this->assertGreaterThan(0, $newId);
+
+        $clone = new RunTemplate($newId);
+        $this->assertFalse((bool) $clone->getDataValue('active'));
+    }
+
+    /**
      * @covers \MultiFlexi\RunTemplate::performInit
      */
     public function testperformInit(): void
