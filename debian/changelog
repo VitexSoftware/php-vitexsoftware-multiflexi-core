@@ -1,4 +1,4 @@
-php-vitexsoftware-multiflexi-core (2.11.0) UNRELEASED; urgency=medium
+php-vitexsoftware-multiflexi-core (2.11.0) unstable; urgency=medium
 
   * Add CronDescriber class (moved from multiflexi-web5's MultiFlexi\Ui
     namespace into MultiFlexi so multiflexi-scheduler can use it too) —
@@ -6,11 +6,39 @@ php-vitexsoftware-multiflexi-core (2.11.0) UNRELEASED; urgency=medium
     localized sentence
   * CronDescriber: describe comma-separated hour lists, e.g.
     "1 5,10,16,21 * * *" -> "At minute 1 past hour 5, 10, 16, and 21."
-
- -- vitex <info@vitexsoftware.cz>  Wed, 29 Jul 2026 19:00:00 +0200
-
-php-vitexsoftware-multiflexi-core (2.10.2) UNRELEASED; urgency=medium
-
+  * RunTemplate: add cloneAs() — cloning a RunTemplate now always creates
+    the copy disabled (active=false), so a not-yet-reviewed copy of
+    credentials/env/cron can never be picked up by the scheduler (#53)
+  * Application::deleteFromSQL() now refuses to delete (throws
+    \RuntimeException) while any RunTemplate is still assigned to the app,
+    instead of silently cascading to delete those RunTemplates itself.
+    Callers must remove the RunTemplates first via
+    RunTemplate::deleteFromSQL(), which already cascades their
+    jobs/config/credential bindings safely.
+  * Fixed RunTemplate::deleteFromSQL() to correctly cascade-delete jobs (and
+    their queue entries, output logs, and artifacts), action config,
+    credential assignments, saved config values, and job-chaining event
+    rules regardless of how it's called. Previously the cascade only worked
+    when the object had been loaded with the target's own id; calling it
+    with a condition array on an unloaded object (e.g.
+    CompanyApp::assignApps()'s unassign path) silently skipped the cascade
+    and then failed with an uncaught FK violation on job.runtemplate_id for
+    any RunTemplate with job history.
+    - Wrapped the cascade in a transaction so a failure partway rolls back
+      cleanly instead of leaving orphaned dependents.
+    - Deactivates the RunTemplate first and re-sweeps job cleanup, to close
+      a race window against the scheduler daemon inserting a new job
+      mid-delete.
+  * Fixed array to string conversion for requirements and topics fields in
+    Application::importAppJson() — arrays are now properly converted to
+    comma-separated strings (e.g. ["mServer", "SQLServer"] ->
+    "mServer,SQLServer") instead of storing the literal string "Array";
+    reimporting existing JSON files now correctly updates these fields
+  * Security\DataEncryption: wrap key-decryption failures in a dedicated
+    EncryptionUnavailableException with a diagnostic message naming the
+    affected key/version, instead of a bare \RuntimeException — makes the
+    common "ENCRYPTION_MASTER_KEY changed/lost after encryption_keys row
+    was created" case actionable from the error alone
   * fix(packaging): remove stale duplicate VaultWarden CredentialProtoType, its
     credprototype.json and test — this credential type is owned by the standalone
     multiflexi-vaultwarden package; the copy here was outdated and collided at
@@ -46,22 +74,12 @@ php-vitexsoftware-multiflexi-core (2.10.2) UNRELEASED; urgency=medium
     in README
   * fix: ConfigField type normalization in Credential::takeData() and
     CredentialProtoType\Common::importFields() via Conffield::fixType()
-
- -- vitex <info@vitexsoftware.cz>  Wed, 29 Jul 2026 18:39:09 +0200
-
-php-vitexsoftware-multiflexi-core (2.9.3) UNRELEASED; urgency=medium
-
   * Add CompanyUser model for company/user assignment handling
   * Add credential type SVG images (CommonCredentialType, Fio, Office365,
     SQLServer, env-file)
-
- -- vitex <info@vitexsoftware.cz>  Sat, 06 Jun 2026 12:30:00 +0200
-
-php-vitexsoftware-multiflexi-core (2.9.2) UNRELEASED; urgency=medium
-
   * The dragonmantank/cron-expression required now
 
- -- vitex <info@vitexsoftware.cz>  Thu, 23 Apr 2026 11:26:20 +0200
+ -- Vítězslav Dvořák <info@vitexsoftware.cz>  Fri, 14 Aug 2026 12:00:00 +0200
 
 php-vitexsoftware-multiflexi-core (2.9.1) unstable; urgency=medium
 
