@@ -617,11 +617,16 @@ EOD;
     /**
      * Schedule job execution.
      *
+     * @param string $logLevel level for the "Scheduling job" status message —
+     *                         callers that only re-confirm an already-pending
+     *                         job (no new schedule row created) should pass
+     *                         'debug' to avoid logging the same line every tick
+     *
      * @return int schedule ID
      */
-    public function scheduleJobRun(\DateTime $when): int
+    public function scheduleJobRun(\DateTime $when, string $logLevel = 'info'): int
     {
-        $this->addStatusMessage(_('Scheduling job').': '.$when->format('Y-m-d H:i:s'));
+        $this->addStatusMessage(_('Scheduling job').': '.$when->format('Y-m-d H:i:s'), $logLevel);
         $scheduler = new Scheduler();
 
         return $scheduler->addJob($this, $when);
