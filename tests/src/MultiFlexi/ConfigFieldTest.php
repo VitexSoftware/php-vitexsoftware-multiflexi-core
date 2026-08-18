@@ -172,4 +172,36 @@ class ConfigFieldTest extends \PHPUnit\Framework\TestCase
         ];
         $this->assertEquals($expected, $this->object->getArray());
     }
+
+    /**
+     * @covers \MultiFlexi\ConfigField::isTruthy
+     */
+    public function testIsTruthyAcceptsKnownTrueRepresentations(): void
+    {
+        foreach (['true', 'True', 'TRUE', '1', 'yes', 'YES', 'on', 'On'] as $value) {
+            $this->assertTrue(ConfigField::isTruthy($value), "Expected '{$value}' to be truthy");
+        }
+    }
+
+    /**
+     * @covers \MultiFlexi\ConfigField::isTruthy
+     */
+    public function testIsTruthyRejectsFalsyOrUnknownRepresentations(): void
+    {
+        foreach (['false', 'False', '0', 'no', '', 'garbage', null] as $value) {
+            $this->assertFalse(ConfigField::isTruthy($value), 'Expected '.var_export($value, true).' to not be truthy');
+        }
+    }
+
+    /**
+     * @covers \MultiFlexi\ConfigField::isCurrentlyTrue
+     */
+    public function testIsCurrentlyTrueReflectsCurrentValue(): void
+    {
+        $this->object->setValue('true');
+        $this->assertTrue($this->object->isCurrentlyTrue());
+
+        $this->object->setValue('false');
+        $this->assertFalse($this->object->isCurrentlyTrue());
+    }
 }

@@ -91,7 +91,7 @@ class Configuration extends \Ease\SQL\Engine
         $cfgs = new Conffield();
 
         foreach ($cfgs->appConfigs($this->getDataValue('app_id')) as $cfg) {
-            if ($cfg['type'] === 'checkbox') {
+            if (Conffield::fixType($cfg['type']) === 'bool') {
                 $data[$cfg['keyname']] = \array_key_exists($cfg['keyname'], $data) ? 'true' : 'false';
             }
         }

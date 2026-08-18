@@ -832,7 +832,9 @@ class Application extends DBEngine
         $appEnvironmentFields = $confField->getAppConfigs($this);
 
         foreach ($appEnvironmentFields as $fieldName => $field) {
-            if ($field->isRequired() && empty($field->getValue())) {
+            $submitted = \array_key_exists($fieldName, $keysValues) ? $keysValues[$fieldName] : $field->getValue();
+
+            if ($field->isRequired() && empty($submitted)) {
                 if ($verbose) {
                     $this->addStatusMessage(sprintf(_('The required configuration key `%s` was not filled'), $fieldName), 'warning');
                 }

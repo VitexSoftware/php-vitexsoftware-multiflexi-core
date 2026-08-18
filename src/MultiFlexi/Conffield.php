@@ -43,34 +43,28 @@ class Conffield extends Engine
             $checked = true;
         }
 
-        $data['required'] = \array_key_exists('required', $data) && $data['required'] === 'on' ? 1 : 0;
-        $data['secret'] = \array_key_exists('secret', $data) && $data['secret'] === 'on' ? 1 : 0;
-        $data['multiline'] = \array_key_exists('multiline', $data) && $data['multiline'] === 'on' ? 1 : 0;
-        $data['expiring'] = \array_key_exists('expiring', $data) && $data['expiring'] === 'on' ? 1 : 0;
+        // This method doubles as the SQL-row hydrator (called from
+        // loadFromSQL()) and the HTML-form-submission handler (called with
+        // $_POST). A raw DB row always carries these columns as an
+        // already-boolean 0/1 (int or numeric string); an HTML checkbox
+        // carries them as the literal string 'on' when checked, and is
+        // simply absent from the array when unchecked. Both representations
+        // must be normalized to 0/1 without clobbering a DB-loaded 1 back to
+        // 0 just because it isn't literally 'on'.
+        foreach (['required', 'secret', 'multiline', 'expiring'] as $boolField) {
+            $rawValue = $data[$boolField] ?? null;
+            $data[$boolField] = \in_array($rawValue, ['on', 1, '1', true], true) ? 1 : 0;
+        }
 
         return $checked ? parent::takeData($data) : 0;
     }
 
     /**
-     * @deprecated since version 1.27 Use the addConfigFields() instead
-     *
      * @param int $appId
      */
     public function appConfigs($appId): array
     {
         return $this->getColumnsFromSQL(['*'], ['app_id' => $appId], 'keyname', 'keyname');
-    }
-
-    public function addConfigFields(\MultiFlexi\Application $app): ConfigFields
-    {
-        $confields = new ConfigFields($app->getDataValue('name'));
-
-        foreach ($this->appConfigs($app->getMyKey()) as $configFieldData) {
-            $field = new \MultiFlexi\ConfigField($code, $type, $name, $description, $hint);
-            $confields->addField($field);
-        }
-
-        return $confields;
     }
 
     /**

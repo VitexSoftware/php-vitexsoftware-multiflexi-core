@@ -284,6 +284,26 @@ class ConfigField
     }
 
     /**
+     * Canonical truthiness check for a bool-typed ConfigField's stored/raw
+     * string value. Accepts the DB convention ('true'/'false') plus common
+     * truthy strings ('1', 'yes', 'on'), case-insensitive, so every UI form
+     * that renders a bool ConfigField agrees on one rule.
+     */
+    public static function isTruthy(?string $value): bool
+    {
+        return \in_array(strtolower((string) $value), ['true', '1', 'yes', 'on'], true);
+    }
+
+    /**
+     * Whether this field's own current value (falling back to its default,
+     * per getValue()) is truthy.
+     */
+    public function isCurrentlyTrue(): bool
+    {
+        return self::isTruthy($this->getValue());
+    }
+
+    /**
      * Set whether the field value is populated manually.
      */
     public function setManual(bool $isManual): self

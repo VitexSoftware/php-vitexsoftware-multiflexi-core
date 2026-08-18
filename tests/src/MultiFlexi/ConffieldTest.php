@@ -43,14 +43,46 @@ class ConffieldTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @covers \MultiFlexi\Conffield::takeData
-     *
-     * @todo   Implement testtakeData().
      */
-    public function testtakeData(): void
+    public function testTakeDataPreservesBoolFlagsLoadedFromSql(): void
     {
-        $this->assertEquals('', $this->object->takeData());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        // Simulates what loadFromSQL() passes in: a raw DB row where
+        // required/secret/multiline/expiring are already 0/1, not the
+        // HTML-checkbox literal 'on'. A prior bug forced these back to 0
+        // on every load because the coercion only recognized 'on'.
+        $this->object->takeData([
+            'app_id' => 1,
+            'keyname' => 'TEST',
+            'type' => 'bool',
+            'required' => 1,
+            'secret' => 0,
+            'multiline' => 1,
+            'expiring' => 0,
+        ]);
+
+        $this->assertSame(1, $this->object->getDataValue('required'));
+        $this->assertSame(0, $this->object->getDataValue('secret'));
+        $this->assertSame(1, $this->object->getDataValue('multiline'));
+        $this->assertSame(0, $this->object->getDataValue('expiring'));
+    }
+
+    /**
+     * @covers \MultiFlexi\Conffield::takeData
+     */
+    public function testTakeDataCoercesHtmlCheckboxSubmission(): void
+    {
+        // Checked HTML checkboxes submit the literal string 'on'; unchecked
+        // ones are simply absent from $_POST.
+        $this->object->takeData([
+            'app_id' => 1,
+            'keyname' => 'TEST',
+            'type' => 'bool',
+            'required' => 'on',
+            // 'secret' intentionally absent => unchecked
+        ]);
+
+        $this->assertSame(1, $this->object->getDataValue('required'));
+        $this->assertSame(0, $this->object->getDataValue('secret'));
     }
 
     /**

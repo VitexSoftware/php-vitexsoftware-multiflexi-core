@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Test\MultiFlexi;
 
+use MultiFlexi\Conffield;
 use MultiFlexi\Configuration;
 
 /**
@@ -23,6 +24,8 @@ use MultiFlexi\Configuration;
 class ConfigurationTest extends \PHPUnit\Framework\TestCase
 {
     protected $object;
+    private static ?int $testAppId = null;
+    private static string $boolFieldName = 'PHPUNIT_BOOL_COERCION_TEST';
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -39,6 +42,43 @@ class ConfigurationTest extends \PHPUnit\Framework\TestCase
      */
     protected function tearDown(): void
     {
+    }
+
+    private static function testAppId(): int
+    {
+        if (self::$testAppId === null) {
+            $pdo = new \PDO(
+                'mysql:host='.\Ease\Shared::cfg('DB_HOST').';port='.\Ease\Shared::cfg('DB_PORT').';dbname='.\Ease\Shared::cfg('DB_DATABASE'),
+                \Ease\Shared::cfg('DB_USERNAME'),
+                \Ease\Shared::cfg('DB_PASSWORD'),
+            );
+            $id = $pdo->query('SELECT id FROM apps ORDER BY id LIMIT 1')->fetchColumn();
+            self::$testAppId = (int) $id;
+        }
+
+        return self::$testAppId;
+    }
+
+    /**
+     * A 'bool' typed conffield row must exist for the coercion loop in
+     * Configuration::takeData() to find and act on it.
+     */
+    private function seedBoolConffield(): void
+    {
+        // Not using Conffield::addAppConfig() here: it writes a 'name' column
+        // that doesn't exist on the 'conffield' table (a separate, pre-existing
+        // bug found during investigation) and would fatal on insert.
+        (new Conffield())->insertToSQL([
+            'app_id' => self::testAppId(),
+            'keyname' => self::$boolFieldName,
+            'type' => 'bool',
+            'description' => 'PHPUnit coercion test field',
+        ]);
+    }
+
+    private function removeBoolConffield(): void
+    {
+        (new Conffield())->deleteFromSQL(['app_id' => self::testAppId(), 'keyname' => self::$boolFieldName]);
     }
 
     /**
@@ -67,14 +107,37 @@ class ConfigurationTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @covers \MultiFlexi\Configuration::takeData
-     *
-     * @todo   Implement testtakeData().
      */
-    public function testtakeData(): void
+    public function testTakeDataCoercesAbsentBoolFieldToFalse(): void
     {
-        $this->assertEquals('', $this->object->takeData());
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->seedBoolConffield();
+
+        try {
+            $this->object->setDataValue('app_id', self::testAppId());
+            $this->object->takeData([]);
+
+            $this->assertSame('false', $this->object->getDataValue(self::$boolFieldName));
+        } finally {
+            $this->removeBoolConffield();
+        }
+    }
+
+    /**
+     * @covers \MultiFlexi\Configuration::takeData
+     */
+    public function testTakeDataCoercesPresentBoolFieldToTrue(): void
+    {
+        $this->seedBoolConffield();
+
+        try {
+            $configuration = new Configuration();
+            $configuration->setDataValue('app_id', self::testAppId());
+            $configuration->takeData([self::$boolFieldName => 'true']);
+
+            $this->assertSame('true', $configuration->getDataValue(self::$boolFieldName));
+        } finally {
+            $this->removeBoolConffield();
+        }
     }
 
     /**
