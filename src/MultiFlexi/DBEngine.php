@@ -31,6 +31,8 @@ namespace MultiFlexi;
  */
 class DBEngine extends Engine
 {
+    use \MultiFlexi\Security\AuditableEntity;
+
     /**
      * Filter results by.
      */
@@ -867,6 +869,62 @@ class DBEngine extends Engine
         }
 
         return $data;
+    }
+
+    /**
+     * Insert record to SQL database and record the action to the audit log.
+     *
+     * @param null|array $data
+     */
+    public function insertToSQL($data = null)
+    {
+        $result = parent::insertToSQL($data);
+
+        if ($result) {
+            $this->auditAction('create', (int) $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Update record in SQL database and record the action to the audit log.
+     *
+     * @param null|array           $data
+     * @param array<string,mixed>  $conditons
+     */
+    public function updateToSQL($data = null, $conditons = [])
+    {
+        if (null === $data) {
+            $data = $this->getData();
+        }
+
+        $entityId = $this->resolveAuditEntityId($data, $conditons);
+
+        $result = parent::updateToSQL($data, $conditons);
+
+        if ($result) {
+            $this->auditAction('update', $entityId ? (int) $entityId : null);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Delete record from SQL database and record the action to the audit log.
+     *
+     * @param null|array|int $data
+     */
+    public function deleteFromSQL($data = null)
+    {
+        $entityId = $this->resolveAuditEntityId($data);
+        $result = parent::deleteFromSQL($data);
+
+        if ($result) {
+            $this->auditAction('delete', $entityId, \is_array($data) ? $data : []);
+        }
+
+        return $result;
     }
 
     /**

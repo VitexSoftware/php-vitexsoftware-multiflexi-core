@@ -25,7 +25,12 @@ use Ease\SQL\Orm;
  */
 class User extends \Ease\User
 {
-    use Orm;
+    use Orm {
+        insertToSQL as private ormInsertToSQL;
+        updateToSQL as private ormUpdateToSQL;
+        deleteFromSQL as private ormDeleteFromSQL;
+    }
+    use \MultiFlexi\Security\AuditableEntity;
     use \Ease\recordkey;
     public $useKeywords = [
         'login' => 'STRING',
@@ -105,6 +110,62 @@ class User extends \Ease\User
         }
 
         return $Icon;
+    }
+
+    /**
+     * Insert record to SQL database and record the action to the audit log.
+     *
+     * @param null|array $data
+     */
+    public function insertToSQL($data = null)
+    {
+        $result = $this->ormInsertToSQL($data);
+
+        if ($result) {
+            $this->auditAction('create', (int) $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Update record in SQL database and record the action to the audit log.
+     *
+     * @param null|array          $data
+     * @param array<string,mixed> $conditons
+     */
+    public function updateToSQL($data = null, $conditons = [])
+    {
+        if (null === $data) {
+            $data = $this->getData();
+        }
+
+        $entityId = $this->resolveAuditEntityId($data, $conditons);
+
+        $result = $this->ormUpdateToSQL($data, $conditons);
+
+        if ($result) {
+            $this->auditAction('update', $entityId ? (int) $entityId : null);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Delete record from SQL database and record the action to the audit log.
+     *
+     * @param null|array|int $data
+     */
+    public function deleteFromSQL($data = null)
+    {
+        $entityId = $this->resolveAuditEntityId($data);
+        $result = $this->ormDeleteFromSQL($data);
+
+        if ($result) {
+            $this->auditAction('delete', $entityId, \is_array($data) ? $data : []);
+        }
+
+        return $result;
     }
 
     /**
