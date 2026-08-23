@@ -377,7 +377,12 @@ class Credential extends DBEngine
     {
         $this->credator->deleteFromSQL(['credential_id' => $this->getMyKey()]);
 
-        return parent::deleteFromSQL($data);
+        // $this->getData() (the implicit fallback when $data is null) also
+        // holds one entry per credata field, keyed by the field's own name
+        // (see loadFromSQL()'s setDataValue() calls) — using it as-is here
+        // would make the parent's WHERE clause match against those field
+        // names as if they were columns of the credentials table.
+        return parent::deleteFromSQL($data ?? [$this->keyColumn => $this->getMyKey()]);
     }
 
     public function getCompanyCredentials(int $companyId, $appRequirements = []): array
