@@ -174,6 +174,18 @@ EOD, );
         return $this->getUserRoleDetails($userId);
     }
 
+    /**
+     * Assign a single role (by id) to a user, additively — unlike
+     * setUserRoles(), this never unassigns the user's other roles.
+     */
+    public function assignRoleToUser(int $userId, int $roleId, ?int $assignedBy = null, ?string $expiresAt = null): bool
+    {
+        return $this->getPdo()->prepare(
+            'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by, expires_at) VALUES (?, ?, ?, ?) '
+            .'ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), assigned_at = CURRENT_TIMESTAMP, expires_at = VALUES(expires_at)',
+        )->execute([$userId, $roleId, $assignedBy, $expiresAt]);
+    }
+
     // -----------------------------------------------------------------------
     // Permissions (rbac_permissions / rbac_role_permissions)
     //
