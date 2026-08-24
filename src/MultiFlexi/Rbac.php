@@ -173,4 +173,207 @@ EOD, );
 
         return $this->getUserRoleDetails($userId);
     }
+
+    // -----------------------------------------------------------------------
+    // Permissions (rbac_permissions / rbac_role_permissions)
+    //
+    // Ported from multiflexi-web5's MultiFlexi\Security\RoleBasedAccessControl,
+    // which had its own copy of this schema/logic. Session-based "current
+    // user" resolution, audit logging, and result caching stay in web5 (they
+    // depend on $_SESSION / $GLOBALS, which don't belong in a portable
+    // library); this class covers the DB-backed read/write primitives only.
+    // -----------------------------------------------------------------------
+
+    /**
+     * True when $userId holds a role granting $permissionName (not yet expired).
+     */
+    public function userHasPermission(int $userId, string $permissionName): bool
+    {
+        $stmt = $this->getPdo()->prepare(<<<'EOD'
+SELECT 1
+             FROM rbac_user_roles ur
+             JOIN rbac_role_permissions rp ON ur.role_id = rp.role_id
+             JOIN rbac_permissions p ON rp.permission_id = p.id
+             WHERE ur.user_id = ?
+               AND p.name = ?
+               AND (ur.expires_at IS NULL OR ur.expires_at > CURRENT_TIMESTAMP)
+             LIMIT 1
+EOD, );
+        $stmt->execute([$userId, $permissionName]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * Distinct permissions (name, description, resource, action) granted to
+     * $userId via any of their roles.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUserPermissions(int $userId): array
+    {
+        $stmt = $this->getPdo()->prepare(<<<'EOD'
+SELECT DISTINCT p.name, p.description, p.resource, p.action
+             FROM rbac_permissions p
+             JOIN rbac_role_permissions rp ON p.id = rp.permission_id
+             JOIN rbac_user_roles ur ON rp.role_id = ur.role_id
+             WHERE ur.user_id = ?
+               AND (ur.expires_at IS NULL OR ur.expires_at > CURRENT_TIMESTAMP)
+             ORDER BY p.resource, p.action, p.name
+EOD, );
+        $stmt->execute([$userId]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAllRoles(bool $includeInactive = false): array
+    {
+        $sql = 'SELECT * FROM rbac_roles'.($includeInactive ? '' : ' WHERE is_active = 1').' ORDER BY name';
+
+        return $this->getPdo()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAllPermissions(): array
+    {
+        return $this->getPdo()->query('SELECT * FROM rbac_permissions ORDER BY resource, action, name')->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getRolePermissions(int $roleId): array
+    {
+        $stmt = $this->getPdo()->prepare(<<<'EOD'
+SELECT p.*
+             FROM rbac_permissions p
+             JOIN rbac_role_permissions rp ON p.id = rp.permission_id
+             WHERE rp.role_id = ?
+             ORDER BY p.resource, p.action, p.name
+EOD, );
+        $stmt->execute([$roleId]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * True when any (non-expired) user currently holds $roleName. Useful for
+     * first-run detection (e.g. "does a super_admin exist yet").
+     */
+    public function isRoleAssigned(string $roleName): bool
+    {
+        $stmt = $this->getPdo()->prepare(<<<'EOD'
+SELECT 1
+             FROM rbac_user_roles ur
+             JOIN rbac_roles r ON ur.role_id = r.id
+             WHERE r.name = ?
+               AND r.is_active = 1
+               AND (ur.expires_at IS NULL OR ur.expires_at > CURRENT_TIMESTAMP)
+             LIMIT 1
+EOD, );
+        $stmt->execute([$roleName]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * Remove one role assignment from a user.
+     */
+    public function removeRoleFromUser(int $userId, int $roleId): bool
+    {
+        return $this->getPdo()->prepare('DELETE FROM rbac_user_roles WHERE user_id = ? AND role_id = ?')
+            ->execute([$userId, $roleId]);
+    }
+
+    /**
+     * Create (or update, matched by name) a role.
+     *
+     * @return null|int the role id, or null on failure
+     */
+    public function createRole(string $name, string $displayName, ?string $description = null, bool $isSystem = false): ?int
+    {
+        $this->getPdo()->prepare(<<<'EOD'
+INSERT INTO rbac_roles (name, display_name, description, is_system, is_active)
+             VALUES (?, ?, ?, ?, 1)
+             ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), description = VALUES(description), updated_at = CURRENT_TIMESTAMP
+EOD, )->execute([$name, $displayName, $description, $isSystem ? 1 : 0]);
+
+        $stmt = $this->getPdo()->prepare('SELECT id FROM rbac_roles WHERE name = ? LIMIT 1');
+        $stmt->execute([$name]);
+        $id = $stmt->fetchColumn();
+
+        return $id !== false ? (int) $id : null;
+    }
+
+    /**
+     * Create (or update, matched by name) a permission.
+     *
+     * @return null|int the permission id, or null on failure
+     */
+    public function createPermission(string $name, ?string $description = null, ?string $resource = null, ?string $action = null, bool $isSystem = false): ?int
+    {
+        $this->getPdo()->prepare(<<<'EOD'
+INSERT INTO rbac_permissions (name, description, resource, action, is_system)
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE description = VALUES(description), resource = VALUES(resource), action = VALUES(action), updated_at = CURRENT_TIMESTAMP
+EOD, )->execute([$name, $description, $resource, $action, $isSystem ? 1 : 0]);
+
+        $stmt = $this->getPdo()->prepare('SELECT id FROM rbac_permissions WHERE name = ? LIMIT 1');
+        $stmt->execute([$name]);
+        $id = $stmt->fetchColumn();
+
+        return $id !== false ? (int) $id : null;
+    }
+
+    /**
+     * Grant $permissionName to $roleId.
+     */
+    public function assignPermissionToRole(int $roleId, string $permissionName, ?int $grantedBy = null): bool
+    {
+        $stmt = $this->getPdo()->prepare('SELECT id FROM rbac_permissions WHERE name = ? LIMIT 1');
+        $stmt->execute([$permissionName]);
+        $permissionId = $stmt->fetchColumn();
+
+        if ($permissionId === false) {
+            return false;
+        }
+
+        return $this->getPdo()->prepare(
+            'INSERT INTO rbac_role_permissions (role_id, permission_id, granted_by) VALUES (?, ?, ?) '
+            .'ON DUPLICATE KEY UPDATE granted_at = CURRENT_TIMESTAMP',
+        )->execute([$roleId, (int) $permissionId, $grantedBy]);
+    }
+
+    /**
+     * Aggregate RBAC counters: total_roles, total_permissions,
+     * users_with_roles, and the 10 most-assigned roles.
+     *
+     * @return array<string, mixed>
+     */
+    public function getStatistics(): array
+    {
+        $pdo = $this->getPdo();
+
+        $popular = $pdo->query(<<<'EOD'
+SELECT r.name, r.display_name, COUNT(ur.user_id) AS user_count
+             FROM rbac_roles r
+             LEFT JOIN rbac_user_roles ur ON r.id = ur.role_id
+             WHERE r.is_active = 1
+             GROUP BY r.id, r.name, r.display_name
+             ORDER BY user_count DESC
+             LIMIT 10
+EOD, )->fetchAll(\PDO::FETCH_ASSOC);
+
+        return [
+            'total_roles' => (int) $pdo->query('SELECT COUNT(*) FROM rbac_roles WHERE is_active = 1')->fetchColumn(),
+            'total_permissions' => (int) $pdo->query('SELECT COUNT(*) FROM rbac_permissions')->fetchColumn(),
+            'users_with_roles' => (int) $pdo->query('SELECT COUNT(DISTINCT user_id) FROM rbac_user_roles')->fetchColumn(),
+            'popular_roles' => $popular,
+        ];
+    }
 }
