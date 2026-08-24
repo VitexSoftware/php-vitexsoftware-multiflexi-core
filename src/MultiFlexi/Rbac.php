@@ -16,13 +16,13 @@ declare(strict_types=1);
 namespace MultiFlexi;
 
 /**
- * Reads RBAC role assignments (rbac_roles / rbac_user_roles).
+ * Reads and assigns RBAC role assignments (rbac_roles / rbac_user_roles).
  *
- * Single source of truth for "does this user hold role X" checks, which
- * were previously hand-rolled as raw SQL in multiple places (multiflexi-cli
- * `user-role:set`, multiflexi-server `UserRoleApi`) each time RBAC was
- * touched. Role assignment (write side) still lives in those callers for
- * now; this class covers the read/check side.
+ * Single source of truth for RBAC checks and role assignment, which were
+ * previously hand-rolled as raw SQL in multiple places (multiflexi-cli
+ * `user-role:set`, multiflexi-server `UserRoleApi`) every time RBAC was
+ * touched. Role assignment uses `ON DUPLICATE KEY UPDATE`, which is
+ * MySQL-specific — matching the behavior of the code this replaces.
  */
 class Rbac extends DBEngine
 {
@@ -82,5 +82,95 @@ EOD, );
         $stmt->execute([$userId]);
 
         return array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'name');
+    }
+
+    /**
+     * Active role names mapped to their id, e.g. ['admin' => 2, 'viewer' => 5].
+     *
+     * @return array<string, int>
+     */
+    public function getAvailableRoles(): array
+    {
+        $stmt = $this->getPdo()->query('SELECT id, name FROM rbac_roles WHERE is_active = 1');
+        $map = [];
+
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $map[(string) $row['name']] = (int) $row['id'];
+        }
+
+        return $map;
+    }
+
+    /**
+     * Full role detail rows (id, name, display_name, assigned_at, expires_at)
+     * currently held by $userId.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUserRoleDetails(int $userId): array
+    {
+        $stmt = $this->getPdo()->prepare(<<<'EOD'
+SELECT r.id, r.name, r.display_name, ur.assigned_at, ur.expires_at
+             FROM rbac_roles r
+             JOIN rbac_user_roles ur ON ur.role_id = r.id
+             WHERE ur.user_id = ? AND r.is_active = 1
+             ORDER BY r.name
+EOD, );
+        $stmt->execute([$userId]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
+
+    /**
+     * Assign $roleNames to $userId. When $replace is true (default), any
+     * existing role not in $roleNames is unassigned; otherwise roles are
+     * added on top of the user's current ones.
+     *
+     * @param array<string> $roleNames
+     *
+     * @throws \InvalidArgumentException when a role name is unknown/inactive
+     *
+     * @return array<int, array<string, mixed>> the user's role details after the update
+     */
+    public function setUserRoles(int $userId, array $roleNames, bool $replace = true, ?int $assignedBy = null): array
+    {
+        $available = $this->getAvailableRoles();
+        $missing = array_values(array_diff($roleNames, array_keys($available)));
+
+        if (!empty($missing)) {
+            throw new \InvalidArgumentException('Unknown role(s): '.implode(', ', $missing));
+        }
+
+        $targetRoleIds = array_values(array_map(static fn (string $name): int => $available[$name], $roleNames));
+        $pdo = $this->getPdo();
+
+        $pdo->beginTransaction();
+
+        try {
+            if ($replace) {
+                if (empty($targetRoleIds)) {
+                    $pdo->prepare('DELETE FROM rbac_user_roles WHERE user_id = ?')->execute([$userId]);
+                } else {
+                    $placeholders = implode(',', array_fill(0, \count($targetRoleIds), '?'));
+                    $pdo->prepare("DELETE FROM rbac_user_roles WHERE user_id = ? AND role_id NOT IN ({$placeholders})")
+                        ->execute(array_merge([$userId], $targetRoleIds));
+                }
+            }
+
+            foreach ($targetRoleIds as $roleId) {
+                $pdo->prepare(
+                    'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by) VALUES (?, ?, ?) '
+                    .'ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), assigned_at = CURRENT_TIMESTAMP',
+                )->execute([$userId, $roleId, $assignedBy]);
+            }
+
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+
+            throw $e;
+        }
+
+        return $this->getUserRoleDetails($userId);
     }
 }
