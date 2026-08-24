@@ -330,7 +330,7 @@ class Job extends DBEngine
         $sqlLogger->setCompany(0);
         $sqlLogger->setApplication(0);
 
-        foreach ($this->application->getResultFiles() as $resultFile) {
+        foreach ($this->application->getResultFiles($this->environment) as $resultFile) {
             $description = $this->getArtifactDescription($resultFile);
             $this->storeJobArtifact($resultFile, $description);
         }

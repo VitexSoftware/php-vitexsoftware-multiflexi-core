@@ -904,9 +904,14 @@ class Application extends DBEngine
      * 1. Legacy RESULT_FILE environment variable (backward compatibility)
      * 2. Artifact definitions from app_artifacts table (pattern-matched in temp dir)
      *
+     * @param null|ConfigFields $jobEnvironment Job's resolved runtime environment (with macros
+     *                                          already substituted). When omitted, falls back to
+     *                                          the app's static config defaults, which still
+     *                                          contain unresolved macros such as `{ACCOUNT_NUMBER}`.
+     *
      * @return array<string> List of existing file paths
      */
-    public function getResultFiles(): array
+    public function getResultFiles(?ConfigFields $jobEnvironment = null): array
     {
         $resultFiles = [];
         $appId = $this->getMyKey();
@@ -918,7 +923,7 @@ class Application extends DBEngine
         $tmpDir = Defaults::$MULTIFLEXI_TMP;
 
         // Legacy: RESULT_FILE environment variable
-        $cfgField = $this->getEnvironment()->getFieldByCode('RESULT_FILE');
+        $cfgField = ($jobEnvironment ?? $this->getEnvironment())->getFieldByCode('RESULT_FILE');
 
         if ($cfgField && !empty($cfgField->getValue())) {
             $resultFiles[] = Job::tmpfilepath($cfgField->getValue());
