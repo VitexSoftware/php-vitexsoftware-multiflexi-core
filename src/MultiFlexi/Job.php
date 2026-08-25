@@ -330,16 +330,18 @@ class Job extends DBEngine
         $sqlLogger->setCompany(0);
         $sqlLogger->setApplication(0);
 
-        foreach ($this->application->getResultFiles($this->environment) as $resultFile) {
-            $description = $this->getArtifactDescription($resultFile);
-            $this->storeJobArtifact($resultFile, $description);
-        }
-
         $resultfile = $this->environment->getFieldByCode('RESULT_FILE') ? $this->environment->getFieldByCode('RESULT_FILE')->getValue() : '';
+        // Captured before storeJobArtifact() below deletes the file on disk once it's stored as an artifact.
+        $resultFileContent = file_exists($resultfile) ? file_get_contents($resultfile) : '';
+
+        foreach ($this->application->getResultFiles($this->environment) as $matchedFile) {
+            $description = $this->getArtifactDescription($matchedFile);
+            $this->storeJobArtifact($matchedFile, $description);
+        }
 
         $this->reporter->setDataValue('phase', 'jobDone');
         $this->reporter->setDataValue('job_id', $this->getMyKey());
-        $this->reporter->setDataValue('data', file_exists($resultfile) ? file_get_contents($resultfile) : '');
+        $this->reporter->setDataValue('data', $resultFileContent);
         $this->reporter->setDataValue('version', $this->getApplication()->getDataValue('version'));
         $this->reporter->setDataValue('exitcode', $statusCode);
         $this->reporter->setDataValue('exitcode_description', $this->executor->meaning().' '.$this->getApplication()->exitCodeDescription($statusCode));
@@ -399,11 +401,6 @@ class Job extends DBEngine
         if (!empty($rtUpdate)) {
             $this->getRunTemplate()->updateToSQL($rtUpdate, ['id' => $this->getRunTemplate()->getMyKey()]);
         }
-
-        // TODO
-        //        if (file_exists($resultfile)) {
-        //            unlink($resultfile);
-        //        }
 
         $result = $this->updateToSQL([
             'pid'         => $this->executor->getPid(),
@@ -1643,13 +1640,18 @@ EOD;
 
                 if ($resultContent !== false) {
                     $contentType = \function_exists('mime_content_type') ? mime_content_type($resultfile) : 'text/plain';
-                    $artifactor->createArtifact(
+                    $artifactId = $artifactor->createArtifact(
                         $this->getMyKey(),
                         $resultContent,
                         basename($resultfile),
                         $contentType,
                         $description,
                     );
+
+                    if ($artifactId) {
+                        // Content is now preserved as an artifact in the database; free the disk copy.
+                        unlink($resultfile);
+                    }
                 }
             } catch (\Exception $e) {
                 $this->addStatusMessage(sprintf(_('Failed to create artifact for result file %s: %s'), $resultfile, $e->getMessage()), 'warning');
