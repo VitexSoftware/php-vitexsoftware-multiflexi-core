@@ -415,6 +415,29 @@ class Job extends DBEngine
     }
 
     /**
+     * Finalize a Job that was blocked before it ever ran (e.g. the Phase 2
+     * credential-availability gate in the executor) so it stops looking like
+     * a still-pending job to Scheduler::initializeScheduling(), which only
+     * resets a stuck run_template.next_schedule when it finds no job with
+     * `exitcode IS NULL` for that schedule slot.
+     *
+     * Unlike runEnd(), this never touches $this->executor (never initialized
+     * for a job that didn't run) and does not scan for artifacts, report to
+     * Zabbix/OTel, or touch job counters/next_schedule directly — the regular
+     * healing tick picks those up once exitcode is no longer null.
+     */
+    public function markUnexecuted(int $exitCode): void
+    {
+        $now = new \Envms\FluentPDO\Literal(\Ease\Shared::cfg('DB_CONNECTION') === 'sqlite' ? "date('now')" : 'NOW()');
+
+        $this->updateToSQL([
+            'begin'    => $now,
+            'end'      => $now,
+            'exitcode' => $exitCode,
+        ], ['id' => $this->getMyKey()]);
+    }
+
+    /**
      * Low-cardinality attribute set for OpenTelemetry job counters/histogram.
      *
      * Deliberately excludes job-instance-unique reporter fields (job_id, pid,
