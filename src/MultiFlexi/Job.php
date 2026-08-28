@@ -255,7 +255,7 @@ class Job extends DBEngine
         $this->reporter->setDataValue('executor', $this->getDataValue('executor'));
         $this->reporter->setDataValue('begin', (new \DateTime())->format('Y-m-d H:i:s'));
         $this->reporter->setDataValue('interval', $this->getRuntemplate()->getDataValue('cron'));
-        $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($this->getRuntemplate()->getDataValue('interv')));
+        $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($this->getRuntemplate()->getDataValue('interv'), $this->getRuntemplate()->getDataValue('cron')));
         $this->reporter->setDataValue('app_name', $this->getApplication()->getRecordName());
         $this->reporter->setDataValue('app_id', $this->getApplication()->getMyKey());
         $this->reporter->setDataValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
@@ -595,7 +595,7 @@ EOD;
             $this->reporter->setDataValue('launched_by_id', (int) \Ease\Shared::user()->getMyKey());
             $this->reporter->setDataValue('launched_by', empty(\Ease\Shared::user()->getUserLogin()) ? 'cron' : \Ease\Shared::user()->getUserLogin());
             $this->reporter->setDataValue('interval', $runTemplate->getDataValue('interv'));
-            $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv')));
+            $this->reporter->setDataValue('interval_seconds', Scheduler::codeToSeconds($runTemplate->getDataValue('interv'), $runTemplate->getDataValue('cron')));
 
             if (\Ease\Shared::cfg('ZABBIX_SERVER')) {
                 // TODO $this->reportToZabbix('job-['.$this->getCompany()->getDataValue('slug').'-'.$this->getApplication()->getDataValue('code').'-'.$this->getRuntemplate()->getMyKey().']');

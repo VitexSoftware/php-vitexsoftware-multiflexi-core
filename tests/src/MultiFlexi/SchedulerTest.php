@@ -95,6 +95,29 @@ class SchedulerTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @covers \MultiFlexi\Scheduler::codeToSeconds
+     */
+    public function testCodeToSecondsCustomCron(): void
+    {
+        // Every hour on the hour -> 3600s average gap.
+        $this->assertEquals(3600, Scheduler::codeToSeconds('c', '0 * * * *'));
+
+        // Uneven daily slots (6,8,...,22h) average out to 2h despite the
+        // overnight gap between 22h and 06h.
+        $this->assertEquals(7200, Scheduler::codeToSeconds('c', '1 6,8,10,12,14,16,18,20,22 * * *'));
+
+        // No cron expression given for a custom-scheduled RunTemplate.
+        $this->assertEquals(0, Scheduler::codeToSeconds('c', null));
+        $this->assertEquals(0, Scheduler::codeToSeconds('c', ''));
+
+        // Invalid cron expression must not throw.
+        $this->assertEquals(0, Scheduler::codeToSeconds('c', 'not a cron expression'));
+
+        // $cron is ignored for non-custom codes.
+        $this->assertEquals(3600, Scheduler::codeToSeconds('h', '0 * * * *'));
+    }
+
+    /**
      * @covers \MultiFlexi\Scheduler::intervalToCode
      */
     public function testIntervalToCode(): void

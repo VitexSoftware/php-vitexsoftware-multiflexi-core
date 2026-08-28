@@ -388,12 +388,50 @@ class Scheduler extends Engine
     /**
      * Get Job Interval length in seconds by code.
      *
-     * Known codes: y, m, w, d, h, i, n (disabled), c (custom cron — returns 0).
-     * Returns 0 for unknown or null codes (e.g. RunTemplate with no schedule set).
+     * Known codes: y, m, w, d, h, i, n (disabled), c (custom cron).
+     * For code 'c', pass the RunTemplate's cron expression via $cron to get
+     * an estimated interval (average gap between upcoming occurrences).
+     * Returns 0 for unknown or null codes, or for 'c' without a usable
+     * $cron expression (e.g. RunTemplate with no schedule set).
      */
-    public static function codeToSeconds(?string $code): int
+    public static function codeToSeconds(?string $code, ?string $cron = null): int
     {
+        if ($code === 'c') {
+            return self::cronToAverageSeconds($cron);
+        }
+
         return ($code !== null && \array_key_exists($code, self::$intervalSecond)) ? (int) (self::$intervalSecond[$code]) : 0;
+    }
+
+    /**
+     * Estimate the average interval in seconds between consecutive runs of
+     * a cron expression by sampling a few of its upcoming occurrences.
+     *
+     * A plain "next run minus now" would be skewed by however close 'now'
+     * happens to be to the next occurrence, so this instead averages the
+     * gaps across several consecutive occurrences (e.g. an expression
+     * firing at 6,8,10,...,22h averages to 2h despite the 8h overnight
+     * gap).
+     */
+    private static function cronToAverageSeconds(?string $cron, int $samples = 6): int
+    {
+        if (empty($cron)) {
+            return 0;
+        }
+
+        try {
+            $runDates = (new CronExpression($cron))->getMultipleRunDates($samples, new \DateTime(), false, true);
+        } catch (\Exception $exception) {
+            return 0;
+        }
+
+        if (\count($runDates) < 2) {
+            return 0;
+        }
+
+        $span = end($runDates)->getTimestamp() - reset($runDates)->getTimestamp();
+
+        return (int) round($span / (\count($runDates) - 1));
     }
 
     /**

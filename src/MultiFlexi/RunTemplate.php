@@ -470,7 +470,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
         }
 
         $packet = new ZabbixPacket();
-        $packet->addMetric((new ZabbixMetric('job-['.$company->getDataValue('code').'-'.$application->getDataValue('code').'-'.$jobInfo['id'].'-interval_seconds]', (string) Scheduler::codeToSeconds($jobInfo['interv'])))->withHostname($hostname));
+        $packet->addMetric((new ZabbixMetric('job-['.$company->getDataValue('code').'-'.$application->getDataValue('code').'-'.$jobInfo['id'].'-interval_seconds]', (string) Scheduler::codeToSeconds($jobInfo['interv'], $jobInfo['cron'] ?? null)))->withHostname($hostname));
 
         try {
             $result = $zabbixSender->send($packet);
