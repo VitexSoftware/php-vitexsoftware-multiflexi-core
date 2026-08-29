@@ -276,6 +276,29 @@
             "format": {
               "type": "string",
               "enum": ["file", "json", "text", "url", "custom"]
+            },
+            "fields": {
+              "type": "object",
+              "description": "Named items inside this output, for job-chaining mapping editors (e.g. Node-RED) to offer as selectors. Metadata only - the actual data lives in the produced file/output.",
+              "patternProperties": {
+                "^[a-zA-Z0-9_-]+$": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["string", "integer", "float", "boolean"]
+                    },
+                    "description": {
+                      "$ref": "#/$defs/localizedString"
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "JSONPath into the produced JSON, when it differs from the field name (e.g. \"$.customer.id\")."
+                    }
+                  },
+                  "required": ["type"]
+                }
+              }
             }
           },
           "required": ["format"]
@@ -298,6 +321,30 @@
             "format": {
               "type": "string",
               "enum": ["file", "json", "text", "url", "custom"]
+            },
+            "target": {
+              "type": "string",
+              "description": "Name of an `environment` key that receives the whole consumed value (e.g. a materialised file path for a CLI switch)."
+            },
+            "fields": {
+              "type": "object",
+              "description": "Per-item bindings from this consumed input to individual `environment` keys.",
+              "patternProperties": {
+                "^[a-zA-Z0-9_-]+$": {
+                  "type": "object",
+                  "properties": {
+                    "target": {
+                      "type": "string",
+                      "description": "Name of the `environment` key this item's value is written to."
+                    },
+                    "format": {
+                      "type": "string",
+                      "enum": ["string", "integer", "float", "boolean"]
+                    }
+                  },
+                  "required": ["target"]
+                }
+              }
             }
           },
           "required": ["format"]

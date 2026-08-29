@@ -41,7 +41,28 @@ class Token extends Engine
      */
     public function getUser()
     {
-        return $this->getDataValue('user') ? new \MultiFlexi\User($this->getDataValue('user')) : null;
+        return $this->getDataValue('user_id') ? new \MultiFlexi\User($this->getDataValue('user_id')) : null;
+    }
+
+    /**
+     * True when this token exists, belongs to an enabled user and has not
+     * expired (a null `until` means it never expires).
+     */
+    public function isValid(): bool
+    {
+        if ($this->getMyKey() === null) {
+            return false;
+        }
+
+        $until = $this->getDataValue('until');
+
+        if ($until !== null && strtotime((string) $until) < time()) {
+            return false;
+        }
+
+        $user = $this->getUser();
+
+        return $user instanceof \MultiFlexi\User && $user->isAccountEnabled();
     }
 
     /**
