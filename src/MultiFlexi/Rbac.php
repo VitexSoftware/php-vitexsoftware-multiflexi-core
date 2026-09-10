@@ -21,8 +21,9 @@ namespace MultiFlexi;
  * Single source of truth for RBAC checks and role assignment, which were
  * previously hand-rolled as raw SQL in multiple places (multiflexi-cli
  * `user-role:set`, multiflexi-server `UserRoleApi`) every time RBAC was
- * touched. Role assignment uses `ON DUPLICATE KEY UPDATE`, which is
- * MySQL-specific — matching the behavior of the code this replaces.
+ * touched. Upserts branch per PDO driver (`ON DUPLICATE KEY UPDATE` on
+ * mysql, `ON CONFLICT ... DO UPDATE` on sqlite) so role assignment works on
+ * both backends.
  */
 class Rbac extends DBEngine
 {
@@ -30,6 +31,15 @@ class Rbac extends DBEngine
     {
         parent::__construct();
         $this->setMyTable('rbac_user_roles');
+    }
+
+    /**
+     * True when the current PDO connection is sqlite, i.e. `ON DUPLICATE KEY
+     * UPDATE` must be replaced with `ON CONFLICT ... DO UPDATE`.
+     */
+    private function isSqlite(): bool
+    {
+        return $this->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME) === 'sqlite';
     }
 
     /**
@@ -157,11 +167,14 @@ EOD, );
                 }
             }
 
+            $sql = $this->isSqlite()
+                ? 'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by) VALUES (?, ?, ?) '
+                    .'ON CONFLICT(user_id, role_id) DO UPDATE SET assigned_by = excluded.assigned_by, assigned_at = CURRENT_TIMESTAMP'
+                : 'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by) VALUES (?, ?, ?) '
+                    .'ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), assigned_at = CURRENT_TIMESTAMP';
+
             foreach ($targetRoleIds as $roleId) {
-                $pdo->prepare(
-                    'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by) VALUES (?, ?, ?) '
-                    .'ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), assigned_at = CURRENT_TIMESTAMP',
-                )->execute([$userId, $roleId, $assignedBy]);
+                $pdo->prepare($sql)->execute([$userId, $roleId, $assignedBy]);
             }
 
             $pdo->commit();
@@ -180,10 +193,13 @@ EOD, );
      */
     public function assignRoleToUser(int $userId, int $roleId, ?int $assignedBy = null, ?string $expiresAt = null): bool
     {
-        return $this->getPdo()->prepare(
-            'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by, expires_at) VALUES (?, ?, ?, ?) '
-            .'ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), assigned_at = CURRENT_TIMESTAMP, expires_at = VALUES(expires_at)',
-        )->execute([$userId, $roleId, $assignedBy, $expiresAt]);
+        $sql = $this->isSqlite()
+            ? 'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by, expires_at) VALUES (?, ?, ?, ?) '
+                .'ON CONFLICT(user_id, role_id) DO UPDATE SET assigned_by = excluded.assigned_by, assigned_at = CURRENT_TIMESTAMP, expires_at = excluded.expires_at'
+            : 'INSERT INTO rbac_user_roles (user_id, role_id, assigned_by, expires_at) VALUES (?, ?, ?, ?) '
+                .'ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), assigned_at = CURRENT_TIMESTAMP, expires_at = VALUES(expires_at)';
+
+        return $this->getPdo()->prepare($sql)->execute([$userId, $roleId, $assignedBy, $expiresAt]);
     }
 
     // -----------------------------------------------------------------------
@@ -309,11 +325,18 @@ EOD, );
      */
     public function createRole(string $name, string $displayName, ?string $description = null, bool $isSystem = false): ?int
     {
-        $this->getPdo()->prepare(<<<'EOD'
+        $sql = $this->isSqlite()
+            ? <<<'EOD'
+INSERT INTO rbac_roles (name, display_name, description, is_system, is_active)
+             VALUES (?, ?, ?, ?, 1)
+             ON CONFLICT(name) DO UPDATE SET display_name = excluded.display_name, description = excluded.description, updated_at = CURRENT_TIMESTAMP
+EOD
+            : <<<'EOD'
 INSERT INTO rbac_roles (name, display_name, description, is_system, is_active)
              VALUES (?, ?, ?, ?, 1)
              ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), description = VALUES(description), updated_at = CURRENT_TIMESTAMP
-EOD, )->execute([$name, $displayName, $description, $isSystem ? 1 : 0]);
+EOD;
+        $this->getPdo()->prepare($sql)->execute([$name, $displayName, $description, $isSystem ? 1 : 0]);
 
         $stmt = $this->getPdo()->prepare('SELECT id FROM rbac_roles WHERE name = ? LIMIT 1');
         $stmt->execute([$name]);
@@ -329,11 +352,18 @@ EOD, )->execute([$name, $displayName, $description, $isSystem ? 1 : 0]);
      */
     public function createPermission(string $name, ?string $description = null, ?string $resource = null, ?string $action = null, bool $isSystem = false): ?int
     {
-        $this->getPdo()->prepare(<<<'EOD'
+        $sql = $this->isSqlite()
+            ? <<<'EOD'
+INSERT INTO rbac_permissions (name, description, resource, action, is_system)
+             VALUES (?, ?, ?, ?, ?)
+             ON CONFLICT(name) DO UPDATE SET description = excluded.description, resource = excluded.resource, action = excluded.action, updated_at = CURRENT_TIMESTAMP
+EOD
+            : <<<'EOD'
 INSERT INTO rbac_permissions (name, description, resource, action, is_system)
              VALUES (?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE description = VALUES(description), resource = VALUES(resource), action = VALUES(action), updated_at = CURRENT_TIMESTAMP
-EOD, )->execute([$name, $description, $resource, $action, $isSystem ? 1 : 0]);
+EOD;
+        $this->getPdo()->prepare($sql)->execute([$name, $description, $resource, $action, $isSystem ? 1 : 0]);
 
         $stmt = $this->getPdo()->prepare('SELECT id FROM rbac_permissions WHERE name = ? LIMIT 1');
         $stmt->execute([$name]);
@@ -355,10 +385,13 @@ EOD, )->execute([$name, $description, $resource, $action, $isSystem ? 1 : 0]);
             return false;
         }
 
-        return $this->getPdo()->prepare(
-            'INSERT INTO rbac_role_permissions (role_id, permission_id, granted_by) VALUES (?, ?, ?) '
-            .'ON DUPLICATE KEY UPDATE granted_at = CURRENT_TIMESTAMP',
-        )->execute([$roleId, (int) $permissionId, $grantedBy]);
+        $sql = $this->isSqlite()
+            ? 'INSERT INTO rbac_role_permissions (role_id, permission_id, granted_by) VALUES (?, ?, ?) '
+                .'ON CONFLICT(role_id, permission_id) DO UPDATE SET granted_at = CURRENT_TIMESTAMP'
+            : 'INSERT INTO rbac_role_permissions (role_id, permission_id, granted_by) VALUES (?, ?, ?) '
+                .'ON DUPLICATE KEY UPDATE granted_at = CURRENT_TIMESTAMP';
+
+        return $this->getPdo()->prepare($sql)->execute([$roleId, (int) $permissionId, $grantedBy]);
     }
 
     /**
