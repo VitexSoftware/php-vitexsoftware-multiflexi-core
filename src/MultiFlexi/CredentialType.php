@@ -22,6 +22,8 @@ namespace MultiFlexi;
  */
 class CredentialType extends DBEngine
 {
+    public const SCHEMA_URI = 'https://multiflexi.eu/schema/credential-type.json';
+
     public static string $credTypeSchema = __DIR__.'/../../schema/credential-type.json';
 
     /**

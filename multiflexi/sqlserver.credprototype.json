@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json",
+  "$schema": "https://multiflexi.eu/schema/credential-prototype.json",
   "uuid": "84c157ce-57d5-45cd-ae67-75fdfedab57f",
   "code": "SQLServer",
   "name": "SQL Server",

@@ -1,5 +1,5 @@
 {
-    "$schema": "https://multiflexi.eu/multiflexi.app.schema.json",
+    "$schema": "https://multiflexi.eu/schema/application.json",
     "name": "Schema Invalid Test App",
     "description": "Valid JSON but fails schema validation",
     "version": "1.0.0",

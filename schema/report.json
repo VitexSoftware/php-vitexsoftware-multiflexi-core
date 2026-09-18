@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/report.json",
+  "$id": "https://multiflexi.eu/schema/report.json",
   "schemaVersion": "0.1.0",
   "title": "MultiFlexi Application Report Schema",
   "type": "object",

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/multiflexi.app.schema.json",
+  "$schema": "https://multiflexi.eu/schema/application.json",
   "name": "Example App with Exit Codes",
   "description": {
     "en": "Example application demonstrating exit code definitions",

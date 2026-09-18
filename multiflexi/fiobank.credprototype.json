@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json",
+  "$schema": "https://multiflexi.eu/schema/credential-prototype.json",
   "uuid": "f79aaa38-2eaf-453a-beee-3a2afa1221d5",
   "code": "FioBank",
   "name": {

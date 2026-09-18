@@ -24,6 +24,8 @@ class CredentialProtoType extends \MultiFlexi\Engine implements \MultiFlexi\chec
 {
     use \Ease\recordkey;
 
+    public const SCHEMA_URI = 'https://multiflexi.eu/schema/credential-prototype.json';
+
     /**
      * Database table name.
      */
@@ -356,7 +358,7 @@ class CredentialProtoType extends \MultiFlexi\Engine implements \MultiFlexi\chec
         $protoId = $this->getMyKey();
         $export = [];
 
-        $export['schema'] = 'https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/credential-prototype.json';
+        $export['$schema'] = self::SCHEMA_URI;
         $export['version'] = $this->getDataValue('version') ?? '1.0';
         $export['uuid'] = $this->getDataValue('uuid') ?? '';
         $export['code'] = $this->getDataValue('code') ?? '';

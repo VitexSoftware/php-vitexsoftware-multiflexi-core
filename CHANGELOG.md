@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Canonical JSON Schema URLs are now `https://multiflexi.eu/schema/*.json`
+  (`application.json`, `credential-type.json`, `credential-prototype.json`,
+  `report.json`). Application and credential-prototype JSON export uses these
+  URIs in `$schema`.
+
 ## [2.11.0] - 2026-08-14
 
 ### Added

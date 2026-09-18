@@ -22,6 +22,8 @@ namespace MultiFlexi;
  */
 class Application extends DBEngine
 {
+    public const SCHEMA_URI = 'https://multiflexi.eu/schema/application.json';
+
     public ?string $lastModifiedColumn = null;
     public Company $company;
     public static string $appSchema = __DIR__.'/../../schema/application.json';
@@ -231,7 +233,7 @@ class Application extends DBEngine
         $rawData = $this->getData();
         $export = [];
 
-        $export['$schema'] = 'https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/application.json';
+        $export['$schema'] = self::SCHEMA_URI;
 
         $export['image'] = $rawData['image'] ?? '';
 
