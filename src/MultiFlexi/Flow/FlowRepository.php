@@ -350,6 +350,12 @@ class FlowRepository extends DBEngine
         $changeEvidence = (string) ($change['evidence'] ?? '');
         $changeOperation = (string) ($change['operation'] ?? '');
 
+        // Catch-all HTTP receive nodes (empty evidence + any) are for Node-RED
+        // debug ingress only — never start a MultiFlexi flow_run from them.
+        if (($evidence === null || $evidence === '') && (string) $operation === 'any') {
+            return false;
+        }
+
         if ($evidence !== null && $evidence !== '' && (string) $evidence !== $changeEvidence) {
             return false;
         }
