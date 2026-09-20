@@ -22,9 +22,23 @@ namespace MultiFlexi;
  */
 class Defaults
 {
+    /**
+     * Scratch directory for job artifacts and temp files.
+     * Initialised eagerly so static access works without constructing.
+     */
     public static string $MULTIFLEXI_TMP;
+
+    public static function init(): void
+    {
+        self::$MULTIFLEXI_TMP = file_exists('/var/lib/multiflexi/tmp')
+            ? '/var/lib/multiflexi/tmp'
+            : sys_get_temp_dir();
+    }
+
     public function __construct()
     {
-        self::$MULTIFLEXI_TMP = file_exists('/var/lib/multiflexi/tmp') ? '/var/lib/multiflexi/tmp' : sys_get_temp_dir();
+        self::init();
     }
 }
+
+Defaults::init();

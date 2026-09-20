@@ -31,6 +31,7 @@ class Job extends DBEngine
     public const SCHEDULE_TYPE_ADHOC_WEB = 'adhoc-web';
     public const SCHEDULE_TYPE_ADHOC_CLI = 'adhoc-cli';
     public const SCHEDULE_TYPE_ADHOC_API = 'adhoc-api';
+    public const SCHEDULE_TYPE_EVENT = 'event';
     public const SCHEDULE_TYPE_COMMAND_LINE = 'CommandLine';
 
     /**
@@ -43,6 +44,7 @@ class Job extends DBEngine
         self::SCHEDULE_TYPE_ADHOC_WEB,
         self::SCHEDULE_TYPE_ADHOC_CLI,
         self::SCHEDULE_TYPE_ADHOC_API,
+        self::SCHEDULE_TYPE_EVENT,
         self::SCHEDULE_TYPE_COMMAND_LINE,
     ];
 

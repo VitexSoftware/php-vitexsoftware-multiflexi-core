@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `Conffield::addAppConfig()` no longer writes a removed `name` column
+  (caused `Unknown column 'name' in 'INSERT INTO'` when creating fields via CLI
+  or other callers). Display name now always uses `keyname`.
+
 ### Changed
 - Canonical JSON Schema URLs are now `https://multiflexi.eu/schema/*.json`
   (`application.json`, `credential-type.json`, `credential-prototype.json`,

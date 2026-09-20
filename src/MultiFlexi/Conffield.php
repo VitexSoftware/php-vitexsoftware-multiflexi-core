@@ -94,13 +94,16 @@ class Conffield extends Engine
         $this->setDataValue('type', $envProperties['type']);
         $this->setDataValue('description', $envProperties['description']);
         $this->setDataValue('defval', \array_key_exists('defval', $envProperties) ? $envProperties['defval'] : '');
-        $this->setDataValue('name', \array_key_exists('name', $envProperties) ? $envProperties['name'] : '');
         $this->setDataValue('hint', \array_key_exists('hint', $envProperties) ? $envProperties['hint'] : '');
         $this->setDataValue('note', \array_key_exists('note', $envProperties) ? $envProperties['note'] : '');
         $this->setDataValue('required', !empty($envProperties['required']) ? 1 : 0);
         $this->setDataValue('secret', !empty($envProperties['secret']) ? 1 : 0);
         $this->setDataValue('multiline', !empty($envProperties['multiline']) ? 1 : 0);
         $this->setDataValue('expiring', !empty($envProperties['expiring']) ? 1 : 0);
+
+        if (\array_key_exists('category', $envProperties)) {
+            $this->setDataValue('category', (string) $envProperties['category']);
+        }
 
         return $this->dbsync();
     }
@@ -110,7 +113,8 @@ class Conffield extends Engine
         $appConfiguration = new ConfigFields(\Ease\Euri::fromObject($app));
 
         foreach ((new self())->appConfigs($app->getMyKey()) as $appConfig) {
-            $displayName = !empty($appConfig['name']) ? $appConfig['name'] : $appConfig['keyname'];
+            // Display name used to live in a removed `name` column; keyname is canonical.
+            $displayName = $appConfig['keyname'];
             $hint = $appConfig['hint'] ?? '';
             $field = new ConfigField($appConfig['keyname'], self::fixType($appConfig['type']), $displayName, $appConfig['description'], $hint);
             $field->setRequired($appConfig['required'] === 1)

@@ -65,12 +65,7 @@ class ConfigurationTest extends \PHPUnit\Framework\TestCase
      */
     private function seedBoolConffield(): void
     {
-        // Not using Conffield::addAppConfig() here: it writes a 'name' column
-        // that doesn't exist on the 'conffield' table (a separate, pre-existing
-        // bug found during investigation) and would fatal on insert.
-        (new Conffield())->insertToSQL([
-            'app_id' => self::testAppId(),
-            'keyname' => self::$boolFieldName,
+        (new Conffield())->addAppConfig(self::testAppId(), self::$boolFieldName, [
             'type' => 'bool',
             'description' => 'PHPUnit coercion test field',
         ]);
