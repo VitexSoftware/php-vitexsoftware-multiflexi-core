@@ -118,6 +118,48 @@ class SchedulerTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @covers \MultiFlexi\Scheduler::sanityBoundary
+     */
+    public function testSanityBoundaryMonthlyIn31DayMonth(): void
+    {
+        // Monthly runtemplate with 8h01m delay, checked right after the
+        // October run: the pending job for 1 Nov 08:01 must stay plausible
+        // (a flat 30.44-day period used to put the boundary at 1 Nov 02:36).
+        $now = new \DateTime('2026-10-01 08:01:30');
+        $pendingJob = new \DateTime('2026-11-01 08:01:00');
+        $boundary = Scheduler::sanityBoundary('m', null, 28860, $now);
+
+        $this->assertNotNull($boundary);
+        $this->assertLessThanOrEqual($boundary, $pendingJob);
+    }
+
+    /**
+     * @covers \MultiFlexi\Scheduler::sanityBoundary
+     */
+    public function testSanityBoundaryDetectsImplausibleJob(): void
+    {
+        // Daily runtemplate with a job scheduled 4 days out is implausible.
+        $now = new \DateTime('2026-10-01 12:00:00');
+        $boundary = Scheduler::sanityBoundary('d', null, 0, $now);
+
+        $this->assertGreaterThan($boundary, new \DateTime('2026-10-05 00:00:00'));
+        $this->assertLessThanOrEqual($boundary, new \DateTime('2026-10-02 00:00:00'));
+    }
+
+    /**
+     * @covers \MultiFlexi\Scheduler::sanityBoundary
+     */
+    public function testSanityBoundaryWithoutSchedule(): void
+    {
+        $now = new \DateTime();
+
+        $this->assertNull(Scheduler::sanityBoundary('n', null, 0, $now));
+        $this->assertNull(Scheduler::sanityBoundary('c', null, 0, $now));
+        $this->assertNull(Scheduler::sanityBoundary('c', 'not a cron expression', 0, $now));
+        $this->assertNotNull(Scheduler::sanityBoundary('c', '23 10 1 * *', 0, $now));
+    }
+
+    /**
      * @covers \MultiFlexi\Scheduler::intervalToCode
      */
     public function testIntervalToCode(): void

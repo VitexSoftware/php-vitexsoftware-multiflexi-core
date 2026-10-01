@@ -221,26 +221,15 @@ class Scheduler extends Engine
             }
 
             $after = new \DateTime($scheduleEntry['after']);
-            $now = new \DateTime();
+            $sanityBoundary = self::sanityBoundary(
+                $runtemplateData['interv'],
+                $runtemplateData['cron'],
+                (int) $runtemplateData['delay'],
+                new \DateTime(),
+            );
 
-            if ($runtemplateData['interv'] === 'c') {
-                if (empty($runtemplateData['cron'])) {
-                    continue;
-                }
-
-                $sanityBoundary = (new CronExpression($runtemplateData['cron']))->getNextRunDate($now, 1);
-            } else {
-                $periodSeconds = self::codeToSeconds($runtemplateData['interv']);
-
-                if ($periodSeconds <= 0) {
-                    continue;
-                }
-
-                $sanityBoundary = (clone $now)->modify('+'.$periodSeconds.' seconds');
-            }
-
-            if (!empty($runtemplateData['delay'])) {
-                $sanityBoundary->modify('+'.$runtemplateData['delay'].' seconds');
+            if ($sanityBoundary === null) {
+                continue;
             }
 
             if ($after > $sanityBoundary) {
@@ -383,6 +372,37 @@ class Scheduler extends Engine
     public static function codeToInterval(?string $code): string
     {
         return ($code !== null && \array_key_exists($code, self::$intervalCode)) ? self::$intervalCode[$code] : 'n/a';
+    }
+
+    /**
+     * Latest plausible launch time of a pending job for a runtemplate.
+     *
+     * Fixed intervals use their calendar cron expression (see $intervCron)
+     * the same way custom cron does: a flat period in seconds (e.g. 'm' =
+     * 30.44 days) falls short of the next occurrence in 31-day months, so a
+     * valid pending job would be purged and recreated on every tick.
+     *
+     * @return null|\DateTime null when the interval has no usable schedule
+     */
+    public static function sanityBoundary(?string $interv, ?string $cron, int $delay, \DateTime $now): ?\DateTime
+    {
+        $cronExpression = $interv === 'c' ? $cron : (self::$intervCron[$interv] ?? '');
+
+        if (empty($cronExpression)) {
+            return null;
+        }
+
+        try {
+            $boundary = (new CronExpression($cronExpression))->getNextRunDate($now, 1);
+        } catch (\Exception $exception) {
+            return null;
+        }
+
+        if ($delay > 0) {
+            $boundary->modify('+'.$delay.' seconds');
+        }
+
+        return $boundary;
     }
 
     /**
