@@ -105,6 +105,24 @@ class JobOutputLine extends Engine
     }
 
     /**
+     * Highest row ID for a job (0 when the job has no stored lines yet).
+     *
+     * Used by the job detail page so the SSE live stream can skip lines already
+     * rendered into the terminal snapshot and only append new ones.
+     */
+    public function getMaxIdForJob(int $jobId): int
+    {
+        $row = $this->getFluentPDO()
+            ->from($this->myTable)
+            ->where('job_id', $jobId)
+            ->select(null)
+            ->select('MAX(id) AS max_id')
+            ->fetch();
+
+        return (int) ($row['max_id'] ?? 0);
+    }
+
+    /**
      * Concatenate all lines of a given type for a job into a single string.
      */
     public function getOutputString(int $jobId, string $type): string
