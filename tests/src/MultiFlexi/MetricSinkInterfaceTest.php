@@ -179,4 +179,59 @@ final class MetricSinkInterfaceTest extends TestCase
             'exitcode' => 0,
         ], $filtered);
     }
+
+    /**
+     * Regression guard: an unreachable OTLP/Grafana endpoint must never abort
+     * the caller. forceFlush() returning false (SDK export failure path) disables
+     * further export for this process and leaves isEnabled() false.
+     *
+     * Uses anonymous stubs instead of PHPUnit mocks so the test runs without the
+     * optional OpenTelemetry SDK packages installed.
+     */
+    public function testOtelMetricsExporterFlushFailureDisablesExporter(): void
+    {
+        $exporter = (new \ReflectionClass(OtelMetricsExporter::class))->newInstanceWithoutConstructor();
+
+        $meterProvider = new class {
+            public function forceFlush(): bool
+            {
+                return false;
+            }
+        };
+
+        $enabled = new \ReflectionProperty(OtelMetricsExporter::class, 'enabled');
+        $enabled->setValue($exporter, true);
+
+        $provider = new \ReflectionProperty(OtelMetricsExporter::class, 'meterProvider');
+        $provider->setValue($exporter, $meterProvider);
+
+        $exporter->flush();
+
+        $this->assertFalse($exporter->isEnabled());
+    }
+
+    /**
+     * Regression guard: thrown exceptions from forceFlush() are swallowed.
+     */
+    public function testOtelMetricsExporterFlushExceptionIsSwallowed(): void
+    {
+        $exporter = (new \ReflectionClass(OtelMetricsExporter::class))->newInstanceWithoutConstructor();
+
+        $meterProvider = new class {
+            public function forceFlush(): bool
+            {
+                throw new \RuntimeException('Export retry limit exceeded');
+            }
+        };
+
+        $enabled = new \ReflectionProperty(OtelMetricsExporter::class, 'enabled');
+        $enabled->setValue($exporter, true);
+
+        $provider = new \ReflectionProperty(OtelMetricsExporter::class, 'meterProvider');
+        $provider->setValue($exporter, $meterProvider);
+
+        $exporter->flush();
+
+        $this->assertFalse($exporter->isEnabled());
+    }
 }

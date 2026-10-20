@@ -58,8 +58,11 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
 
     /**
      * MeterProvider instance.
+     *
+     * Typed as mixed so tests can inject stubs without the optional OpenTelemetry
+     * SDK packages, and so a missing SDK class never breaks property assignment.
      */
-    private ?MeterProvider $meterProvider = null;
+    private mixed $meterProvider = null;
 
     /**
      * Meter instance for creating metrics.
@@ -112,11 +115,21 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
         }
 
         try {
+            // OTEL SDK logs export failures (unreachable collector) with full
+            // exception stacks to stderr. Silence that — MultiFlexi reports
+            // failures via addStatusMessage in flush()/record* instead, and an
+            // unreachable Grafana/OTLP endpoint must never look like a fatal crash.
+            if (class_exists('\\OpenTelemetry\\API\\Behavior\\Internal\\Logging')) {
+                \OpenTelemetry\API\Behavior\Internal\Logging::disable();
+            } elseif (class_exists('\\OpenTelemetry\\API\\LoggerHolder')) {
+                \OpenTelemetry\API\LoggerHolder::disable();
+            }
+
             $this->initializeMeterProvider();
             $this->initializeMetrics();
             $this->addStatusMessage(_('OpenTelemetry metrics exporter initialized'), 'debug');
-        } catch (\Exception $e) {
-            $this->addStatusMessage(sprintf(_('Failed to initialize OpenTelemetry: %s'), $e->getMessage()), 'error');
+        } catch (\Throwable $e) {
+            $this->addStatusMessage(sprintf(_('Failed to initialize OpenTelemetry: %s'), $e->getMessage()), 'warning');
             $this->enabled = false;
         }
     }
@@ -145,16 +158,20 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
             return;
         }
 
-        $this->jobsTotal->add(1, $this->filterAttributes([
-            'app_id' => $appId,
-            'app_name' => $appName,
-            'company_id' => $companyId,
-            'company_name' => $companyName,
-            'runtemplate_id' => $runtemplateId,
-            'runtemplate_name' => $runtemplateName,
-        ]));
+        try {
+            $this->jobsTotal->add(1, $this->filterAttributes([
+                'app_id' => $appId,
+                'app_name' => $appName,
+                'company_id' => $companyId,
+                'company_name' => $companyName,
+                'runtemplate_id' => $runtemplateId,
+                'runtemplate_name' => $runtemplateName,
+            ]));
 
-        $this->addStatusMessage(sprintf(_('OTel: Recorded job start #%d'), $jobId), 'debug');
+            $this->addStatusMessage(sprintf(_('OTel: Recorded job start #%d'), $jobId), 'debug');
+        } catch (\Throwable $e) {
+            $this->disableAfterFailure(sprintf(_('OTel: recordJobStart failed: %s'), $e->getMessage()));
+        }
     }
 
     /**
@@ -170,30 +187,38 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
             return;
         }
 
-        // Add exitcode to attributes
-        $attributes['exitcode'] = $exitCode;
+        try {
+            // Add exitcode to attributes
+            $attributes['exitcode'] = $exitCode;
 
-        $attributes = $this->filterAttributes($attributes);
+            $attributes = $this->filterAttributes($attributes);
 
-        // Record success or failure
-        if ($exitCode === 0) {
-            $this->jobsSuccess->add(1, $attributes);
-        } else {
-            $this->jobsFailed->add(1, $attributes);
+            // Record success or failure
+            if ($exitCode === 0) {
+                $this->jobsSuccess->add(1, $attributes);
+            } else {
+                $this->jobsFailed->add(1, $attributes);
+            }
+
+            // Record duration
+            $this->jobDuration->record($duration, $attributes);
+
+            $this->addStatusMessage(sprintf(
+                _('OTel: Recorded job end, exitcode=%d, duration=%.2fs'),
+                $exitCode,
+                $duration,
+            ), 'debug');
+        } catch (\Throwable $e) {
+            $this->disableAfterFailure(sprintf(_('OTel: recordJobEnd failed: %s'), $e->getMessage()));
         }
-
-        // Record duration
-        $this->jobDuration->record($duration, $attributes);
-
-        $this->addStatusMessage(sprintf(
-            _('OTel: Recorded job end, exitcode=%d, duration=%.2fs'),
-            $exitCode,
-            $duration,
-        ), 'debug');
     }
 
     /**
      * Force flush metrics to exporter.
+     *
+     * Export failures (unreachable OTLP/Grafana endpoint) are swallowed: the SDK
+     * returns false from forceFlush() rather than throwing, and we never let a
+     * telemetry outage abort job execution.
      */
     public function flush(): void
     {
@@ -202,10 +227,15 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
         }
 
         try {
-            $this->meterProvider->forceFlush();
-            $this->addStatusMessage(_('OTel: Metrics flushed'), 'debug');
-        } catch (\Exception $e) {
-            $this->addStatusMessage(sprintf(_('Error flushing metrics: %s'), $e->getMessage()), 'error');
+            $ok = $this->meterProvider->forceFlush();
+
+            if ($ok) {
+                $this->addStatusMessage(_('OTel: Metrics flushed'), 'debug');
+            } else {
+                $this->disableAfterFailure(_('OTel: Metrics flush failed (collector unreachable?)'));
+            }
+        } catch (\Throwable $e) {
+            $this->disableAfterFailure(sprintf(_('OTel: Metrics flush failed: %s'), $e->getMessage()));
         }
     }
 
@@ -221,9 +251,23 @@ class OtelMetricsExporter extends \Ease\Sand implements MetricSinkInterface
         try {
             $this->meterProvider->shutdown();
             $this->addStatusMessage(_('OTel: Metrics provider shutdown'), 'debug');
-        } catch (\Exception $e) {
-            $this->addStatusMessage(sprintf(_('Error shutting down metrics: %s'), $e->getMessage()), 'error');
+        } catch (\Throwable $e) {
+            $this->addStatusMessage(sprintf(_('OTel: Metrics shutdown failed: %s'), $e->getMessage()), 'warning');
+        } finally {
+            $this->enabled = false;
+            $this->meterProvider = null;
         }
+    }
+
+    /**
+     * Log a soft failure and stop further export attempts in this process.
+     *
+     * Avoids repeated multi-second connection timeouts when the collector is down.
+     */
+    private function disableAfterFailure(string $message): void
+    {
+        $this->addStatusMessage($message, 'warning');
+        $this->enabled = false;
     }
 
     /**
