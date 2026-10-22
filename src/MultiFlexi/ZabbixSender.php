@@ -49,6 +49,13 @@ class ZabbixSender extends \MultiFlexi\Zabbix\ZabbixSender
      */
     private const RESPONSE_HEADER_LENGTH = 13;
 
+    /** Connect/send/receive timeout in seconds. */
+    private const TIMEOUT = 3;
+
+    /** Seconds to skip Zabbix after a failed connect. */
+    private const RETRY_PAUSE = 60;
+    private static int $retryAfter = 0;
+
     /**
      * Instance instances array.
      */
@@ -129,19 +136,41 @@ class ZabbixSender extends \MultiFlexi\Zabbix\ZabbixSender
             throw new \Exception("can't create TCP socket");
         }
 
-        $socketConnected = socket_connect(
-            $socket,
-            $this->serverAddress,
-            $this->serverPort,
-        );
+        // Never block the caller (scheduler, executor) on an unreachable Zabbix server:
+        // the default kernel connect timeout is ~2 minutes per attempt.
+        if (self::$retryAfter > time()) {
+            throw new ZabbixNetworkException(sprintf('zabbix server %s:%d recently unreachable, skipping', $this->serverAddress, $this->serverPort));
+        }
+
+        socket_set_option($socket, \SOL_SOCKET, \SO_RCVTIMEO, ['sec' => self::TIMEOUT, 'usec' => 0]);
+        socket_set_option($socket, \SOL_SOCKET, \SO_SNDTIMEO, ['sec' => self::TIMEOUT, 'usec' => 0]);
+        socket_set_nonblock($socket);
+        $socketConnected = @socket_connect($socket, $this->serverAddress, $this->serverPort);
 
         if (!$socketConnected) {
+            $read = null;
+            $write = [$socket];
+            $except = null;
+
+            if (socket_last_error($socket) === \SOCKET_EINPROGRESS
+                && socket_select($read, $write, $except, self::TIMEOUT) === 1
+                && socket_get_option($socket, \SOL_SOCKET, \SO_ERROR) === 0) {
+                $socketConnected = true;
+            }
+        }
+
+        if (!$socketConnected) {
+            self::$retryAfter = time() + self::RETRY_PAUSE;
+            socket_close($socket);
+
             throw new ZabbixNetworkException(sprintf(
                 "can't connect to %s:%d",
                 $this->serverAddress,
                 $this->serverPort,
             ), );
         }
+
+        socket_set_block($socket);
 
         $bytesCount = socket_send(
             $socket,
