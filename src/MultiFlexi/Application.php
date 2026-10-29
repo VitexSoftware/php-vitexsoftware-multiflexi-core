@@ -1091,9 +1091,26 @@ class Application extends DBEngine
             }
 
             // Insert configuration field definition
-            $configId = $this->getFluentPDO()
-                ->insertInto('conffield', $configData)
-                ->execute();
+            try {
+                $configId = $this->getFluentPDO()
+                    ->insertInto('conffield', $configData)
+                    ->execute();
+            } catch (\Throwable $exception) {
+                if (!\array_key_exists('options', $configData)) {
+                    throw $exception;
+                }
+
+                // The database may not have the conffield.options column yet (the
+                // multiflexi-database migration did not run before this import).
+                // Store the field without its allowed values; they are filled in by
+                // the next import once the schema is migrated.
+                unset($configData['options']);
+                $this->addStatusMessage(sprintf(_('Allowed values of %s not stored (conffield.options is missing, run database migration)'), $key), 'warning');
+
+                $configId = $this->getFluentPDO()
+                    ->insertInto('conffield', $configData)
+                    ->execute();
+            }
 
             // TODO: Save localized descriptions when conffield_translations table is created
             // For now, we're using the default language description in the main table
