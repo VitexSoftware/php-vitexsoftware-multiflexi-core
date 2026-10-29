@@ -40,6 +40,13 @@ class ConfigField
     private bool $isExpiring = false; // New property to mark expiring fields
 
     /**
+     * Allowed values of a field of type "set" (value => label).
+     *
+     * @var array<string, string>
+     */
+    private array $options = [];
+
+    /**
      * ConfigField constructor.
      *
      * @param string $code        Field code
@@ -376,9 +383,43 @@ class ConfigField
     }
 
     /**
+     * Set allowed values of the field (type "set").
+     *
+     * A plain list is accepted too: each item is then used as both value and label.
+     *
+     * @param array<int|string, string> $options value => label map or list of values
+     */
+    public function setOptions(array $options): self
+    {
+        $normalized = [];
+
+        foreach ($options as $value => $label) {
+            if (\is_int($value)) {
+                $normalized[(string) $label] = (string) $label;
+            } else {
+                $normalized[$value] = (string) $label;
+            }
+        }
+
+        $this->options = $normalized;
+
+        return $this;
+    }
+
+    /**
+     * Get allowed values of the field (type "set").
+     *
+     * @return array<string, string> value => label
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
+    /**
      * Get the configuration field as an array.
      *
-     * @return array<string, bool|string>
+     * @return array<string, array<string, string>|bool|string>
      */
     public function getArray(): array
     {
@@ -398,6 +439,7 @@ class ConfigField
             'manual' => $this->isManual(),
             'multiline' => $this->isMultiLine(), // Added multiLine to array
             'expiring' => $this->isExpiring(), // Added isExpiring to array
+            'options' => $this->getOptions(),
         ];
     }
 }

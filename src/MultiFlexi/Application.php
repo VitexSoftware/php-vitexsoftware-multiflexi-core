@@ -314,6 +314,10 @@ class Application extends DBEngine
                     $envEntry['category'] = $field->getCategory();
                 }
 
+                if ($field->getOptions() !== []) {
+                    $envEntry['options'] = $field->getOptions();
+                }
+
                 $environment[$field->getCode()] = $envEntry;
             }
 
@@ -1067,6 +1071,11 @@ class Application extends DBEngine
                 'defval' => $this->convertDefval($config['defval'] ?? '', $config['type'] ?? 'string'),
                 'required' => isset($config['required']) ? (int) $config['required'] : 0,
             ];
+
+            // Allowed values of a "set" field (value => label, or a plain list of values)
+            if (!empty($config['options']) && \is_array($config['options'])) {
+                $configData['options'] = json_encode($config['options'], \JSON_UNESCAPED_UNICODE);
+            }
 
             // Handle localized description field
             if (isset($config['description'])) {

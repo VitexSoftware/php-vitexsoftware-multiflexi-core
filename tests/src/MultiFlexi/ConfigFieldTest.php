@@ -169,6 +169,10 @@ class ConfigFieldTest extends \PHPUnit\Framework\TestCase
             'note' => '',
             'secret' => false,
             'manual' => true,
+            'category' => '',
+            'multiline' => false,
+            'expiring' => false,
+            'options' => [],
         ];
         $this->assertEquals($expected, $this->object->getArray());
     }
@@ -203,5 +207,29 @@ class ConfigFieldTest extends \PHPUnit\Framework\TestCase
 
         $this->object->setValue('false');
         $this->assertFalse($this->object->isCurrentlyTrue());
+    }
+
+    /**
+     * @covers \MultiFlexi\ConfigField::setOptions
+     * @covers \MultiFlexi\ConfigField::getOptions
+     */
+    public function testOptionsMapIsKeptAndExported(): void
+    {
+        $this->assertSame([], $this->object->getOptions());
+
+        $this->object->setOptions(['cs_CZ.UTF-8' => 'Čeština', 'en_US.UTF-8' => 'English']);
+
+        $this->assertSame(['cs_CZ.UTF-8' => 'Čeština', 'en_US.UTF-8' => 'English'], $this->object->getOptions());
+        $this->assertSame(['cs_CZ.UTF-8' => 'Čeština', 'en_US.UTF-8' => 'English'], $this->object->getArray()['options']);
+    }
+
+    /**
+     * @covers \MultiFlexi\ConfigField::setOptions
+     */
+    public function testOptionsListUsesValuesAsLabels(): void
+    {
+        $this->object->setOptions(['bootstrap', 'email']);
+
+        $this->assertSame(['bootstrap' => 'bootstrap', 'email' => 'email'], $this->object->getOptions());
     }
 }

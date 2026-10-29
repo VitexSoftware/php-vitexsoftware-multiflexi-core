@@ -105,6 +105,10 @@ class Conffield extends Engine
             $this->setDataValue('category', (string) $envProperties['category']);
         }
 
+        if (!empty($envProperties['options']) && \is_array($envProperties['options'])) {
+            $this->setDataValue('options', json_encode($envProperties['options'], \JSON_UNESCAPED_UNICODE));
+        }
+
         return $this->dbsync();
     }
 
@@ -125,6 +129,15 @@ class Conffield extends Engine
                 ->setSecret(!empty($appConfig['secret']))
                 ->setMultiLine(!empty($appConfig['multiline']))
                 ->setExpiring(!empty($appConfig['expiring']));
+
+            if (!empty($appConfig['options'])) {
+                $decodedOptions = json_decode((string) $appConfig['options'], true);
+
+                if (\is_array($decodedOptions)) {
+                    $field->setOptions($decodedOptions);
+                }
+            }
+
             $appConfiguration->addField($field);
         }
 
