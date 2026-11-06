@@ -289,7 +289,7 @@ class Application extends DBEngine
         }
 
         $export['version'] = $rawData['version'] ?? '';
-        $export['schemaVersion'] = '3.3.0';
+        $export['schemaVersion'] = '3.4.0';
 
         // Requirements: stored as comma-separated in DB
         if (!empty($rawData['requirements'])) {
@@ -394,6 +394,33 @@ class Application extends DBEngine
 
             if (!empty($consumes)) {
                 $export['consumes'] = $consumes;
+            }
+
+            // Exit codes from app_exit_codes table, in schema shape (localized descriptions)
+            $exitCodeRows = $this->getFluentPDO()
+                ->from('app_exit_codes')
+                ->where('app_id', $appId)
+                ->orderBy('exit_code')
+                ->fetchAll();
+
+            if (!empty($exitCodeRows)) {
+                $exitCodes = [];
+
+                foreach ($exitCodeRows as $row) {
+                    $code = (string) $row['exit_code'];
+
+                    if (!isset($exitCodes[$code])) {
+                        $exitCodes[$code] = [
+                            'description' => [],
+                            'severity' => (string) ($row['severity'] ?? 'error'),
+                            'retry' => (bool) $row['retry'],
+                        ];
+                    }
+
+                    $exitCodes[$code]['description'][$row['lang']] = (string) $row['description'];
+                }
+
+                $export['exitCodes'] = $exitCodes;
             }
         }
 
@@ -896,11 +923,103 @@ class Application extends DBEngine
         return $confField->getAppConfigs($this);
     }
 
-    public function exitCodeDescription(int $exitCode, string $lang = 'en'): string
+    /**
+     * Currently used UI language code (e.g. 'en', 'cs').
+     */
+    public static function currentLang(): string
     {
-        $exitCodeDescriptionRaw = $this->getFluentPDO()->from('app_exit_codes')->select(['description'])->where(['lang' => $lang, 'app_id' => $this->getMyKey(), 'exit_code' => $exitCode]);
+        return substr(\Ease\Locale::$localeUsed ?? 'en_US', 0, 2);
+    }
 
-        return $exitCodeDescriptionRaw->count() ? (string) $exitCodeDescriptionRaw->fetch('description') : _('Undocumented');
+    /**
+     * Get localized description of an exit code defined by this application.
+     *
+     * Falls back to English when the requested language has no translation,
+     * then to the generic sysexits meaning (Symfony Process), then to 'Undocumented'.
+     *
+     * @param int         $exitCode Exit code number
+     * @param null|string $lang     Language code; null = current UI locale
+     */
+    public function exitCodeDescription(int $exitCode, ?string $lang = null): string
+    {
+        $lang ??= self::currentLang();
+        $description = $this->fetchExitCodeValue($exitCode, $lang, 'description');
+
+        if ($description === null && $lang !== 'en') {
+            $description = $this->fetchExitCodeValue($exitCode, 'en', 'description');
+        }
+
+        if ($description === null && class_exists(\Symfony\Component\Process\Process::class)) {
+            $description = \Symfony\Component\Process\Process::$exitCodes[$exitCode] ?? null;
+        }
+
+        return $description ?? _('Undocumented');
+    }
+
+    /**
+     * Whether this application documents the given exit code (in any stored language).
+     *
+     * @param int         $exitCode Exit code number
+     * @param null|string $lang     Language code; null = current UI locale (English is always accepted)
+     */
+    public function hasExitCode(int $exitCode, ?string $lang = null): bool
+    {
+        $lang ??= self::currentLang();
+
+        return $this->fetchExitCodeValue($exitCode, $lang, 'description') !== null
+            || $this->fetchExitCodeValue($exitCode, 'en', 'description') !== null;
+    }
+
+    /**
+     * Get all exit code definitions of this application, keyed by exit code.
+     *
+     * @param null|string $lang Language code; null = current UI locale, fallback to English
+     *
+     * @return array<int, array{description: string, severity: string, retry: bool}>
+     */
+    public function getExitCodes(?string $lang = null): array
+    {
+        $lang ??= self::currentLang();
+        $rows = $this->getFluentPDO()->from('app_exit_codes')
+            ->where('app_id', $this->getMyKey())
+            ->orderBy('exit_code')
+            ->fetchAll();
+
+        $byCode = [];
+
+        foreach ($rows as $row) {
+            $byCode[(int) $row['exit_code']][$row['lang']] = $row;
+        }
+
+        $result = [];
+
+        foreach ($byCode as $code => $langs) {
+            $row = $langs[$lang] ?? $langs['en'] ?? reset($langs);
+            $result[$code] = [
+                'description' => (string) $row['description'],
+                'severity' => (string) ($row['severity'] ?? 'error'),
+                'retry' => (bool) $row['retry'],
+            ];
+        }
+
+        ksort($result);
+
+        return $result;
+    }
+
+    /**
+     * Fetch a single column of an exit code row.
+     *
+     * @return null|string null when no matching row exists
+     */
+    protected function fetchExitCodeValue(int $exitCode, string $lang, string $column): ?string
+    {
+        $row = $this->getFluentPDO()->from('app_exit_codes')
+            ->select([$column])
+            ->where(['app_id' => $this->getMyKey(), 'exit_code' => $exitCode, 'lang' => $lang])
+            ->fetch();
+
+        return $row ? (string) $row[$column] : null;
     }
 
     /**

@@ -346,7 +346,13 @@ class Job extends DBEngine
         $this->reporter->setDataValue('data', $resultFileContent);
         $this->reporter->setDataValue('version', $this->getApplication()->getDataValue('version'));
         $this->reporter->setDataValue('exitcode', $statusCode);
-        $this->reporter->setDataValue('exitcode_description', $this->executor->meaning().' '.$this->getApplication()->exitCodeDescription($statusCode));
+        $appDescription = $this->getApplication()->exitCodeDescription($statusCode);
+        // When the application documents the code, append its description to the generic meaning;
+        // otherwise exitCodeDescription() already fell back to the same generic text — don't duplicate it
+        $exitcodeDescription = $this->getApplication()->hasExitCode($statusCode)
+            ? trim($this->executor->meaning().' '.$appDescription)
+            : $appDescription;
+        $this->reporter->setDataValue('exitcode_description', $exitcodeDescription);
         $this->reporter->setDataValue('scheduled', $this->getDataValue('schedule'));
         $this->reporter->setDataValue('end', (new \DateTime())->format('Y-m-d H:i:s'));
         $this->reporter->setDataValue('runtemplate_id', $this->getRuntemplate()->getMyKey());
@@ -1410,6 +1416,24 @@ EOD;
         }
 
         return $this->application;
+    }
+
+    /**
+     * Localized description of this job's exit code as declared by the application
+     * in its exitCodes definition (app_exit_codes table). Falls back to English,
+     * then to 'Undocumented' when the code is not documented.
+     *
+     * @param null|string $lang Language code; null = current UI locale
+     */
+    public function getExitCodeDescription(?string $lang = null): string
+    {
+        $exitCode = $this->getDataValue('exitcode');
+
+        if ($exitCode === null) {
+            return _('Pending');
+        }
+
+        return $this->getApplication()->exitCodeDescription((int) $exitCode, $lang);
     }
 
 
