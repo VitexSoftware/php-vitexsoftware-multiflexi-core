@@ -156,6 +156,127 @@ class EventRule extends DBEngine
     }
 
     /**
+     * Whether this rule dispatches one work item per matching document item.
+     */
+    public function isItemFanout(): bool
+    {
+        return (string) ($this->getDataValue('fanout') ?? 'none') === 'item';
+    }
+
+    /**
+     * Items of the change (changes_cache.items, JSON list) that satisfy item_filter.
+     *
+     * item_filter is a JSON object {"field": "expected"}; every pair must match.
+     * A value like "code:MULTIFLEXI" matches the AbraFlexi reference of the same
+     * code, with or without the "code:" prefix. Without item_filter all items match.
+     *
+     * @param array<string, mixed> $change changes_cache record
+     *
+     * @return array<int, array<string, mixed>> matching items (empty list when none)
+     */
+    public function matchingItems(array $change): array
+    {
+        $items = $change['items'] ?? [];
+
+        if (\is_string($items)) {
+            $items = json_decode($items, true);
+        }
+
+        if (!\is_array($items)) {
+            return [];
+        }
+
+        $filter = $this->getDataValue('item_filter');
+
+        if (\is_string($filter) && $filter !== '') {
+            $filter = json_decode($filter, true);
+        }
+
+        if (!\is_array($filter) || $filter === []) {
+            return array_values(array_filter($items, 'is_array'));
+        }
+
+        $matching = [];
+
+        foreach ($items as $item) {
+            if (!\is_array($item)) {
+                continue;
+            }
+
+            $ok = true;
+
+            foreach ($filter as $field => $expected) {
+                $actual = $item[$field] ?? null;
+
+                if (\is_array($actual)) {
+                    $actual = $actual['kod'] ?? $actual['code'] ?? $actual['id'] ?? null;
+                }
+
+                if ($actual === null || self::normalizeRef((string) $actual) !== self::normalizeRef((string) $expected)) {
+                    $ok = false;
+
+                    break;
+                }
+            }
+
+            if ($ok) {
+                $matching[] = $item;
+            }
+        }
+
+        return $matching;
+    }
+
+    /**
+     * Environment overrides for one work item of a fan-out rule.
+     *
+     * @param array<string, mixed> $change changes_cache record
+     * @param array<string, mixed> $item   one matching document item
+     *
+     * @return array<string, string>
+     */
+    public function buildItemEnvOverrides(array $change, array $item): array
+    {
+        $env = $this->buildEnvOverrides($change);
+        $ref = $item['cenik'] ?? $item['kod'] ?? '';
+
+        if (\is_array($ref)) {
+            $ref = $ref['kod'] ?? $ref['code'] ?? $ref['id'] ?? '';
+        }
+
+        $env['EVENT_INVOICE_ID'] = (string) ($change['recordid'] ?? '');
+        $env['EVENT_ITEM_ID'] = (string) ($item['id'] ?? '');
+        $env['EVENT_ITEM_CODE'] = self::normalizeRef((string) $ref);
+        $env['EVENT_ITEM_NAME'] = (string) ($item['nazev'] ?? '');
+        $env['EVENT_ITEM_QUANTITY'] = (string) ($item['mnozMj'] ?? '');
+        $env['EVENT_IDEMPOTENCY_KEY'] = self::idempotencyKey($change, (int) $this->getMyKey(), (string) ($item['id'] ?? ''));
+
+        return $env;
+    }
+
+    /**
+     * Stable key of one unit of event work: a replayed delivery gives the same key.
+     *
+     * @param array<string, mixed> $change changes_cache record
+     */
+    public static function idempotencyKey(array $change, int $ruleId, string $itemId = ''): string
+    {
+        return hash('sha256', implode('|', [
+            (string) ($change['source'] ?? ''),
+            (string) ($change['evidence'] ?? ''),
+            (string) ($change['recordid'] ?? ''),
+            (string) ($change['operation'] ?? ''),
+            $itemId,
+            (string) $ruleId,
+        ]));
+    }
+
+    private static function normalizeRef(string $ref): string
+    {
+        return strtoupper(preg_replace('/^code:/i', '', trim($ref)));
+    }
+
+    /**
      * Resolve a single selector against source data.
      *
      * Selector forms:

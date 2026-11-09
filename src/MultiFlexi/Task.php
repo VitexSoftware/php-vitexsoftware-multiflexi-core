@@ -37,6 +37,8 @@ class Task extends DBEngine
     public const STATE_FULFILLED_LATE = 'fulfilled_late';
     public const STATE_FAILED = 'failed';
     public const STATE_MISSED = 'missed';
+    public const STATE_DEAD = 'dead';
+    public const ORIGIN_EVENT = 'event';
 
     public function __construct($identifier = null, array $options = [])
     {
@@ -131,6 +133,98 @@ class Task extends DBEngine
         }
 
         return clone $windowEnd;
+    }
+
+    /**
+     * Create (or find) the work item of an event delivery.
+     *
+     * A replayed hook yields the same idempotency key and therefore the same
+     * Task - nothing is inserted twice.
+     *
+     * @param array<string, string> $context env overrides applied on every attempt
+     */
+    public static function forEvent(RunTemplate $rt, string $idempotencyKey, array $context): self
+    {
+        $existing = new self();
+        $row = $existing->listingQuery()->where('idempotency_key', $idempotencyKey)->fetch();
+
+        if ($row) {
+            $existing->takeData($row);
+            $existing->setMyKey((int) $row['id']);
+
+            return $existing;
+        }
+
+        $now = new \DateTime();
+        $deadline = (clone $now)->modify('+1 day');
+
+        $task = new self();
+        $task->setData([
+            'runtemplate_id' => $rt->getMyKey(),
+            'window_start' => $now->format('Y-m-d H:i:s'),
+            'window_end' => $deadline->format('Y-m-d H:i:s'),
+            'deadline' => $deadline->format('Y-m-d H:i:s'),
+            'state' => self::STATE_OPEN,
+            'attempts' => 0,
+            'origin' => self::ORIGIN_EVENT,
+            'idempotency_key' => $idempotencyKey,
+            'context' => json_encode($context, \JSON_UNESCAPED_UNICODE),
+            'next_attempt_at' => $now->format('Y-m-d H:i:s'),
+            'created_at' => $now->format('Y-m-d H:i:s'),
+        ], true);
+
+        $taskId = $task->insertToSQL();
+        $task->loadFromSQL($taskId);
+
+        return $task;
+    }
+
+    /**
+     * Env overrides stored with an event task.
+     *
+     * @return array<string, string>
+     */
+    public function getContext(): array
+    {
+        $ctx = json_decode((string) $this->getDataValue('context'), true);
+
+        return \is_array($ctx) ? $ctx : [];
+    }
+
+    /**
+     * Event tasks that are open and due now (never started or waiting for retry).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function dueEventTasks(int $limit = 50): array
+    {
+        $t = new self();
+
+        return $t->listingQuery()
+            ->where('origin', self::ORIGIN_EVENT)
+            ->where('state', self::STATE_OPEN)
+            ->where('(next_attempt_at IS NULL OR next_attempt_at <= ?)', (new \DateTime())->format('Y-m-d H:i:s'))
+            ->limit($limit)
+            ->fetchAll() ?: [];
+    }
+
+    /**
+     * Record a failed attempt: schedule the next one or give up (dead).
+     */
+    public function recordAttemptFailure(string $error): void
+    {
+        $this->incrementAttempts();
+        $next = $this->getNextRetryTime();
+
+        if ($next === null) {
+            $this->updateToSQL(['state' => self::STATE_DEAD, 'last_error' => $error, 'next_attempt_at' => null], ['id' => $this->getMyKey()]);
+            $this->setDataValue('state', self::STATE_DEAD);
+
+            return;
+        }
+
+        $this->updateToSQL(['state' => self::STATE_OPEN, 'last_error' => $error, 'next_attempt_at' => $next->format('Y-m-d H:i:s')], ['id' => $this->getMyKey()]);
+        $this->setDataValue('state', self::STATE_OPEN);
     }
 
     /**
