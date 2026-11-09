@@ -192,7 +192,8 @@ class Task extends DBEngine
     }
 
     /**
-     * Event tasks that are open and due now (never started or waiting for retry).
+     * Event tasks that are open and due now. A Task handed to a job has next_attempt_at
+     * cleared (markDispatched), so job-driven retries are never started twice.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -203,9 +204,18 @@ class Task extends DBEngine
         return $t->listingQuery()
             ->where('origin', self::ORIGIN_EVENT)
             ->where('state', self::STATE_OPEN)
-            ->where('(next_attempt_at IS NULL OR next_attempt_at <= ?)', (new \DateTime())->format('Y-m-d H:i:s'))
+            ->where('(next_attempt_at IS NOT NULL AND next_attempt_at <= ?)', (new \DateTime())->format('Y-m-d H:i:s'))
             ->limit($limit)
             ->fetchAll() ?: [];
+    }
+
+    /**
+     * The job for this Task exists; from now on Job::updateTaskState() drives it.
+     */
+    public function markDispatched(): void
+    {
+        $this->updateToSQL(['state' => self::STATE_RUNNING, 'next_attempt_at' => null], ['id' => $this->getMyKey()]);
+        $this->setDataValue('state', self::STATE_RUNNING);
     }
 
     /**

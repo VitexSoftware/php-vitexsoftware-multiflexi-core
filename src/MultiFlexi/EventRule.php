@@ -245,10 +245,12 @@ class EventRule extends DBEngine
         }
 
         $env['EVENT_INVOICE_ID'] = (string) ($change['recordid'] ?? '');
-        $env['EVENT_ITEM_ID'] = (string) ($item['id'] ?? '');
-        $env['EVENT_ITEM_CODE'] = self::normalizeRef((string) $ref);
-        $env['EVENT_ITEM_NAME'] = (string) ($item['nazev'] ?? '');
-        $env['EVENT_ITEM_QUANTITY'] = (string) ($item['mnozMj'] ?? '');
+        // Item data is tenant/customer controlled: keep identifiers to a safe charset
+        // and the free text short and free of control characters.
+        $env['EVENT_ITEM_ID'] = self::safeToken((string) ($item['id'] ?? ''));
+        $env['EVENT_ITEM_CODE'] = self::safeToken(self::normalizeRef((string) $ref));
+        $env['EVENT_ITEM_NAME'] = mb_substr(preg_replace('/[\x00-\x1F\x7F]+/u', ' ', (string) ($item['nazev'] ?? '')) ?? '', 0, 120);
+        $env['EVENT_ITEM_QUANTITY'] = preg_replace('/[^0-9.,-]/', '', (string) ($item['mnozMj'] ?? '')) ?? '';
         $env['EVENT_IDEMPOTENCY_KEY'] = self::idempotencyKey($change, (int) $this->getMyKey(), (string) ($item['id'] ?? ''));
 
         return $env;
@@ -269,6 +271,11 @@ class EventRule extends DBEngine
             $itemId,
             (string) $ruleId,
         ]));
+    }
+
+    private static function safeToken(string $value): string
+    {
+        return substr(preg_replace('/[^A-Za-z0-9_.:@-]/', '', $value) ?? '', 0, 64);
     }
 
     private static function normalizeRef(string $ref): string
