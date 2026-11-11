@@ -1,6 +1,9 @@
 php-vitexsoftware-multiflexi-core (2.11.0) unstable; urgency=medium
 
   * Use https://multiflexi.eu/schema/*.json as the canonical JSON Schema $id
+  * EventSource: tenant scope (event_source.server_url), delete of a processed
+    change by its row id (inversions of two companies overlap) and batch limit
+    MULTIFLEXI_EVENT_BATCH; replaces the diverged copy shipped by multiflexi-eventor
   * Add CronDescriber class (moved from multiflexi-web5's MultiFlexi\Ui
     namespace into MultiFlexi so multiflexi-scheduler can use it too) —
     translates a RunTemplate interval code / cron expression into a short,

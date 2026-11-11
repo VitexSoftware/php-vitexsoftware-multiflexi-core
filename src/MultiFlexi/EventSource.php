@@ -21,10 +21,23 @@ namespace MultiFlexi;
  * Each EventSource defines connection parameters to an adapter database
  * (e.g. abraflexi-webhook-acceptor) that contains a `changes_cache` table.
  *
+ * Several tenants (e.g. AbraFlexi companies) may share one adapter database.
+ * A source with a `server_url` sees only the changes of that tenant.
+ *
  * @author Vítězslav Dvořák <info@vitexsoftware.cz>
  */
 class EventSource extends DBEngine
 {
+    /**
+     * Name of the change buffer table inside the adapter database.
+     */
+    public const CACHE_TABLE = 'changes_cache';
+
+    /**
+     * Default maximum number of changes fetched per poll cycle.
+     */
+    public const DEFAULT_BATCH_LIMIT = 100;
+
     /**
      * @var string Name Column
      */
@@ -93,7 +106,7 @@ class EventSource extends DBEngine
                 $dsn = sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $database);
 
                 break;
-
+            case 'mysql':
             default:
                 $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $database);
 
@@ -101,6 +114,7 @@ class EventSource extends DBEngine
         }
 
         $this->adapterConnection = new \PDO($dsn, $username, $password, [
+            \PDO::ATTR_TIMEOUT => 5,
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
         ]);
@@ -110,6 +124,11 @@ class EventSource extends DBEngine
 
     /**
      * Fetch unprocessed changes from the adapter's changes_cache table.
+     *
+     * Rows with an inversion greater than last_processed_id are returned in
+     * ascending order, limited to one batch (MULTIFLEXI_EVENT_BATCH, default 100).
+     * When the source has a `server_url`, only the changes of that tenant are
+     * returned (changes_cache.source is changesapi.id, one row per server/company).
      *
      * If the adapter writes a `context` column containing a JSON object, its
      * keys are merged into the top level of each returned row so that
@@ -123,9 +142,26 @@ class EventSource extends DBEngine
     {
         $pdo = $this->getConnection();
         $lastProcessedId = (int) $this->getDataValue('last_processed_id');
+        $limit = max(1, (int) \Ease\Shared::cfg('MULTIFLEXI_EVENT_BATCH', self::DEFAULT_BATCH_LIMIT));
+        $serverUrl = trim((string) ($this->getDataValue('server_url') ?? ''));
 
-        $stmt = $pdo->prepare('SELECT * FROM changes_cache WHERE inversion > :last_id ORDER BY inversion ASC');
-        $stmt->execute([':last_id' => $lastProcessedId]);
+        $tenantFilter = $serverUrl !== ''
+            ? ' AND source IN (SELECT id FROM changesapi WHERE serverurl = :serverurl)'
+            : '';
+
+        $stmt = $pdo->prepare(sprintf(
+            'SELECT * FROM %s WHERE inversion > :last_id%s ORDER BY inversion ASC LIMIT %d',
+            self::CACHE_TABLE,
+            $tenantFilter,
+            $limit,
+        ));
+        $stmt->bindValue(':last_id', $lastProcessedId, \PDO::PARAM_INT);
+
+        if ($serverUrl !== '') {
+            $stmt->bindValue(':serverurl', rtrim($serverUrl, '/'));
+        }
+
+        $stmt->execute();
         $rows = $stmt->fetchAll();
 
         return array_map(static function (array $row): array {
@@ -164,16 +200,29 @@ class EventSource extends DBEngine
     /**
      * Delete a processed record from the adapter's changes_cache.
      *
-     * @param int $inversion The change version ID to remove
+     * The cache is shared by every tenant of the acceptor and the inversion is the
+     * change version of ONE AbraFlexi company, so two tenants regularly hold the
+     * same inversion. A record is therefore removed by its own row id; deleting by
+     * inversion alone would also destroy another tenant's unprocessed change.
+     *
+     * @param int      $inversion The change version ID (used only when the row id is unknown)
+     * @param null|int $rowId     Primary key (changes_cache.id) of the processed record
      *
      * @return bool True on success
      */
-    public function wipeCacheRecord(int $inversion): bool
+    public function wipeCacheRecord(int $inversion, ?int $rowId = null): bool
     {
         $pdo = $this->getConnection();
-        $stmt = $pdo->prepare('DELETE FROM changes_cache WHERE inversion = :inversion');
 
-        return $stmt->execute([':inversion' => $inversion]);
+        if ($rowId !== null) {
+            $stmt = $pdo->prepare(sprintf('DELETE FROM %s WHERE id = :id', self::CACHE_TABLE));
+            $stmt->bindValue(':id', $rowId, \PDO::PARAM_INT);
+        } else {
+            $stmt = $pdo->prepare(sprintf('DELETE FROM %s WHERE inversion = :inversion', self::CACHE_TABLE));
+            $stmt->bindValue(':inversion', $inversion, \PDO::PARAM_INT);
+        }
+
+        return $stmt->execute();
     }
 
     /**
@@ -188,6 +237,7 @@ class EventSource extends DBEngine
 
             return true;
         } catch (\PDOException $e) {
+            $this->adapterConnection = null;
             $this->addStatusMessage(
                 sprintf(_('Event source "%s" unreachable: %s'), $this->getRecordName(), $e->getMessage()),
                 'warning',
@@ -204,6 +254,6 @@ class EventSource extends DBEngine
      */
     public function getEnabledSources(): array
     {
-        return $this->listingQuery()->where('enabled', true)->fetchAll();
+        return $this->listingQuery()->where('enabled', true)->fetchAll() ?: [];
     }
 }
