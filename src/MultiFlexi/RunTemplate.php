@@ -556,8 +556,16 @@ class RunTemplate extends \MultiFlexi\DBEngine
         return $runtemplateEnv;
     }
 
+    /**
+     * Save the given config fields of this run template (partial update:
+     * fields not present in $env keep their stored values).
+     */
     public function setRuntemplateEnvironment(ConfigFields $env): bool
     {
+        if (empty($env->getEnvArray())) {
+            return true;
+        }
+
         $companies = new Company((int) $this->getDataValue('company_id'));
         $app = new Application((int) $this->getDataValue('app_id'));
 
@@ -567,7 +575,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
             'company_id' => $companies->getMyKey(),
         ], ['autoload' => false]);
 
-        if ($configurator->takeData($env->getEnvArray()) && null !== $configurator->saveToSQL()) {
+        if ($configurator->takeData($env->getEnvArray(), true) && null !== $configurator->saveToSQL()) {
             $configurator->addStatusMessage(_('Config fields Saved').' '.implode(',', array_keys($env->getEnvArray())), 'success');
             $result = true;
         } else {
@@ -589,7 +597,7 @@ class RunTemplate extends \MultiFlexi\DBEngine
             'company_id' => $companies->getMyKey(),
         ], ['autoload' => false]);
 
-        if ($app->checkRequiredFields($properties, true) && $configurator->takeData($properties) && null !== $configurator->saveToSQL()) {
+        if ($app->checkRequiredFields($properties, true) && $configurator->takeData($properties, true) && null !== $configurator->saveToSQL()) {
             $configurator->addStatusMessage(_('Config fields Saved').' '.implode(',', array_keys($properties)), 'success');
             $result = true;
         } else {

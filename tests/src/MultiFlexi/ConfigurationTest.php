@@ -136,6 +136,63 @@ class ConfigurationTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Partial update (CLI/API) must not touch bool fields it did not receive.
+     *
+     * @covers \MultiFlexi\Configuration::takeData
+     */
+    public function testTakeDataPartialLeavesAbsentBoolFieldUntouched(): void
+    {
+        $this->seedBoolConffield();
+
+        try {
+            $configuration = new Configuration();
+            $configuration->setDataValue('app_id', self::testAppId());
+            $configuration->takeData(['SOME_OTHER_FIELD' => 'x'], true);
+
+            $this->assertNull($configuration->getDataValue(self::$boolFieldName));
+        } finally {
+            $this->removeBoolConffield();
+        }
+    }
+
+    /**
+     * Partial update must honour an explicit false instead of inverting it.
+     *
+     * @covers \MultiFlexi\Configuration::takeData
+     */
+    public function testTakeDataPartialHonoursExplicitFalse(): void
+    {
+        $this->seedBoolConffield();
+
+        try {
+            $configuration = new Configuration();
+            $configuration->setDataValue('app_id', self::testAppId());
+            $configuration->takeData([self::$boolFieldName => 'false'], true);
+
+            $this->assertSame('false', $configuration->getDataValue(self::$boolFieldName));
+
+            $configuration->takeData([self::$boolFieldName => 'yes'], true);
+            $this->assertSame('true', $configuration->getDataValue(self::$boolFieldName));
+        } finally {
+            $this->removeBoolConffield();
+        }
+    }
+
+    /**
+     * @covers \MultiFlexi\Configuration::boolString
+     */
+    public function testBoolString(): void
+    {
+        foreach (['true', 'TRUE', '1', 'yes', 'on', ' True ', true] as $truthy) {
+            $this->assertSame('true', Configuration::boolString($truthy), var_export($truthy, true));
+        }
+
+        foreach (['false', '0', 'no', 'off', '', 'nonsense', false, null] as $falsy) {
+            $this->assertSame('false', Configuration::boolString($falsy), var_export($falsy, true));
+        }
+    }
+
+    /**
      * @covers \MultiFlexi\Configuration::setEnvironment
      *
      * @todo   Implement testsetEnvironment().

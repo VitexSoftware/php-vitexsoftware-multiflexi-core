@@ -84,19 +84,52 @@ class Configuration extends \Ease\SQL\Engine
     /**
      * Převezme data do aktuálního pole dat.
      *
-     * @param array $data asociativní pole dat
+     * Bool fields are normalised to 'true'/'false':
+     *  - form mode (default): HTML checkbox semantics – an absent field means
+     *    an unchecked checkbox ('false'), a present one a checked one ('true');
+     *  - partial mode: only fields present in $data are touched and their value
+     *    decides ('true', '1', 'yes', 'on' => 'true', anything else => 'false').
+     *    Absent bool fields are left out, so their stored value is kept.
+     *    Use it for CLI/API updates that send only the changed keys.
+     *
+     * @param array $data    asociativní pole dat
+     * @param bool  $partial partial update instead of a complete form submit
      */
-    public function takeData(array $data): int
+    public function takeData(array $data, bool $partial = false): int
     {
         $cfgs = new Conffield();
 
         foreach ($cfgs->appConfigs($this->getDataValue('app_id')) as $cfg) {
             if (Conffield::fixType($cfg['type']) === 'bool') {
-                $data[$cfg['keyname']] = \array_key_exists($cfg['keyname'], $data) ? 'true' : 'false';
+                $key = $cfg['keyname'];
+
+                if ($partial) {
+                    if (\array_key_exists($key, $data)) {
+                        $data[$key] = self::boolString($data[$key]);
+                    }
+                } else {
+                    $data[$key] = \array_key_exists($key, $data) ? 'true' : 'false';
+                }
             }
         }
 
         return parent::takeData($data);
+    }
+
+    /**
+     * Normalise a bool-ish config value to 'true' or 'false'.
+     */
+    public static function boolString(mixed $value): string
+    {
+        if ($value instanceof ConfigField) {
+            $value = $value->getValue();
+        }
+
+        if (\is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        return \in_array(strtolower(trim((string) $value)), ['1', 'true', 'yes', 'on'], true) ? 'true' : 'false';
     }
 
     /**
