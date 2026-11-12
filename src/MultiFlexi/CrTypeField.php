@@ -40,7 +40,7 @@ class CrTypeField extends Engine
 
         foreach ($this->listingQuery()->where(['credential_type_id' => $credentialType->getMyKey()]) as $fieldData) {
             $field = new ConfigFieldWithHelper($fieldData['keyname'], $fieldData['type'], $fieldData['keyname'], $fieldData['description']);
-            $field->setHint($fieldData['hint'])->setDefaultValue($fieldData['defval'])->setRequired($fieldData['required'])->setHelper($fieldData['helper']);
+            $field->setHint($fieldData['hint'])->setDefaultValue($fieldData['defval'])->setRequired((bool) $fieldData['required'])->setSecret((bool) ($fieldData['secret'] ?? false))->setHelper($fieldData['helper']);
             $fields->addField($field);
         }
 
@@ -60,6 +60,7 @@ class CrTypeField extends Engine
             'hint' => ['type' => 'string', 'limit' => 256, 'default' => null, 'null' => true],
             'default' => ['type' => 'string', 'limit' => 256, 'default' => null, 'null' => true],
             'required' => ['type' => 'boolean', 'default' => 0, 'null' => false],
+            'secret' => ['type' => 'boolean', 'default' => 0, 'null' => false],
         ];
     }
 }

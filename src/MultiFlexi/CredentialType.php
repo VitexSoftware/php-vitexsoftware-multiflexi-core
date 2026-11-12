@@ -150,7 +150,8 @@ class CredentialType extends DBEngine
 
         foreach ($fielder->listingQuery()->where(['credential_type_id' => $this->getMyKey()]) as $fieldData) {
             $field = new ConfigFieldWithHelper((string) $fieldData['keyname'], $fieldData['type'], $fieldData['keyname'], (string) $fieldData['description']);
-            $field->setHint((string) $fieldData['hint'])->setDefaultValue($fieldData['defval'])->setRequired($fieldData['required'] === 1)->setHelper((string) $fieldData['helper']);
+            $field->setHint((string) $fieldData['hint'])->setDefaultValue($fieldData['defval'])->setRequired((bool) $fieldData['required'])->setHelper((string) $fieldData['helper']);
+            $field->setSecret((bool) ($fieldData['secret'] ?? false) || $field->isSecret());
             $field->setMyKey($fieldData['id']);
 
             if ($this->getPrototype()) {
@@ -158,9 +159,11 @@ class CredentialType extends DBEngine
 
                 if ($fieldHelper) {
                     $field->setManual($fieldHelper->isManual());
-                    $field->setRequired($fieldHelper->isRequired());
-                    $field->setSecret($fieldHelper->isSecret());
-                } else {
+                    $field->setRequired($field->isRequired() || $fieldHelper->isRequired());
+                    $field->setSecret($field->isSecret() || $fieldHelper->isSecret());
+                } elseif (!empty($fieldData['helper'])) {
+                    // Only a field bound to a prototype field can be "undefined";
+                    // a custom (user-defined) field has no helper and is valid.
                     $this->addStatusMessage(sprintf(_('Try to access Undefined field %s'), $fieldData['keyname']), 'error');
                 }
             } else {
@@ -346,6 +349,7 @@ class CredentialType extends DBEngine
                         'hint' => $field['hint'] ?? null,
                         'defval' => $field['default'] ?? null,
                         'required' => $field['required'] ?? false,
+                        'secret' => $field['secret'] ?? \in_array($field['type'], ['password', 'secret'], true),
                     ];
 
                     $crTypeField->takeData($fieldData);
