@@ -690,6 +690,12 @@ class Application extends DBEngine
                 }
             }
 
+            // The schema names this key "cmdparamsTemplate" (as exportAppJson() writes it);
+            // the database column is "cmdparams". The legacy "cmdparams" key still wins.
+            if (isset($appSpec['cmdparamsTemplate']) && !isset($fields['cmdparams'])) {
+                $fields['cmdparams'] = $appSpec['cmdparamsTemplate'];
+            }
+
             if (isset($appSpec['topics'])) { // Backward compatibility for old specs
                 $fields['tags'] = $appSpec['topics'];
             }
