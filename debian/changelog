@@ -1,6 +1,8 @@
 php-vitexsoftware-multiflexi-core (2.11.0) unstable; urgency=medium
 
   * Use https://multiflexi.eu/schema/*.json as the canonical JSON Schema $id
+  * Install MultiFlexi\Flow classes (FlowRepository etc.); multiflexi-eventor
+    failed on every host where they had not been copied by hand
   * Application::importAppJson() stores the schema key cmdparamsTemplate in the
     cmdparams column (it was dropped, so apps imported from JSON ran without arguments)
   * EventSource: tenant scope (event_source.server_url), delete of a processed
