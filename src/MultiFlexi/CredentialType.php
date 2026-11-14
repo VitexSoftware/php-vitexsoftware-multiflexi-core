@@ -85,13 +85,13 @@ class CredentialType extends DBEngine
     public function loadFromSQL($id = null)
     {
         $loaded = parent::loadFromSQL($id);
-        $class = $this->getDataValue('class');
+        $class = $this->getDataValue('prototype');
 
         if ($class) {
-            $this->getPrototype();
+            $prototype = $this->getPrototype();
 
-            if (empty($this->getDataValue('logo'))) {
-                $this->setDataValue('logo', $this->prototype->logo());
+            if ($prototype && empty($this->getDataValue('logo'))) {
+                $this->setDataValue('logo', $prototype->logo());
             }
         }
 
