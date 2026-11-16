@@ -259,6 +259,11 @@ class EventRule extends DBEngine
     /**
      * Stable key of one unit of event work: a replayed delivery gives the same key.
      *
+     * The version of the change (inversion) is part of it: every change of a record is its own
+     * event. Without it, the second update of the same record gave the key of the first one, found
+     * its task and started nothing - an event rule on "update" worked once for a record and never again.
+     * A replayed delivery of one change carries the same version, so it still gives the same key.
+     *
      * @param array<string, mixed> $change changes_cache record
      */
     public static function idempotencyKey(array $change, int $ruleId, string $itemId = ''): string
@@ -268,6 +273,7 @@ class EventRule extends DBEngine
             (string) ($change['evidence'] ?? ''),
             (string) ($change['recordid'] ?? ''),
             (string) ($change['operation'] ?? ''),
+            (string) ($change['inversion'] ?? ''),
             $itemId,
             (string) $ruleId,
         ]));

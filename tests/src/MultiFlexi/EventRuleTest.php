@@ -181,6 +181,53 @@ class EventRuleTest extends TestCase
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private static function change(int $inversion): array
+    {
+        return ['source' => 1, 'evidence' => 'banka', 'recordid' => 7619, 'operation' => 'update', 'inversion' => $inversion];
+    }
+
+    /**
+     * Every change of a record is its own event: the second update must not be taken for the first.
+     *
+     * @covers \MultiFlexi\EventRule::idempotencyKey
+     */
+    public function testEachChangeOfARecordHasItsOwnKey(): void
+    {
+        $this->assertNotSame(
+            EventRule::idempotencyKey(self::change(96193), 4),
+            EventRule::idempotencyKey(self::change(96196), 4),
+        );
+    }
+
+    /**
+     * A replayed delivery of one change gives the same key, so no task is made twice.
+     *
+     * @covers \MultiFlexi\EventRule::idempotencyKey
+     */
+    public function testReplayedChangeHasTheSameKey(): void
+    {
+        $this->assertSame(
+            EventRule::idempotencyKey(self::change(96193), 4),
+            EventRule::idempotencyKey(self::change(96193), 4),
+        );
+    }
+
+    /**
+     * @covers \MultiFlexi\EventRule::idempotencyKey
+     */
+    public function testKeyDiffersByRuleOperationAndItem(): void
+    {
+        $change = self::change(96193);
+        $base = EventRule::idempotencyKey($change, 4);
+
+        $this->assertNotSame($base, EventRule::idempotencyKey($change, 5));
+        $this->assertNotSame($base, EventRule::idempotencyKey(array_merge($change, ['operation' => 'settled']), 4));
+        $this->assertNotSame($base, EventRule::idempotencyKey($change, 4, '7671'));
+    }
+
+    /**
      * Smoke test: getRulesForRunTemplate returns an array (may be empty without DB).
      *
      * @covers \MultiFlexi\EventRule::getRulesForRunTemplate

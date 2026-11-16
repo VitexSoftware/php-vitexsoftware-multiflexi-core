@@ -1,3 +1,14 @@
+php-vitexsoftware-multiflexi-core (2.11.1) unstable; urgency=medium
+
+  * EventRule::idempotencyKey includes the version of the change (inversion).
+    Without it the second change of a record (e.g. a second "update" of one
+    bank record) had the key of the first one, Task::forEvent found the
+    existing task and nothing was started: an event rule on "update" worked
+    once per record and never again. A replayed delivery of one change carries
+    the same version, so it still gives the same key and makes no task twice.
+
+ -- Vítězslav Dvořák <info@vitexsoftware.cz>  Mon, 16 Nov 2026 22:11:00 +0100
+
 php-vitexsoftware-multiflexi-core (2.11.0) unstable; urgency=medium
 
   * Use https://multiflexi.eu/schema/*.json as the canonical JSON Schema $id
