@@ -58,6 +58,24 @@ trait AuditableEntity
     }
 
     /**
+     * ID of the user who made the change.
+     *
+     * In the web UI the signed-in user lives in the session (Ease\Shared::user());
+     * User::singleton() is a separate, never-logged-in instance there, so using it
+     * alone left user_id NULL on every audited change. The session is read
+     * directly (not via Shared::user()) so CLI/daemon processes, which have no
+     * session, keep the previous behaviour and get no user object created.
+     */
+    private static function auditUserId(): ?int
+    {
+        $sessionUser = $_SESSION[\Ease\Shared::appName()][\Ease\Shared::$userSessionName] ?? null;
+        $user = $sessionUser instanceof \Ease\Person ? $sessionUser : \MultiFlexi\User::singleton();
+        $userId = $user->getUserID();
+
+        return $userId ? (int) $userId : null;
+    }
+
+    /**
      * Write one row to security_audit_log for a create/update/delete on this
      * entity. Never throws — a logging failure must not break the operation
      * it is auditing.
@@ -70,7 +88,7 @@ trait AuditableEntity
 
         AuditLog::record(
             $this->getPdo(),
-            \MultiFlexi\User::singleton()->getUserID() ?: null,
+            self::auditUserId(),
             $entityType,
             $entityId,
             $action,
