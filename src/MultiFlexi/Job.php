@@ -147,8 +147,9 @@ class Job extends DBEngine
         }
 
         // Resolve built-in date macros ({yesterday}, {last_month_start}, ...) before the env is stored
-        foreach (Macros::resolveFields($environment) as $envKey => $template) {
-            $this->addStatusMessage(sprintf(_('Macro resolved in %s: %s'), $envKey, $template), 'debug');
+        // Log only field names: a template may also contain secret text (e.g. password fields)
+        foreach (array_keys(Macros::resolveFields($environment)) as $envKey) {
+            $this->addStatusMessage(sprintf(_('Macro resolved in %s'), $envKey), 'debug');
         }
 
         $this->setData([
