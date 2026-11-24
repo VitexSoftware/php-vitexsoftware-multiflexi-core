@@ -755,7 +755,8 @@ EOD;
 
         $companyHost = $this->getRunTemplate()->getCompany()->getDataValue('zabbix_host');
 
-        $hostname = $overrideHost ?? $companyHost ?? \Ease\Shared::cfg('ZABBIX_HOST', gethostname());
+        // ?: not ??: the company form stores an empty string when no override is given
+        $hostname = $overrideHost ?: $companyHost ?: \Ease\Shared::cfg('ZABBIX_HOST', gethostname());
 
         if ($lldMode) {
             $zabbixMetric = json_encode([array_change_key_case($this->reporter->getData(), \CASE_UPPER)]);
