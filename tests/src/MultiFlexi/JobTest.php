@@ -297,4 +297,14 @@ class JobTest extends \PHPUnit\Framework\TestCase
         $this->assertIsArray($allFields);
         $this->assertArrayHasKey('test_key', $allFields);
     }
+
+    /**
+     * @covers \MultiFlexi\Job::errorKind
+     */
+    public function testErrorKindLeaksNothingElse(): void
+    {
+        $this->assertSame('Fatal error AbraFlexi\Exception', \MultiFlexi\Job::errorKind('PHP Fatal error:  Uncaught AbraFlexi\Exception: https://user:secret@host/ password=abc'));
+        $this->assertSame('Fatal error memory limit', \MultiFlexi\Job::errorKind('PHP Fatal error:  Allowed memory size of 1 bytes exhausted'));
+        $this->assertSame('', \MultiFlexi\Job::errorKind('token=abcdef https://u:p@h/'));
+    }
 }

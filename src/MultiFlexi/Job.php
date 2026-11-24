@@ -750,7 +750,7 @@ EOD;
      * another attempt (e.g. deferred by an unavailable credential).
      *
      * @param int    $exitCode exit code of the executor process (non-zero)
-     * @param string $reason   short description, e.g. first line of its stderr
+     * @param string $reason   first line of its stderr; only the error kind is used
      *
      * @return bool true when the job was finalized here
      */
@@ -773,7 +773,9 @@ EOD;
         }
 
         $now = (new \DateTime())->format('Y-m-d H:i:s');
-        $description = trim(sprintf(_('Executor process ended with code %d without result'), $exitCode).' '.mb_substr($reason, 0, 200));
+        // Only the kind of the error: raw stderr may carry secrets (URLs with credentials,
+        // tokens) and must not leave for Zabbix, OTel or the status log.
+        $description = trim(sprintf(_('Executor process ended with code %d without result'), $exitCode).' '.self::errorKind($reason));
 
         // The exitcode IS NULL condition lets a concurrent finalization win
         $this->updateToSQL([
@@ -825,6 +827,25 @@ EOD;
         $this->updateTaskState($exitCode);
 
         return true;
+    }
+
+    /**
+     * Reduce an error message to its kind, e.g. "Fatal error TypeError". Never returns
+     * any other part of the message.
+     */
+    public static function errorKind(string $message): string
+    {
+        $kind = preg_match('/\b(Fatal error|Parse error|Segmentation fault|Out of memory)\b/i', $message, $error) ? $error[1] : '';
+
+        if (preg_match('/Allowed memory size/i', $message)) {
+            $kind = trim($kind.' memory limit');
+        }
+
+        if (preg_match('/Uncaught ((?:[A-Z][A-Za-z0-9]*\\\\)*(?:[A-Z][A-Za-z0-9]*)?(?:Error|Exception))\b/', $message, $class)) {
+            $kind = trim($kind.' '.$class[1]);
+        }
+
+        return $kind;
     }
 
     /**

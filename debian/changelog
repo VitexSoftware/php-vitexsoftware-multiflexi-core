@@ -1,3 +1,10 @@
+php-vitexsoftware-multiflexi-core (2.11.6) unstable; urgency=medium
+
+  * Job::reportCrashed(): send only the kind of the error, never raw stderr
+    which may contain credentials.
+
+ -- vitex <info@vitexsoftware.cz>  Wed, 25 Nov 2026 01:50:00 +0100
+
 php-vitexsoftware-multiflexi-core (2.11.5) unstable; urgency=medium
 
   * Job::reportCrashed(): finalize a job whose executor process died without
