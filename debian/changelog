@@ -1,3 +1,10 @@
+php-vitexsoftware-multiflexi-core (2.11.4) unstable; urgency=medium
+
+  * Native executor: do not fail on uninitialized job files in executors that
+    override setJob() (Docker); a successful container run ended with code 255.
+
+ -- vitex <info@vitexsoftware.cz>  Wed, 25 Nov 2026 00:50:00 +0100
+
 php-vitexsoftware-multiflexi-core (2.11.3) unstable; urgency=medium
 
   * Job::reportToZabbix(): an empty company zabbix_host falls back to

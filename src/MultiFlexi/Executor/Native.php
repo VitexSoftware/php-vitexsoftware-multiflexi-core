@@ -29,7 +29,10 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
     public $timeout = 32767;
     private Process $process;
     private string $commandline;
-    private \MultiFlexi\ConfigFields $jobFiles;
+    /**
+     * Null in executors that override setJob() and use no host files (Docker).
+     */
+    private ?\MultiFlexi\ConfigFields $jobFiles = null;
 
     public function __construct(\MultiFlexi\Job &$job)
     {
@@ -111,7 +114,7 @@ class Native extends \MultiFlexi\CommonExecutor implements \MultiFlexi\executor
 
         $this->addStatusMessage('pid:'.(isset($this->pid) ? (string) ($this->pid) : 'n/a').' '.$command.': '.$this->process->getExitCodeText(), $this->process->getExitCode() === 0 ? 'success' : 'warning');
 
-        foreach ($this->jobFiles as $file) {
+        foreach ($this->jobFiles ?? [] as $file) {
             $filename = $file->getValue();
 
             if (file_exists($filename)) {
