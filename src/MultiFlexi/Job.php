@@ -743,6 +743,91 @@ EOD;
     }
 
     /**
+     * Finalize a job whose executor process died before it could record a result
+     * (PHP fatal error, kill signal, out of memory) and report it like any failure.
+     *
+     * Does nothing when the job already has a result or waits in the queue for
+     * another attempt (e.g. deferred by an unavailable credential).
+     *
+     * @param int    $exitCode exit code of the executor process (non-zero)
+     * @param string $reason   short description, e.g. first line of its stderr
+     *
+     * @return bool true when the job was finalized here
+     */
+    public function reportCrashed(int $exitCode, string $reason = ''): bool
+    {
+        $jobId = (int) $this->getMyKey();
+
+        if ($jobId === 0 || $exitCode === 0) {
+            return false;
+        }
+
+        $row = $this->getFluentPDO()->from('job')->where('id', $jobId)->fetch();
+
+        if (!$row || $row['exitcode'] !== null) {
+            return false;
+        }
+
+        if ((int) $this->getFluentPDO()->from('schedule')->where('job', $jobId)->count() > 0) {
+            return false;
+        }
+
+        $now = (new \DateTime())->format('Y-m-d H:i:s');
+        $description = trim(sprintf(_('Executor process ended with code %d without result'), $exitCode).' '.mb_substr($reason, 0, 200));
+
+        // The exitcode IS NULL condition lets a concurrent finalization win
+        $this->updateToSQL([
+            'begin' => empty($row['begin']) ? $now : $row['begin'],
+            'end' => $now,
+            'exitcode' => $exitCode,
+        ], ['id' => $jobId, 'exitcode' => null]);
+
+        $this->setDataValue('exitcode', $exitCode);
+        $runTemplate = $this->getRuntemplate();
+        $app = $this->getApplication();
+        $company = $this->getCompany();
+
+        foreach ([
+            'phase' => 'jobCrashed',
+            'job_id' => $jobId,
+            'begin' => empty($row['begin']) ? $now : $row['begin'],
+            'end' => $now,
+            'exitcode' => $exitCode,
+            'exitcode_description' => $description,
+            'runtemplate_id' => $runTemplate?->getMyKey(),
+            'runtemplate_name' => $runTemplate?->getRecordName(),
+            'app_id' => $app?->getMyKey(),
+            'app_name' => $app?->getRecordName(),
+            'company_id' => $company?->getMyKey(),
+            'company_name' => $company?->getDataValue('name'),
+            'company_code' => $company?->getDataValue('slug'),
+        ] as $key => $value) {
+            $this->reporter->setDataValue($key, $value);
+        }
+
+        $this->addStatusMessage(sprintf(_('Job #%d crashed: %s'), $jobId, $description), 'error');
+
+        if (\Ease\Shared::cfg('ZABBIX_SERVER') && $app && $company && $runTemplate) {
+            $this->reportToZabbix('job-['.$company->getDataValue('slug').'-'.$app->getDataValue('code').'-'.$runTemplate->getMyKey().']');
+        }
+
+        if ($runTemplate !== null && $runTemplate->getMyKey()) {
+            $rtUpdate = ['failed_jobs_count' => (int) $runTemplate->getDataValue('failed_jobs_count') + 1];
+
+            if (!self::isAdhocScheduleType($row['schedule_type'])) {
+                $rtUpdate['next_schedule'] = null;
+                $rtUpdate['last_schedule'] = $runTemplate->getDataValue('next_schedule');
+            }
+
+            $runTemplate->updateToSQL($rtUpdate, ['id' => $runTemplate->getMyKey()]);
+        }
+
+        $this->updateTaskState($exitCode);
+
+        return true;
+    }
+
+    /**
      * Send Job phase Message to Zabbix.
      *
      * @param string $itemKey destination zabbix item name
