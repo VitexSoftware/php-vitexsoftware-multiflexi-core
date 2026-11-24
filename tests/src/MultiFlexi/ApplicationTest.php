@@ -51,6 +51,28 @@ class ApplicationTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @covers \MultiFlexi\Application::generateCode
+     */
+    public function testgenerateCode(): void
+    {
+        // last 7 characters, first 6 of them - same as the original migration
+        $this->assertSame('-PROBE', Application::generateCode('/usr/bin/multiflexi-probeX'));
+        $this->assertSame('APP', Application::generateCode(''));
+        $first = Application::generateCode('fiobank-statement-mailer');
+        $second = Application::generateCode('csas-statement-mailer', [$first]);
+        $third = Application::generateCode('rb-statement-mailer', [$first, $second]);
+        $this->assertCount(3, array_unique([$first, $second, $third]));
+        $used = [];
+
+        for ($i = 0; $i < 1200; ++$i) {
+            $code = Application::generateCode('same-executable', $used);
+            $this->assertLessThanOrEqual(8, \strlen($code));
+            $this->assertNotContains($code, $used);
+            $used[] = $code;
+        }
+    }
+
+    /**
      * @covers \MultiFlexi\Application::takeData
      */
     public function testtakeData(): void

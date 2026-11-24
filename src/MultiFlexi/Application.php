@@ -80,8 +80,10 @@ class Application extends DBEngine
         //            $data['uuid'] = \Ease\Functions::guidv4();
         //        }
 
-        if ((\array_key_exists('code', $data) === false) || empty($importData['code'])) {
-            //            $data['code'] = substr(substr(strtoupper($data['executable'] ? basename($data['executable']) : $data['name']), -7), 0, 6);
+        // An empty code is "not given": never store '' (the column is UNIQUE) nor
+        // overwrite an existing code. insertToSQL() generates one for new records.
+        if (\array_key_exists('code', $data) && trim((string) $data['code']) === '') {
+            unset($data['code']);
         }
 
         $data['image'] = \array_key_exists('image', $data) ? (string) ($data['image']) : '';
@@ -91,11 +93,77 @@ class Application extends DBEngine
         return parent::takeData($data);
     }
 
-    public function getCode()
+    /**
+     * Code of the application; generated from its executable or name when not set.
+     */
+    public function getCode(): string
     {
         $data = $this->getData();
 
-        return substr(strtoupper($data['executable'] ? basename($data['executable']) : $data['name']), 0, -6);
+        return empty($data['code']) ? self::generateCode((string) (empty($data['executable']) ? $data['name'] ?? '' : $data['executable'])) : (string) $data['code'];
+    }
+
+    /**
+     * Derive a short application code (max. 8 characters), unique among $usedCodes.
+     *
+     * Same algorithm as the app code migration, so codes keep their established look.
+     *
+     * @param string        $source    executable (path allowed) or application name
+     * @param array<string> $usedCodes codes that are already taken
+     */
+    public static function generateCode(string $source, array $usedCodes = []): string
+    {
+        $plain = (string) preg_replace('/[^A-Z0-9_-]/', '', strtoupper(basename($source)));
+        $base = substr(substr($plain, -7), 0, 6);
+
+        if ($base === '') {
+            $base = 'APP';
+        }
+
+        $used = array_flip(array_map('strtoupper', $usedCodes));
+        $code = $base;
+
+        for ($try = 1; isset($used[$code]); ++$try) {
+            $code = substr($base, 0, min(5, 8 - \strlen((string) $try))).$try;
+        }
+
+        return $code;
+    }
+
+    /**
+     * Insert the application; generates its code when none was given.
+     *
+     * @param null|array<string, mixed> $data
+     */
+    #[\Override]
+    public function insertToSQL($data = null)
+    {
+        if (null === $data) {
+            $data = $this->getData();
+        }
+
+        if (empty($data['code'])) {
+            $data['code'] = $this->uniqueCode($data);
+            $this->setDataValue('code', $data['code']);
+        }
+
+        return parent::insertToSQL($data);
+    }
+
+    /**
+     * Generate a code not used by any other application in the database.
+     *
+     * @param array<string, mixed> $data application record
+     */
+    private function uniqueCode(array $data): string
+    {
+        $used = [];
+
+        foreach ($this->getFluentPDO()->from('apps')->select('code', true)->where('code IS NOT NULL')->fetchAll() as $row) {
+            $used[] = (string) $row['code'];
+        }
+
+        return self::generateCode((string) (empty($data['executable']) ? $data['name'] ?? '' : $data['executable']), $used);
     }
 
     public function getUuid()
@@ -783,6 +851,12 @@ class Application extends DBEngine
                 // Update existing app
                 $appId = $existingApp['id'];
                 $this->setMyKey($appId);
+
+                // Heal applications imported before codes were generated
+                if (empty($fields['code']) && empty($existingApp['code'])) {
+                    $fields['code'] = $this->uniqueCode($fields + $existingApp);
+                }
+
                 $this->takeData($fields);
                 $this->saveToSQL();
             } else {
