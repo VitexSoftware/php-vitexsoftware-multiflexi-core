@@ -48,6 +48,10 @@ class Job extends DBEngine
         self::SCHEDULE_TYPE_COMMAND_LINE,
     ];
 
+    /**
+     * Exit code of a job not launched because its company is disabled (EX_NOPERM).
+     */
+    public const EXIT_DENIED = 77;
     public executor $executor;
     public static array $intervalCode = [
         'y' => 'yearly',
@@ -129,6 +133,7 @@ class Job extends DBEngine
      */
     public function newJob(RunTemplate $runtemplate, ConfigFields $environment, \DateTime $scheduled, $executor = 'Native', $scheduleType = 'adhoc')
     {
+        self::assertCompanyEnabled($runtemplate);
         $this->runTemplate = $runtemplate;
         $this->application = $this->getRunTemplate()->getApplication();
         $this->company = $this->getRunTemplate()->getCompany();
@@ -500,7 +505,7 @@ class Job extends DBEngine
 
         $nextRetry = $task->getNextRetryTime();
 
-        if ($nextRetry !== null) {
+        if ($nextRetry !== null && $this->getRunTemplate()->isCompanyEnabled()) {
             $retryJob = new self();
             $retryJob->setDataValue('task_id', $taskId);
             $retryJob->prepareJob(
@@ -566,6 +571,7 @@ EOD;
     public function prepareJob(RunTemplate $runTemplate, ConfigFields $envOverride, \DateTime $scheduled, string $executor = 'Native', string $scheduleType = 'adhoc'): string
     {
         $outline = '';
+        self::assertCompanyEnabled($runTemplate);
         $this->runTemplate = $runTemplate;
         $appId = $this->getRunTemplate()->getDataValue('app_id');
         $companyId = $this->getRunTemplate()->getDataValue('company_id');
@@ -892,10 +898,61 @@ EOD;
     }
 
     /**
+     * Refuse a job of a disabled company.
+     *
+     * @throws JobDeniedException
+     */
+    private static function assertCompanyEnabled(RunTemplate $runTemplate): void
+    {
+        if (!$runTemplate->isCompanyEnabled()) {
+            throw new JobDeniedException(sprintf(
+                _('RunTemplate #%d cannot run: company #%d is disabled'),
+                (int) $runTemplate->getMyKey(),
+                (int) $runTemplate->getDataValue('company_id'),
+            ));
+        }
+    }
+
+    /**
+     * Close a queued job whose company was disabled after the job had been scheduled.
+     *
+     * The job is finished without launching anything, without actions and without a retry.
+     *
+     * @return bool true when the job was denied
+     */
+    public function denyWhenCompanyDisabled(): bool
+    {
+        $runTemplate = $this->getRuntemplate();
+
+        if ($runTemplate === null || $runTemplate->isCompanyEnabled()) {
+            return false;
+        }
+
+        $reason = sprintf(_('Company #%d is disabled'), (int) $runTemplate->getDataValue('company_id'));
+        $this->updateToSQL([
+            'block_reason' => $reason,
+            'blocked_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+        ], ['id' => $this->getMyKey()]);
+        $this->markUnexecuted(self::EXIT_DENIED);
+
+        if ((int) $this->getDataValue('task_id') > 0) {
+            (new Task((int) $this->getDataValue('task_id')))->markFailed();
+        }
+
+        $this->addStatusMessage(sprintf(_('Job #%d was not launched: %s'), (int) $this->getMyKey(), $reason), 'warning');
+
+        return true;
+    }
+
+    /**
      * Perform Job.
      */
     public function performJob(): void
     {
+        if ($this->denyWhenCompanyDisabled()) {
+            return;
+        }
+
         $this->runBegin();
 
         try {

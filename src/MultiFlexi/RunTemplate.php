@@ -339,6 +339,45 @@ class RunTemplate extends \MultiFlexi\DBEngine
     }
 
     /**
+     * Is the company of this RunTemplate enabled?
+     *
+     * A disabled company runs no jobs at all, however they are started.
+     * A RunTemplate without a company is not restricted.
+     */
+    public function isCompanyEnabled(): bool
+    {
+        return $this->isRelatedRecordEnabled(new Company(), (int) $this->getDataValue('company_id'));
+    }
+
+    /**
+     * Is the application of this RunTemplate enabled?
+     *
+     * A disabled application is not started by the scheduler or by events, a manual launch is possible.
+     */
+    public function isApplicationEnabled(): bool
+    {
+        return $this->isRelatedRecordEnabled(new Application(), (int) $this->getDataValue('app_id'));
+    }
+
+    /**
+     * Why jobs of this RunTemplate must not be started automatically (scheduler, events).
+     *
+     * @return null|string reason, null when they may run
+     */
+    public function automaticRunDenial(): ?string
+    {
+        if (!$this->isCompanyEnabled()) {
+            return sprintf(_('Company #%d is disabled'), (int) $this->getDataValue('company_id'));
+        }
+
+        if (!$this->isApplicationEnabled()) {
+            return sprintf(_('Application #%d is disabled'), (int) $this->getDataValue('app_id'));
+        }
+
+        return null;
+    }
+
+    /**
      * Get apps for given company sorted by.
      *
      * @return array<array>
@@ -775,5 +814,19 @@ class RunTemplate extends \MultiFlexi\DBEngine
             ->leftJoin('runtemplate ON runtemplate.id = job.runtemplate_id')
             ->select(['runtemplate.name AS runtemplate_name', 'runtemplate.id AS runtemplate_id', 'runtemplate.last_schedule'])
             ->fetchAll();
+    }
+
+    /**
+     * Read the current "enabled" state from the database; long running daemons must see a change at once.
+     */
+    private function isRelatedRecordEnabled(Engine $engine, int $id): bool
+    {
+        if ($id === 0) {
+            return true;
+        }
+
+        $row = $engine->listingQuery()->select('enabled', true)->where('id', $id)->fetch();
+
+        return $row === false || (bool) $row['enabled'];
     }
 }

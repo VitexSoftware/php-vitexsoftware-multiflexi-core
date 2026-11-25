@@ -60,7 +60,10 @@ class Application extends DBEngine
     {
         unset($data['$schema'], $data['produces'], $data['consumes'], $data['csrf_token']);
         // TODO: Process somehow in future
-        $data['enabled'] = \array_key_exists('enabled', $data) ? (($data['enabled'] === 'on') || ($data['enabled'] === 1)) : 0;
+        // Absent "enabled" means "not given" (e.g. manifest import): keep the stored state
+        if (\array_key_exists('enabled', $data)) {
+            $data['enabled'] = (int) filter_var($data['enabled'], \FILTER_VALIDATE_BOOLEAN);
+        }
 
         if (\array_key_exists('name', $data) && empty($data['name'])) {
             $this->addStatusMessage(_('Name is empty'), 'warning');
@@ -132,6 +135,7 @@ class Application extends DBEngine
 
     /**
      * Insert the application; generates its code when none was given.
+     * A new application is enabled unless stated otherwise.
      *
      * @param null|array<string, mixed> $data
      */
@@ -145,6 +149,11 @@ class Application extends DBEngine
         if (empty($data['code'])) {
             $data['code'] = $this->uniqueCode($data);
             $this->setDataValue('code', $data['code']);
+        }
+
+        if (!isset($data['enabled'])) {
+            $data['enabled'] = 1;
+            $this->setDataValue('enabled', 1);
         }
 
         return parent::insertToSQL($data);

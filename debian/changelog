@@ -1,3 +1,13 @@
+php-vitexsoftware-multiflexi-core (2.12.0) unstable; urgency=medium
+
+  * takeData() of Application and Company keeps "enabled" when not given, so a
+    manifest import no longer disables the application; new records are enabled.
+  * A disabled company runs no jobs at all (JobDeniedException, exit code 77 for
+    jobs already queued); RunTemplate::automaticRunDenial() for schedulers.
+  * Breaks multiflexi-migrations before 2.5.9, which repairs the stored state.
+
+ -- vitex <info@vitexsoftware.cz>  Wed, 25 Nov 2026 02:30:00 +0100
+
 php-vitexsoftware-multiflexi-core (2.11.6) unstable; urgency=medium
 
   * Job::reportCrashed(): send only the kind of the error, never raw stderr

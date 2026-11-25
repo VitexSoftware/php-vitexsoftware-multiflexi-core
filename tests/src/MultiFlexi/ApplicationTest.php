@@ -81,6 +81,37 @@ class ApplicationTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @covers \MultiFlexi\Application::takeData
+     */
+    public function testTakeDataKeepsEnabledWhenNotGiven(): void
+    {
+        foreach ([0, 1] as $stored) {
+            $app = new Application();
+            $app->setDataValue('enabled', $stored);
+            $app->takeData(['name' => 'Imported', 'executable' => '/bin/test']);
+            $this->assertSame($stored, $app->getDataValue('enabled'));
+        }
+    }
+
+    /**
+     * @covers \MultiFlexi\Application::takeData
+     */
+    public function testTakeDataNormalizesEnabled(): void
+    {
+        foreach (['on' => 1, '1' => 1, 'true' => 1, '0' => 0, 'off' => 0, '' => 0] as $given => $expected) {
+            $app = new Application();
+            $app->takeData(['enabled' => (string) $given, 'name' => 'x', 'executable' => '/bin/test']);
+            $this->assertSame($expected, $app->getDataValue('enabled'), var_export($given, true));
+        }
+
+        foreach ([[true, 1], [1, 1], [false, 0], [0, 0]] as [$given, $expected]) {
+            $app = new Application();
+            $app->takeData(['enabled' => $given, 'name' => 'x', 'executable' => '/bin/test']);
+            $this->assertSame($expected, $app->getDataValue('enabled'), var_export($given, true));
+        }
+    }
+
+    /**
      * @covers \MultiFlexi\Application::findBinaryInPath
      */
     public function testfindBinaryInPath(): void

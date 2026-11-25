@@ -49,12 +49,35 @@ class Company extends DBEngine
     }
 
     /**
+     * Insert the company. A new company is enabled unless stated otherwise.
+     *
+     * @param null|array<string, mixed> $data
+     */
+    #[\Override]
+    public function insertToSQL($data = null)
+    {
+        if (null === $data) {
+            $data = $this->getData();
+        }
+
+        if (!isset($data['enabled'])) {
+            $data['enabled'] = 1;
+            $this->setDataValue('enabled', 1);
+        }
+
+        return parent::insertToSQL($data);
+    }
+
+    /**
      * Prepare data for save.
      */
     #[\Override]
     public function takeData(array $data): int
     {
-        $data['enabled'] = !empty($data['enabled'] ?? false);
+        // Absent "enabled" means "not given": keep the stored state
+        if (\array_key_exists('enabled', $data)) {
+            $data['enabled'] = (int) filter_var($data['enabled'], \FILTER_VALIDATE_BOOLEAN);
+        }
 
         if (\array_key_exists('slug', $data) && empty($data['slug'])) {
             unset($data['slug']);
